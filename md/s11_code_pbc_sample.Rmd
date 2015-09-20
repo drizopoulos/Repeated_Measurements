@@ -1,0 +1,9 @@
+```{r}
+# 16 sample patients
+ids <- c(102, 36, 288, 193, 177, 202, 70, 301, 88, 104, 
+         43, 209, 28, 184, 176, 157)
+
+xyplot(log(serBilir) ~ year | id, data = pbc2, subset = id %in% ids, 
+       type = "l", col = 1, layout = c(4, 4), as.table = TRUE, 
+       xlab = "Time (years)", ylab = "log serum Bilirubin")
+```

@@ -1,0 +1,5 @@
+```{r}
+fm_s22 <- lm(log(serBilir) ~ age + drug, data = pbc2.id)
+
+summary(fm_s22)
+```

@@ -1,0 +1,37 @@
+```{r}
+# model with exponential correlation matrix & random intercepts
+fm_s37_aids1 <- lme(CD4 ~ obstime + I(obstime^2) + (obstime + I(obstime^2)):drug, 
+                    data = aids, random = ~ 1 | patient, 
+                   correlation = corExp(form = ~ obstime | patient))
+
+# model with exponential correlation matrix & random intercepts & slopes
+fm_s37_aids2 <- lme(CD4 ~ obstime + I(obstime^2) + (obstime + I(obstime^2)):drug, 
+                    data = aids, random = ~ obstime | patient, 
+                    correlation = corExp(form = ~ obstime | patient))
+
+# model with exponential correlation matrix & random intercepts, slopes & slopes^2
+fm_s37_aids3 <- lme(CD4 ~ obstime + I(obstime^2) + (obstime + I(obstime^2)):drug, 
+                    data = aids, random = ~ obstime + I(obstime^2) | patient, 
+                    correlation = corExp(form = ~ obstime | patient),
+                    control = lmeControl(opt = "optim"))
+
+# fixed effects per model
+cbind("Int" = fixef(fm_s37_aids1), 
+      "Linear Slp" = fixef(fm_s37_aids2), 
+      "Quad Slp" = fixef(fm_s37_aids3))
+
+
+# 95% CI for correlation parameter per model
+intervals(fm_s37_aids1, which = "var-cov")$corStruct
+intervals(fm_s37_aids2, which = "var-cov")$corStruct
+intervals(fm_s37_aids3, which = "var-cov")$corStruct
+
+
+############################################################################################
+# Note: If you try fitting the model with the Gaussian correlation (i.e., corGaus()), and  #
+#       then calculate the 95% CIs, you will note that the model has not actually          #
+#       successfully converged because the covariance matrix of the MLEs is non-positive   # 
+#       definite.                                                                          #
+############################################################################################
+```
+

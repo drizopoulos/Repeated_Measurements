@@ -1,0 +1,53 @@
+```{r}
+fm_s46_pbc <- geeglm(serCholD ~ ns(year, 3) * drug + ns(age, 3), family = binomial, 
+                 data = pbc2, id = id, corstr = "exchangeable")
+
+# parameters do not have a straightforward intepretation
+summary(fm_s46_pbc)
+
+# the following function calculates differences, and
+# their corresponding 95CIs and p-values
+rowDiff <- function (object, newdata, orig_data, adjust.p = FALSE, ...) {
+    form <- formula(object)
+    namesVars <- all.vars(form)
+    respVar <- namesVars[1]
+    newdata[[respVar]] <- 0.01
+    betas <- if (!inherits(object, "lme")) coef(object) else fixef(object)
+    V <- if (inherits(object, "geeglm")) object$geese$vbeta else vcov(object)
+    orig_data <- orig_data[complete.cases(orig_data[namesVars]), ]
+    mfX <- model.frame(terms(form), data = orig_data)
+    X <- model.matrix(attr(mfX, "terms"), newdata)
+    ind <- combn(nrow(X), 2)
+    k <- ncol(ind)
+    out <- matrix(0, k, 5)
+    for (i in seq_len(k)) {
+        XX <- X[ind[1, i], , drop = FALSE] - X[ind[2, i], , drop = FALSE]
+        est <- drop(XX %*% betas)
+        se <- sqrt(diag(XX %*% V %*% t(XX)))
+        out[i, 1] <- est
+        out[i, 2] <- se
+        out[i, 3] <- est - 1.96 * se
+        out[i, 4] <- est + 1.96 * se
+        out[i, 5] <- 2 * pnorm(abs(est / se), lower.tail = FALSE)
+    }
+    if (k > 2 && adjust.p) {
+        out[, 5] <- p.adjust(out[, 5], ...)
+    }
+    colnames(out) <- c("Diff", "Std.Err.", "95%low", "95%upp", "p-value")
+    rownames(out) <- paste(ind[1, ], "-", ind[2, ])
+    out
+}
+
+
+# we want to test treatment differences for 49 year old males
+# at year 7 -- we create the corresponding data frame
+nDF <- with(pbc2, expand.grid(
+    year = 7, drug = levels(drug), age = 49
+))
+nDF
+
+# we compute the difference of the two rows;
+# in this case this the log odds ratio between
+# the aforementioned patients
+rowDiff(fm_s46_pbc, nDF, pbc2)
+```

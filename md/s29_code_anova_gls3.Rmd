@@ -1,0 +1,8 @@
+```{r}
+fm_s29_pbc <- gls(log(serBilir) ~ year + year:drug + year * sex + age, data = pbc2,
+                   correlation = corCAR1(form = ~ year | id))
+
+# t-tests for each coefficient
+summary(fm_s29_pbc)
+```
+

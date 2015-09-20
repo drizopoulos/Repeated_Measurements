@@ -1,0 +1,35 @@
+```{r}
+aids$lowCD4 <- aids$CD4 < sqrt(150)
+aids$obstimef <- factor(aids$obstime)
+fm_s45_ind <- geeglm(lowCD4 ~ obstimef, family = binomial, data = aids, 
+                     id = patient, corstr = "independence")
+
+fm_s45_exc <- geeglm(lowCD4 ~ obstimef, family = binomial, data = aids, 
+                     id = patient, corstr = "exchangeable")
+
+fm_s45_ar1 <- geeglm(lowCD4 ~ obstimef, family = binomial, data = aids, 
+                     id = patient, corstr = "ar1")
+
+fm_s45_uns <- geeglm(lowCD4 ~ obstimef, family = binomial, data = aids, 
+                     id = patient, corstr = "unstructured")
+
+# estimated coefficients 
+round(cbind("independence" = coef(fm_s45_ind), 
+      "exchangeable" = coef(fm_s45_exc),
+      "AR1" = coef(fm_s45_ar1),
+      "unstructured" = coef(fm_s45_uns)), 3)
+
+# Sandwich standard errors
+extractSEs <- function (model) sqrt(diag(model$geese$vbeta))
+round(cbind("independence" = extractSEs(fm_s45_ind), 
+            "exchangeable" = extractSEs(fm_s45_exc),
+            "AR1" = extractSEs(fm_s45_ar1),
+            "unstructured" = extractSEs(fm_s45_uns)), 3)
+
+# Naive standard errors
+extractSEs_naive <- function (model) sqrt(diag(model$geese$vbeta.naiv))
+round(cbind("independence" = extractSEs_naive(fm_s45_ind), 
+            "exchangeable" = extractSEs_naive(fm_s45_exc),
+            "AR1" = extractSEs_naive(fm_s45_ar1),
+            "unstructured" = extractSEs_naive(fm_s45_uns)), 3)
+```

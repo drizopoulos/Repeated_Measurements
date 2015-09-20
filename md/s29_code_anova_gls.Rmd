@@ -1,0 +1,14 @@
+```{r}
+# model with compound symmetry matrix
+fm_s29_aids1 <- gls(CD4 ~ obstime + obstime:drug, data = aids,
+                    correlation = corCompSymm(form = ~ obstime | patient))
+
+# model with general covariance matrix
+fm_s29_aids2 <- gls(CD4 ~ obstime + obstime:drug, data = aids,
+                    correlation = corSymm(form = ~ 1 | patient),
+                    weights = varIdent(form = ~ 1 | obstime))
+
+# Likelihood ratio test
+anova(fm_s29_aids1, fm_s29_aids2)
+```
+

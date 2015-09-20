@@ -1,0 +1,13 @@
+```{r}
+fm_s24_aids <- gls(CD4 ~ obstime + obstime:drug, data = aids,
+              correlation = corCompSymm(form = ~ obstime | patient))
+
+summary(fm_s24_aids)
+
+# patient 450 has all measurements
+getVarCov(fm_s24_aids, individual = 450)
+
+# corresponding correlation matrix
+cov2cor(getVarCov(fm_s24_aids, individual = 450))
+```
+

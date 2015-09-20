@@ -1,0 +1,8 @@
+```{r}
+# time-varying prothrombin -- current value formulation
+fm_s38_pbc1 <- lme(log(serBilir) ~ ns(year, 2) + sex + age + prothrombin, 
+                   data = pbc2, random = list(id = pdDiag(form = ~ ns(year, 2))))
+
+summary(fm_s38_pbc1)
+```
+

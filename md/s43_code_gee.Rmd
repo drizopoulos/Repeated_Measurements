@@ -1,0 +1,6 @@
+```{r}
+fm_s43 <- geeglm(serCholD ~ year * drug, family = binomial, 
+                 data = pbc2, id = id, corstr = "exchangeable")
+
+summary(fm_s43)
+```

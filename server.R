@@ -1,0 +1,2008 @@
+shinyServer(function(input, output) {
+    
+    output$section_choice <- renderUI({
+        if (!is.null(input$chapter)) {
+            chs <- switch(input$chapter,
+                "Chapter 1" = paste("Section", c("1.1")),
+                "Chapter 2" = paste("Section", c("2.2", "2.4", "2.7", "2.9", "2.11")),
+                "Chapter 3" = paste("Section", c("3.2", "3.3", "3.6*", "3.7", "3.8*", "3.10", "3.11")),
+                "Chapter 4" = paste("Section", c("4.1", "4.3", "4.5", "4.6")),
+                "Practicals" = paste("Practical", 1:5)
+            )
+            selectInput("section", "Select section:", chs, chs[1])
+        }
+    })
+
+    ######################################################################################
+    ######################################################################################
+    
+    ##############
+    # start page #
+    ##############
+    
+    output$start_page <- renderText({
+        if (input$chapter == 'Chapter 0')
+            includeHTML("./html/start_page.Rhtml")
+    })
+    
+    ######################################################################################
+    ######################################################################################
+    
+    ###############
+    # Section 1.1 #
+    ###############
+    
+    output$s11_data_choice <- renderUI({
+        if (input$chapter == "Chapter 1" && input$section == "Section 1.1")
+            fluidRow(column(4, radioButtons("data", "Data set:", c("AIDS", "PBC", "Prothro", "Glaucoma"))),
+                     column(6, checkboxInput("s11_loess", "Include loess/spline"), 
+                            checkboxInput("s11_sample", "Show sample patients")))
+    })
+    
+    output$s11_glaucoma_choice <- renderUI({
+        if (input$chapter == "Chapter 1" && input$section == "Section 1.1"
+            && naf(input$data) && input$data == "Glaucoma")
+            fluidRow(column(4, numericInput("id", "Patient:", 1, min = 1, max = 139)),
+                     column(4, radioButtons("eye", "Eye:", c("right", "left"))))
+    })
+    
+    output$s11_code_aids <- renderText({
+        if (input$chapter == "Chapter 1" && input$section == "Section 1.1") {
+            if (naf(input$data) && input$data == "AIDS") {
+                if (input$s11_loess && !input$s11_sample) {
+                    includeMarkdown("./md/s11_code_aids_loess.Rmd")
+                } else if (input$s11_sample && !input$s11_loess) {
+                    includeMarkdown("./md/s11_code_aids_sample.Rmd")
+                } else if (input$s11_sample && input$s11_loess) {
+                    includeMarkdown("./md/s11_code_aids_loess_sample.Rmd")
+                } else {
+                    includeMarkdown("./md/s11_code_aids.Rmd")
+                }
+            }
+        }
+    })
+    
+    output$s11_code_prothro <- renderText({  
+        if (input$chapter == "Chapter 1" && input$section == "Section 1.1") {
+            if (naf(input$data) && input$data == "Prothro") {
+                if (input$s11_loess && !input$s11_sample) {
+                    includeMarkdown("./md/s11_code_prothro_loess.Rmd")
+                } else if (input$s11_sample && !input$s11_loess) {
+                    includeMarkdown("./md/s11_code_prothro_sample.Rmd")
+                } else if (input$s11_sample && input$s11_loess) {
+                    includeMarkdown("./md/s11_code_prothro_loess_sample.Rmd")
+                } else {
+                    includeMarkdown("./md/s11_code_prothro.Rmd")
+                }
+            }
+        }
+    })
+    
+    output$s11_code_pbc <- renderText({
+        if (input$chapter == "Chapter 1" && input$section == "Section 1.1") {
+            if (naf(input$data) && input$data == "PBC") {
+                if (input$s11_loess && !input$s11_sample) {
+                    includeMarkdown("./md/s11_code_pbc_loess.Rmd")
+                } else if (input$s11_sample && !input$s11_loess) {
+                    includeMarkdown("./md/s11_code_pbc_sample.Rmd")
+                } else if (input$s11_sample && input$s11_loess) {
+                    includeMarkdown("./md/s11_code_pbc_loess_sample.Rmd")
+                } else {
+                    includeMarkdown("./md/s11_code_pbc.Rmd")
+                }
+            }
+        }
+    })
+    
+    output$s11_code_glaucoma <- renderText({  
+        if (input$chapter == "Chapter 1" && input$section == "Section 1.1") {
+            if (naf(input$data) && input$data == "Glaucoma") {
+                if (input$s11_loess) {
+                    includeMarkdown("./md/s11_code_glaucoma_loess.Rmd")
+                } else {
+                    includeMarkdown("./md/s11_code_glaucoma.Rmd")
+                }
+            }
+        }
+    })
+    
+    ######################################################################################
+    ######################################################################################
+    
+    ###############
+    # Section 2.2 #
+    ###############
+    
+    output$s22_code_lm <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.2") {
+            includeMarkdown("./md/s22_code_lm.Rmd")
+        }
+    })
+    
+    output$s22_Routput_lm <- renderPrint({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.2") {
+            fm_s22 <- lm(log(serBilir) ~ age + drug, data = pbc2.id)
+            htmlPrint(summary(fm_s22))
+        }
+    })
+
+    ###############
+    # Section 2.4 #
+    ###############
+    
+    output$s24_choice <- renderUI({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.4")
+            radioButtons("fit_effPlt", "Select:", 
+                         c("Model fit", "Effect plot"))
+    })
+   
+    output$s24_Agechoice <- renderUI({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.4"
+            && naf(input$fit_effPlt) && input$fit_effPlt == "Effect plot")
+            sliderInput("age_select_pbc", "Age",
+                        min = 30, max = 65, value = 49, animate = TRUE, step = 5)
+    })
+    
+    output$s24_code_gls <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.4"
+            && naf(input$fit_effPlt) && input$fit_effPlt == "Model fit") {
+            includeMarkdown("./md/s24_code_gls.Rmd")
+        }
+    })
+    
+    output$s24_Routput_gls <- renderPrint({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.4"
+            && naf(input$fit_effPlt) && input$fit_effPlt == "Model fit") {
+            fm_s24_aids <- gls(CD4 ~ obstime + obstime:drug,
+                          correlation = corCompSymm(form = ~ obstime | patient),
+                          data = aids)
+            htmlPrint2(
+                '# summarize model fit\n',
+                summary(fm_s24_aids),
+                '\n# Marginal covariance matrix',
+                getVarCov(fm_s24_aids, individual = 450),
+                '\n# Induced correlation matrix',
+                cov2cor(getVarCov(fm_s24_aids, individual = 450))
+            )
+        }
+    })
+    
+    output$s24_code_gls_effectPlot <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.4"
+            && naf(input$fit_effPlt) && input$fit_effPlt == "Effect plot") {
+            includeMarkdown("./md/s24_code_gls_effectPlot.Rmd")
+        }
+    })
+    
+    ######################################################################################
+    ######################################################################################
+    
+    ###############
+    # Section 2.7 #
+    ###############
+    
+    output$s27_cs_choice <- renderUI({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.7")
+            fluidRow(column(7, radioButtons("corrStr", "Select correlation structure:", 
+                                            c("Compound Symmetry", "AR1", "continuous AR1",
+                                              "exponential", "linear", "Gaussian"))), 
+                     column(4, checkboxInput("corr_plot", "Correlation plot")))
+    })
+
+    output$s27_cs_choice_slider <- renderUI({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.7") {
+            if (length(input$corrStr) && 
+                       input$corrStr %in% c("Compound Symmetry", "AR1", "continuous AR1")) {
+                max <- 0.95
+                stp <- 0.1
+            } else {
+                max <- 20
+                stp <- 2
+            }
+            min <- if (length(input$corrStr) && input$corrStr == "linear") {
+                0.3
+            } else {
+                0.05
+            }
+            sliderInput("corrStr_param", "parameter value",
+                        min = min, max = max, value = 0.05, animate = TRUE, step = stp)
+        }
+    })
+    
+        
+    output$s27_check_tab <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.7")
+            includeHTML("./html/check_tab.Rhtml")
+    })
+    
+    output$s27_Routput_gls <- renderPrint({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.7" 
+            && naf(input$corr_plot) && !input$corr_plot) {
+            Fun <- switch(input$corrStr,
+                          "Compound Symmetry" = corCompSymm,
+                          "AR1" = corAR1, 
+                          "continuous AR1" = corCAR1,
+                          "exponential" = corExp,
+                          "linear" = corLin,
+                          "Gaussian" = corGaus)
+            htmlPrint(testCS(Fun, input$corrStr_param), comment = "# Marginal covariance matrix")
+        }
+    })
+    
+    
+    ######################################################################################
+    ######################################################################################
+    
+    ###############
+    # Section 2.9 #
+    ###############
+    
+    output$s29_test_choice <- renderUI({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.9")
+            radioButtons("test_gls", "Select test:", 
+                         c("LRT covariance matrix", "AIC/BIC covariance matrix", 
+                           "t-test regression coefficients",
+                           "F-test regression coefficients",
+                           "LRT regression coefficients"))
+    })
+    
+    output$s29_code_anova_gls <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.9" 
+            && naf(input$test_gls) && input$test_gls == "LRT covariance matrix") {
+            includeMarkdown("./md/s29_code_anova_gls.Rmd")
+        }
+    })
+    
+    output$s29_code_anova_gls2 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.9"
+            && naf(input$test_gls) && input$test_gls == "AIC/BIC covariance matrix") {
+            includeMarkdown("./md/s29_code_anova_gls2.Rmd")
+        }
+    })
+    
+    output$s29_code_anova_gls3 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.9"
+            && naf(input$test_gls) && input$test_gls == "t-test regression coefficients") {
+            includeMarkdown("./md/s29_code_anova_gls3.Rmd")
+        }
+    })
+    
+    output$s29_code_anova_gls4 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.9"
+            && naf(input$test_gls) && input$test_gls == "F-test regression coefficients") {
+            includeMarkdown("./md/s29_code_anova_gls4.Rmd")
+        }
+    })
+    
+    output$s29_code_anova_gls5 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.9"
+            && naf(input$test_gls) && input$test_gls == "LRT regression coefficients") {
+            includeMarkdown("./md/s29_code_anova_gls5.Rmd")
+        }
+    })
+    
+    output$s29_Routput_gls <- renderPrint({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.9"
+            && naf(input$test_gls) && input$test_gls == "LRT covariance matrix") {
+            fm_s29_aids1 <- gls(CD4 ~ obstime + obstime:drug, data = aids,
+                                correlation = corCompSymm(form = ~ obstime | patient))
+            if (!exists("fm_s29_aids2")) {
+                withProgress({
+                    fm <- gls(CD4 ~ obstime + obstime:drug, data = aids,
+                                     correlation = corSymm(form = ~ 1 | patient),
+                                     weights = varIdent(form = ~ 1 | obstime))
+                }, message = "Fitting the model...")
+                fm_s29_aids2 <<- fm
+                fm_s211_aids <<- fm
+            }
+            htmlPrint(anova(fm_s29_aids1, fm_s29_aids2))
+        }
+    })
+    
+    output$s29_Routput_gls2 <- renderPrint({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.9"
+            && naf(input$test_gls) && input$test_gls == "AIC/BIC covariance matrix") {
+            fm_s29_pro1 <- gls(pro ~ time + time:treat, data = prothro,
+                               correlation = corExp(form = ~ time | id))
+            fm_s29_pro2 <- gls(pro ~ time + time:treat, data = prothro,
+                               correlation = corGaus(form = ~ time | id))
+            fm_s29_pro3 <- gls(pro ~ time + time:treat, data = prothro,
+                               correlation = corExp(form = ~ time | id),
+                               weights = varExp(form = ~ time))
+            fm_s29_pro4 <- gls(pro ~ time + time:treat, data = prothro,
+                               correlation = corGaus(form = ~ time | id),
+                               weights = varExp(form = ~ time))
+            htmlPrint(anova(fm_s29_pro1, fm_s29_pro2, fm_s29_pro3, 
+                            fm_s29_pro4, test = FALSE), comment = '# AIC and BIC all models')
+            htmlPrint(anova(fm_s29_pro1, fm_s29_pro3), 
+                      comment = '# LRT exponential correlation with & without variance function')
+            htmlPrint(anova(fm_s29_pro2, fm_s29_pro4), 
+                      comment = '# LRT Gaussian correlation with & without variance function')
+        }
+    })
+    
+    output$s29_Routput_gls3 <- renderPrint({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.9"
+            && naf(input$test_gls) && input$test_gls == "t-test regression coefficients") {
+            fm_s29_pbc <- gls(log(serBilir) ~ year + year:drug + year * sex + age, data = pbc2,
+                              correlation = corCAR1(form = ~ year | id))
+            htmlPrint(summary(fm_s29_pbc))
+        }
+    })
+    
+    output$s29_Routput_gls4 <- renderPrint({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.9"
+            && naf(input$test_gls) && input$test_gls == "F-test regression coefficients") {
+            fm_s29_pbc <- gls(log(serBilir) ~ year + year:drug + year * sex + age, data = pbc2,
+                              correlation = corCAR1(form = ~ year | id))
+            L_sex <- rbind(c(0,0,1,0,0,0), c(0,0,0,0,0,1))
+            
+            htmlPrint2(
+                "# marginal F-tests for each term",
+                anova(fm_s29_pbc, type = "marginal"),
+                "\n# F-test for specific terms",
+                anova(fm_s29_pbc, Terms = c("sex", "year:sex")),
+                paste0("\n # the same as above but with a contrast matrix;\n",
+                       " # first we see how many coefficients we have"),
+                coef(fm_s29_pbc),
+                paste0("\n # we want to test the coefficients of that ",
+                       "include 'sex'. We have two\n # the 3rd and 6th. ",
+                       "Hence, the contrast matrix is:"),
+                L_sex,
+                "\n# we give it to anova()",
+                anova(fm_s29_pbc, L = L_sex)
+            )
+        }
+    })
+    
+    output$s29_Routput_gls5 <- renderPrint({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.9"
+            && naf(input$test_gls) && input$test_gls == "LRT regression coefficients") {
+            fm_s29_pbc1 <- gls(log(serBilir) ~ year + year:drug + year * sex + age, data = pbc2,
+                               correlation = corCAR1(form = ~ year | id), method = "ML")
+            fm_s29_pbc2 <- gls(log(serBilir) ~ year + year:drug + age, data = pbc2,
+                               correlation = corCAR1(form = ~ year | id), method = "ML")
+            htmlPrint(anova(fm_s29_pbc2, fm_s29_pbc1))
+        }
+    })
+    
+    ######################################################################################
+    ######################################################################################
+    
+    #################
+    # Section 2.11 #
+    #################
+    
+    output$s211_plot_datachoice <- renderUI({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.11") {
+            radioButtons("s211_datachoice", "Select dataset:", c("AIDS", "PBC"))
+        }
+    })
+    
+    output$s211_plot_choice <- renderUI({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.11") {
+            chs <- if (naf(input$s211_datachoice) && input$s211_datachoice == "AIDS") "fitted" 
+            else c("fitted", "year", "age")
+            cond_var <- if (naf(input$s211_datachoice) && input$s211_datachoice == "AIDS") "Condition on drug"
+            else "Condition on sex"
+            fluidRow(column(4, radioButtons("s211_typePlot", "Type of plot:", c("Scatterplot", "QQnorm"))),
+                     column(4, radioButtons("s211_type_res", "Residuals type:", c("Pearson", "normalized"))),
+                     column(4, selectInput("s211_var_res", "Select variable:", chs, chs[1]),
+                            checkboxInput("s211_sex", cond_var)))
+        }
+    })
+    
+    output$s211_code_plot1 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
+            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
+            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
+            && naf(input$s211_type_res) && input$s211_type_res == "Pearson"
+            && naf(input$s211_var_res) && input$s211_var_res == "fitted" && !input$s211_sex)
+            includeMarkdown("./md/s211_code_plot_ResPFitt.Rmd")
+    })
+
+    output$s211_code_plot2 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
+            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
+            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
+            && naf(input$s211_type_res) && input$s211_type_res == "normalized"
+            && naf(input$s211_var_res) && input$s211_var_res == "fitted" && !input$s211_sex)
+            includeMarkdown("./md/s211_code_plot_ResNFitt.Rmd")
+    })
+
+    output$s211_code_plot3 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
+            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
+            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
+            && naf(input$s211_type_res) && input$s211_type_res == "Pearson"
+            && naf(input$s211_var_res) && input$s211_var_res == "fitted" && input$s211_sex)
+            includeMarkdown("./md/s211_code_plot_ResPFitt-sex.Rmd")
+    })
+
+    output$s211_code_plot4 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
+            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
+            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
+            && naf(input$s211_type_res) && input$s211_type_res == "normalized"
+            && naf(input$s211_var_res) && input$s211_var_res == "fitted" && input$s211_sex)
+            includeMarkdown("./md/s211_code_plot_ResNFitt-sex.Rmd")
+    })
+    
+    output$s211_code_plot5 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
+            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
+            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
+            && naf(input$s211_type_res) && input$s211_type_res == "Pearson"
+            && naf(input$s211_var_res) && input$s211_var_res == "year" && !input$s211_sex)
+            includeMarkdown("./md/s211_code_plot_ResPYear.Rmd")
+    })
+    
+    output$s211_code_plot6 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
+            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
+            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
+            && naf(input$s211_type_res) && input$s211_type_res == "normalized"
+            && naf(input$s211_var_res) && input$s211_var_res == "year" && !input$s211_sex)
+            includeMarkdown("./md/s211_code_plot_ResNYear.Rmd")
+    })
+    
+    output$s211_code_plot7 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
+            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
+            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
+            && naf(input$s211_type_res) && input$s211_type_res == "Pearson"
+            && naf(input$s211_var_res) && input$s211_var_res == "year" && input$s211_sex)
+            includeMarkdown("./md/s211_code_plot_ResPYear-sex.Rmd")
+    })
+    
+    output$s211_code_plot8 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
+            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
+            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
+            && naf(input$s211_type_res) && input$s211_type_res == "normalized"
+            && naf(input$s211_var_res) && input$s211_var_res == "year" && input$s211_sex)
+            includeMarkdown("./md/s211_code_plot_ResNYear-sex.Rmd")
+    })
+    
+    output$s211_code_plot9 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
+            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
+            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
+            && naf(input$s211_type_res) && input$s211_type_res == "Pearson"
+            && naf(input$s211_var_res) && input$s211_var_res == "age" && !input$s211_sex)
+            includeMarkdown("./md/s211_code_plot_ResPAge.Rmd")
+    })
+    
+    output$s211_code_plot10 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
+            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
+            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
+            && naf(input$s211_type_res) && input$s211_type_res == "normalized"
+            && naf(input$s211_var_res) && input$s211_var_res == "age" && !input$s211_sex)
+            includeMarkdown("./md/s211_code_plot_ResNAge.Rmd")
+    })
+    
+    output$s211_code_plot11 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
+            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
+            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
+            && naf(input$s211_type_res) && input$s211_type_res == "Pearson"
+            && naf(input$s211_var_res) && input$s211_var_res == "age" && input$s211_sex)
+            includeMarkdown("./md/s211_code_plot_ResPAge-sex.Rmd")
+    })
+    
+    output$s211_code_plot12 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
+            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
+            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
+            && naf(input$s211_type_res) && input$s211_type_res == "normalized"
+            && naf(input$s211_var_res) && input$s211_var_res == "age" && input$s211_sex)
+            includeMarkdown("./md/s211_code_plot_ResNAge-sex.Rmd")
+    })
+    
+    output$s211_code_plot13 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
+            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
+            && naf(input$s211_typePlot) && input$s211_typePlot == "QQnorm"
+            && naf(input$s211_type_res) && input$s211_type_res == "normalized"
+            && naf(input$s211_var_res) && input$s211_sex)
+            includeMarkdown("./md/s211_code_QQplot_ResN-sex.Rmd")
+    })
+    
+    output$s211_code_plot14 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
+            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
+            && naf(input$s211_typePlot) && input$s211_typePlot == "QQnorm"
+            && naf(input$s211_type_res) && input$s211_type_res == "normalized"
+            && naf(input$s211_var_res) && !input$s211_sex)
+            includeMarkdown("./md/s211_code_QQplot_ResN.Rmd")
+    })
+    
+    output$s211_code_plot15 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
+            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
+            && naf(input$s211_typePlot) && input$s211_typePlot == "QQnorm"
+            && naf(input$s211_type_res) && input$s211_type_res == "Pearson"
+            && naf(input$s211_var_res) && input$s211_sex)
+            includeMarkdown("./md/s211_code_QQplot_ResP-sex.Rmd")
+    })
+    
+    output$s211_code_plot16 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
+            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
+            && naf(input$s211_typePlot) && input$s211_typePlot == "QQnorm"
+            && naf(input$s211_type_res) && input$s211_type_res == "Pearson"
+            && naf(input$s211_var_res) && !input$s211_sex)
+            includeMarkdown("./md/s211_code_QQplot_ResP.Rmd")
+    })
+    
+    output$s211_code_plot17 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
+            && naf(input$s211_datachoice) && input$s211_datachoice == "AIDS"
+            && naf(input$s211_typePlot) && input$s211_typePlot == "QQnorm"
+            && naf(input$s211_type_res) && input$s211_type_res == "normalized"
+            && naf(input$s211_var_res) && input$s211_sex)
+            includeMarkdown("./md/s211_code_QQplotAIDS_ResN-sex.Rmd")
+    })
+    
+    output$s211_code_plot18 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
+            && naf(input$s211_datachoice) && input$s211_datachoice == "AIDS"
+            && naf(input$s211_typePlot) && input$s211_typePlot == "QQnorm"
+            && naf(input$s211_type_res) && input$s211_type_res == "normalized"
+            && naf(input$s211_var_res) && !input$s211_sex)
+            includeMarkdown("./md/s211_code_QQplotAIDS_ResN.Rmd")
+    })
+    
+    output$s211_code_plot19 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
+            && naf(input$s211_datachoice) && input$s211_datachoice == "AIDS"
+            && naf(input$s211_typePlot) && input$s211_typePlot == "QQnorm"
+            && naf(input$s211_type_res) && input$s211_type_res == "Pearson"
+            && naf(input$s211_var_res) && input$s211_sex)
+            includeMarkdown("./md/s211_code_QQplotAIDS_ResP-sex.Rmd")
+    })
+
+    output$s211_code_plot20 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
+            && naf(input$s211_datachoice) && input$s211_datachoice == "AIDS"
+            && naf(input$s211_typePlot) && input$s211_typePlot == "QQnorm"
+            && naf(input$s211_type_res) && input$s211_type_res == "Pearson"
+            && naf(input$s211_var_res) && !input$s211_sex)
+            includeMarkdown("./md/s211_code_QQplotAIDS_ResP.Rmd")
+    })
+    
+    output$s211_code_plot21 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
+            && naf(input$s211_datachoice) && input$s211_datachoice == "AIDS"
+            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
+            && naf(input$s211_type_res) && input$s211_type_res == "Pearson"
+            && naf(input$s211_var_res) && input$s211_var_res == "fitted" && !input$s211_sex)
+            includeMarkdown("./md/s211_code_plotAIDS_ResPFitt.Rmd")
+    })
+    
+    output$s211_code_plot22 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
+            && naf(input$s211_datachoice) && input$s211_datachoice == "AIDS"
+            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
+            && naf(input$s211_type_res) && input$s211_type_res == "normalized"
+            && naf(input$s211_var_res) && input$s211_var_res == "fitted" && !input$s211_sex)
+            includeMarkdown("./md/s211_code_plotAIDS_ResNFitt.Rmd")
+    })
+    
+    output$s211_code_plot23 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
+            && naf(input$s211_datachoice) && input$s211_datachoice == "AIDS"
+            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
+            && naf(input$s211_type_res) && input$s211_type_res == "Pearson"
+            && naf(input$s211_var_res) && input$s211_var_res == "fitted" && input$s211_sex)
+            includeMarkdown("./md/s211_code_plotAIDS_ResPFitt-sex.Rmd")
+    })
+    
+    output$s211_code_plot24 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
+            && naf(input$s211_datachoice) && input$s211_datachoice == "AIDS"
+            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
+            && naf(input$s211_type_res) && input$s211_type_res == "normalized"
+            && naf(input$s211_var_res) && input$s211_var_res == "fitted" && input$s211_sex)
+            includeMarkdown("./md/s211_code_plotAIDS_ResNFitt-sex.Rmd")
+    })
+    
+    ######################################################################################
+    ######################################################################################
+
+    ###############
+    # Section 3.2 #
+    ###############
+    
+    output$s32_choice <- renderUI({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.2")
+            radioButtons("fit_effPlt", "Select:", 
+                         c("Model fit", "Effect plot"))
+    })
+    
+    output$s32_Agechoice <- renderUI({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.2"
+            && naf(input$fit_effPlt) && input$fit_effPlt == "Effect plot")
+            sliderInput("age_select_pbc", "Age",
+                        min = 30, max = 65, value = 49, animate = TRUE, step = 5)
+    })
+    
+    output$s32_Prochoice <- renderUI({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.2"
+            && naf(input$fit_effPlt) && input$fit_effPlt == "Effect plot")
+            sliderInput("pro_select_pbc", "Prothrombin",
+                        min = 9.5, max = 13, value = 10.6, step = 0.5, animate = TRUE)
+    })
+
+    output$s32_code_lme <- renderText({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.2"
+            && naf(input$fit_effPlt) && input$fit_effPlt == "Model fit") {
+            includeMarkdown("./md/s32_code_lme.Rmd")
+        }
+    })
+    
+    output$s32_Routput_lme <- renderPrint({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.2"
+            && naf(input$fit_effPlt) && input$fit_effPlt == "Model fit") {
+            fm_s32_aids1 <- lme(CD4 ~ obstime + obstime:drug, random = ~ obstime | patient,
+                               data = aids)
+            fm_s32_aids2 <- lmer(CD4 ~ obstime + obstime:drug + (obstime | patient),
+                               data = aids)
+            
+            htmlPrint2(
+                '###########################',
+                '# Mixed Model using lme() #',
+                '###########################',
+                '\n# summarized model fit',
+                summary(fm_s32_aids1),
+                '\nmarginal covariance matrix',
+                getVarCov(fm_s32_aids1, individuals = 450, type = "marginal"),
+                '\n# corresponding correlation matrix',
+                cov2cor(getVarCov(fm_s32_aids1, individuals = 450, type = "marginal")[[1]]),
+                '\n\n',
+                '############################',
+                '# Mixed Model using lmer() #',
+                '############################',
+                '\n# summarized model fit',
+                summary(fm_s32_aids2),
+                '\n# covariance matrix of the random effects',
+                VarCorr(fm_s32_aids2)
+            )
+        }
+    })
+    
+    output$s32_code_lme_effectPlot <- renderText({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.2"
+            && naf(input$fit_effPlt) && input$fit_effPlt == "Effect plot") {
+            includeMarkdown("./md/s32_code_lme_effectPlot.Rmd")
+        }
+    })
+    
+    ######################################################################################
+    ######################################################################################
+    
+    ###############
+    # Section 3.3 #
+    ###############
+    
+    output$s33_res_choice <- renderUI({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.3")
+            fluidRow(column(7, radioButtons("reStr", "Random effects structure:", 
+                                            c("intercepts", 
+                                              "intercepts & slopes", 
+                                              "intercepts, slopes & slopes^2")),
+                            checkboxInput("diag_covMat", "Diagonal matrix random effects")),
+                     column(4, radioButtons("covMatrix", "Type matrix:", 
+                                            c("covariance", "correlation")),
+                            checkboxInput("corr_plot", "Correlation plot")))
+    })
+    
+    output$s33_slider_sigma2_b0 <- renderUI({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.3") {
+            sliderInput("sigma2_b0", "intercepts variance", min = 0.05, max = 10, value = 1,
+                        animate = TRUE, step = 1)
+        }
+    })
+    
+    output$s33_slider_sigma2_b1 <- renderUI({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.3"
+            && naf(input$reStr) && input$reStr != "intercepts") {
+            sliderInput("sigma2_b1", "slopes variance", min = 0.05, max = 10, value = 1,
+                        animate = TRUE, step = 1)
+        }
+    })
+
+    output$s33_slider_rho_b0b1 <- renderUI({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.3"
+            && naf(input$reStr) && input$reStr != "intercepts"
+            && naf(input$diag_covMat) && !input$diag_covMat) {
+            sliderInput("rho_b0b1", "correlation intercepts & slopes", min = -0.99, max = 0.99, value = 0,
+                        animate = TRUE, step = 0.1)
+        }
+    })
+    
+    output$s33_slider_sigma2_b2 <- renderUI({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.3"
+            && naf(input$reStr) && input$reStr == "intercepts, slopes & slopes^2") {
+            sliderInput("sigma2_b2", "slopes^2 variance", min = 0.05, max = 10, value = 1,
+                        animate = TRUE, step = 1)
+        }
+    })
+    
+    output$s33_slider_rho_b0b2 <- renderUI({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.3"
+            && naf(input$reStr) && input$reStr == "intercepts, slopes & slopes^2"
+            && naf(input$diag_covMat) && !input$diag_covMat) {
+            sliderInput("rho_b0b2", "correlation intercepts & slopes^2", min = -0.99, 
+                        max = 0.99, value = 0, animate = TRUE, step = 0.1)
+        }
+    })
+    
+    output$s33_slider_rho_b1b2 <- renderUI({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.3"
+            && naf(input$reStr) && input$reStr == "intercepts, slopes & slopes^2"
+            && naf(input$diag_covMat) && !input$diag_covMat) {
+            sliderInput("rho_b1b2", "correlation slopes & slopes^2", min = -0.99, 
+                        max = 0.99, value = 0, animate = TRUE, step = 0.1)
+        }
+    })
+    
+    output$s33_slider_sigma2 <- renderUI({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.3") {
+            sliderInput("sigma2", "error variance", min = 0.05, max = 10, value = 1,
+                        animate = TRUE, step = 1)
+        }
+    })
+    
+    output$s33_check_tab <- renderText({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.3")
+            includeHTML("./html/check_tab.Rhtml")
+    })
+    
+    output$s33_Routput_lme <- renderPrint({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.3" 
+            && naf(input$reStr) && naf(input$corr_plot) && !input$corr_plot) {
+            params <- if (naf(input$diag_covMat) && !input$diag_covMat) {
+                switch(input$reStr,
+                       "intercepts" = list(sigma2 = input$sigma2, D = as.matrix(input$sigma2_b0)),
+                       "intercepts & slopes" = {
+                           cov01 <- sqrt(input$sigma2_b0) * sqrt(input$sigma2_b1) * input$rho_b0b1
+                           DD <- matrix(c(input$sigma2_b0, cov01, cov01, input$sigma2_b1), 2, 2)
+                           list(sigma2 = input$sigma2, D = DD)
+                       },
+                       "intercepts, slopes & slopes^2" = {
+                           cov01 <- sqrt(input$sigma2_b0) * sqrt(input$sigma2_b1) * input$rho_b0b1
+                           cov02 <- sqrt(input$sigma2_b0) * sqrt(input$sigma2_b2) * input$rho_b0b2
+                           cov12 <- sqrt(input$sigma2_b1) * sqrt(input$sigma2_b2) * input$rho_b1b2
+                           DD <- matrix(c(input$sigma2_b0, cov01, cov02, cov01, input$sigma2_b1,
+                                          cov12, cov02, cov12, input$sigma2_b2), 3, 3)
+                           list(sigma2 = input$sigma2, D = DD)
+                       })
+            } else { 
+                switch(input$reStr,
+                       "intercepts" = list(sigma2 = input$sigma2, D = as.matrix(input$sigma2_b0)),
+                       "intercepts & slopes" = {
+                           DD <- matrix(c(input$sigma2_b0, 0, 0, input$sigma2_b1), 2, 2)
+                           list(sigma2 = input$sigma2, D = DD)
+                       },
+                       "intercepts, slopes & slopes^2" = {
+                           DD <- matrix(c(input$sigma2_b0, 0, 0, 0, input$sigma2_b1,
+                                          0, 0, 0, input$sigma2_b2), 3, 3)
+                           list(sigma2 = input$sigma2, D = DD)
+                       })
+            }
+            if (naf(input$covMatrix) && input$covMatrix == "covariance") {
+                htmlPrint(testRES(input$reStr, params), comment = "# Marginal covariance matrix")
+            } else {
+                htmlPrint(testRES(input$reStr, params, cor = TRUE), comment = "# Marginal correlation matrix")
+            }
+            
+        }
+    })
+
+    output$s33_Routput_lme2 <- renderPrint({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.3" 
+            && naf(input$reStr) && naf(input$corr_plot) && !input$corr_plot) {
+            params <- if (naf(input$diag_covMat) && !input$diag_covMat) {
+                switch(input$reStr,
+                       "intercepts" = list(sigma2 = input$sigma2, D = as.matrix(input$sigma2_b0)),
+                       "intercepts & slopes" = {
+                           cov01 <- sqrt(input$sigma2_b0) * sqrt(input$sigma2_b1) * input$rho_b0b1
+                           DD <- matrix(c(input$sigma2_b0, cov01, cov01, input$sigma2_b1), 2, 2)
+                           list(sigma2 = input$sigma2, D = DD)
+                       },
+                       "intercepts, slopes & slopes^2" = {
+                           cov01 <- sqrt(input$sigma2_b0) * sqrt(input$sigma2_b1) * input$rho_b0b1
+                           cov02 <- sqrt(input$sigma2_b0) * sqrt(input$sigma2_b2) * input$rho_b0b2
+                           cov12 <- sqrt(input$sigma2_b1) * sqrt(input$sigma2_b2) * input$rho_b1b2
+                           DD <- matrix(c(input$sigma2_b0, cov01, cov02, cov01, input$sigma2_b1,
+                                          cov12, cov02, cov12, input$sigma2_b2), 3, 3)
+                           list(sigma2 = input$sigma2, D = DD)
+                       })
+            } else { 
+                switch(input$reStr,
+                       "intercepts" = list(sigma2 = input$sigma2, D = as.matrix(input$sigma2_b0)),
+                       "intercepts & slopes" = {
+                           DD <- matrix(c(input$sigma2_b0, 0, 0, input$sigma2_b1), 2, 2)
+                           list(sigma2 = input$sigma2, D = DD)
+                       },
+                       "intercepts, slopes & slopes^2" = {
+                           DD <- matrix(c(input$sigma2_b0, 0, 0, 0, input$sigma2_b1,
+                                          0, 0, 0, input$sigma2_b2), 3, 3)
+                           list(sigma2 = input$sigma2, D = DD)
+                       })
+            }
+            htmlPrint(nearPD(params$D), comment = "# Covariance matrix of the random effects")
+        }
+    })
+    
+    output$s33_Routput_ws <- renderPrint({
+        if(input$chapter == "Chapter 3" && input$section == "Section 3.3" 
+           && naf(input$reStr) 
+           && input$reStr %in% c("intercepts", "intercepts & slopes")) {
+            includeHTML("./html/white_space.Rhtml")
+        }
+    })
+    
+    output$s33_Routput_ws2 <- renderPrint({
+        if(input$chapter == "Chapter 3" && input$section == "Section 3.3" 
+           && naf(input$reStr) && input$reStr == "intercepts, slopes & slopes^2") {
+            includeHTML("./html/white_space_long.Rhtml")
+        }
+    })
+    
+    ######################################################################################
+    ######################################################################################
+    
+    ###############
+    # Section 3.6 #
+    ###############
+    
+    output$s36_choice <- renderUI({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.6*")
+            radioButtons("neste_lvl", "Select:", 
+                         c("nested intercepts", "nested slopes", "crossed intercepts"))
+    })
+    
+    output$s36_code_lme <- renderText({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.6*") {
+            if (naf(input$neste_lvl) && input$neste_lvl == "nested intercepts") {
+                includeMarkdown("./md/s36_code_lme.Rmd")
+            } else if (naf(input$neste_lvl) && input$neste_lvl == "nested slopes") {
+                includeMarkdown("./md/s36_code_lme2.Rmd")
+            } else if (naf(input$neste_lvl) && input$neste_lvl == "crossed intercepts") {
+                includeMarkdown("./md/s36_code_lme3.Rmd")
+            }
+        }
+    })
+    
+    output$s36_Routput_lme <- renderPrint({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.6*") {
+            if (naf(input$neste_lvl) && input$neste_lvl == "nested intercepts") {
+                if (!exists("fm_s36_glaucoma1")) {
+                    withProgress({
+                        fm_s36_glaucoma1 <<- lme(thres ~ years, data = glaucoma,
+                                        random = ~ 1 | id / eye)
+                    }, message = "Fitting the model...")
+                }
+                if (!exists("fm_s36_glaucoma2")) {
+                    withProgress({
+                        fm_s36_glaucoma2 <<- lmer(thres ~ years + (1 | id / eye), data = glaucoma)
+                    }, message = "Fitting the model...")
+                }
+                htmlPrint2(
+                    '#####################################',
+                    '# nested random effects using lme() #',
+                    '#####################################',
+                    '\n# summarized model fit',
+                    summary(fm_s36_glaucoma1),
+                    '\n\n',
+                    '######################################',
+                    '# nested random effects using lmer() #',
+                    '######################################',
+                    '\n# summarized model fit',
+                    summary(fm_s36_glaucoma2)
+                )
+            } else if (naf(input$neste_lvl) && input$neste_lvl == "nested slopes") {
+                if (!exists("fm_s36_glaucoma3")) {
+                    withProgress({
+                        fm_s36_glaucoma3 <<- lme(thres ~ years, data = glaucoma,
+                                        random = list(id = pdSymm(form = ~ years), 
+                                                      eye = pdSymm(form = ~ 1)))
+                    }, message = "Fitting the model...")
+                }
+                if (!exists('fm_s36_glaucoma4')) {
+                    withProgress({
+                        fm_s36_glaucoma4 <<- lmer(thres ~ years + (years | id) + (1 | id:eye), 
+                                             data = glaucoma)
+                    }, message = "Fitting the model...")
+                }
+                
+                htmlPrint2(
+                    '#####################################',
+                    '# nested random effects using lme() #',
+                    '#####################################',
+                    '\n# summarized model fit',
+                    summary(fm_s36_glaucoma3),
+                    '\n\n',
+                    '######################################',
+                    '# nested random effects using lmer() #',
+                    '######################################',
+                    '\n# summarized model fit',
+                    summary(fm_s36_glaucoma4)
+                )
+            } else if (naf(input$neste_lvl) && input$neste_lvl == "crossed intercepts") {
+                if (!exists('fm_s36_glaucoma5')) {
+                    withProgress({
+                        fm_s36_glaucoma5 <<- lmer(thres ~ years + (1 | id) + (1 |field), 
+                                         data = glaucoma)
+                    }, message = "Fitting the model...")
+                }
+                htmlPrint2(
+                    '#######################################',
+                    '# crossed random effects using lmer() #',
+                    '#######################################',
+                    '\n# summarized model fit',
+                    summary(fm_s36_glaucoma5)
+                )
+            }
+        }
+    })
+    
+    ######################################################################################
+    ######################################################################################
+    
+    ###############
+    # Section 3.7 #
+    ###############
+    
+    output$s37_code_lme <- renderText({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.7") {
+            includeMarkdown("./md/s37_code_lme.Rmd")
+        }
+    })
+    
+    output$s37_Routput_lme <- renderPrint({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.7") {
+            fm_s37_aids1 <- lme(CD4 ~ obstime + I(obstime^2) + (obstime + I(obstime^2)):drug, data = aids,
+                                random = ~ 1 | patient, 
+                                correlation = corExp(form = ~ obstime | patient))
+            fm_s37_aids2 <- lme(CD4 ~ obstime + I(obstime^2) + (obstime + I(obstime^2)):drug, data = aids,
+                                random = ~ obstime | patient, 
+                                correlation = corExp(form = ~ obstime | patient))
+            if (!exists('fm_s37_aids3')) {
+                withProgress({
+                    fm_s37_aids3 <<- lme(CD4 ~ obstime + I(obstime^2) + (obstime + I(obstime^2)):drug, data = aids,
+                                    random = ~ obstime + I(obstime^2) | patient, 
+                                    correlation = corExp(form = ~ obstime | patient),
+                                    control = lmeControl(opt = "optim"))
+                }, message = "Fitting the model...")
+            }
+            
+            htmlPrint2(
+                '# fixed effects per model',
+                cbind("Int" = fixef(fm_s37_aids1), 
+                      "Linear Slp" = fixef(fm_s37_aids2), 
+                      "Quad Slp" = fixef(fm_s37_aids3)),
+                '\n# 95% CI for correlation parameter per model',
+                intervals(fm_s37_aids1, which = "var-cov")$corStruct,
+                intervals(fm_s37_aids2, which = "var-cov")$corStruct,
+                intervals(fm_s37_aids3, which = "var-cov")$corStruct
+            )
+        }
+    })
+    
+    ######################################################################################
+    ######################################################################################
+    
+    ###############
+    # Section 3.8 #
+    ###############
+    
+    output$s38_choice <- renderUI({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.8*")
+            radioButtons("param_choice", "Select formulation:", 
+                         c("current value", "cumulative effect"))
+    })
+    
+    output$s38_code_lme <- renderText({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.8*") {
+            if (naf(input$param_choice) && input$param_choice == "current value") {
+                includeMarkdown("./md/s38_code_lme1.Rmd")
+            } else if (naf(input$param_choice) && input$param_choice == "cumulative effect") {
+                includeMarkdown("./md/s38_code_lme2.Rmd")
+            }
+        }
+    })
+    
+    output$s38_Routput_lme <- renderPrint({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.8*") {
+            if (naf(input$param_choice) && input$param_choice == "current value") {
+                fm_s38_pbc1 <- lme(log(serBilir) ~ ns(year, 2) + sex + age + prothrombin, 
+                                   data = pbc2, random = list(id = pdDiag(form = ~ ns(year, 2))))
+                htmlPrint2(
+                    '# time-varying prothrombin -- current value formulation',
+                    summary(fm_s38_pbc1)
+                )
+                
+            } else if (naf(input$param_choice) && input$param_choice == "cumulative effect") {
+                area <- function (y, x, i) {
+                    x.i <- x[1:i]
+                    y.i <- y[1:i]
+                    if (length(y.i) == 1)
+                        return(0)
+                    f <- approxfun(x.i, y.i, rule = 2, ties = "ordered")
+                    integrate(f, lower = 0, upper = max(x))$value
+                }
+                spl <- split(pbc2[c("id", "prothrombin", "year")], pbc2$id)
+                pbc2$area_prothr <- unlist(lapply(spl, function (d) {
+                    sapply(seq_len(nrow(d)), function (i) area(d$year, d$prothrombin, i))
+                }), use.names = FALSE)
+                fm_s38_pbc2 <- lme(log(serBilir) ~ ns(year, 2) + sex + age + area_prothr, 
+                                   data = pbc2, random = list(id = pdDiag(form = ~ ns(year, 2))))
+                htmlPrint2(
+                    '# time-varying prothrombin -- area formulation',
+                    summary(fm_s38_pbc2)
+                )
+                
+            }
+        }
+    })
+    
+    ######################################################################################
+    ######################################################################################
+    
+    ################
+    # Section 3.10 #
+    ################
+    
+    output$s310_test_choice <- renderUI({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.10")
+            radioButtons("test_lme", "Select test:", 
+                         c("LRT random effects", "AIC/BIC random effects", 
+                           "t-test regression coefficients",
+                           "F-test regression coefficients",
+                           "LRT regression coefficients"))
+    })
+    
+    output$s310_code_lme <- renderText({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.10") {
+            if (naf(input$test_lme) && input$test_lme == "LRT random effects") {
+                includeMarkdown("./md/s310_code_lme1.Rmd")
+            } else if (naf(input$test_lme) && input$test_lme == "AIC/BIC random effects") {
+                includeMarkdown("./md/s310_code_lme2.Rmd")
+            } else if (naf(input$test_lme) && input$test_lme == "t-test regression coefficients") {
+                includeMarkdown("./md/s310_code_lme3.Rmd")
+            } else if (naf(input$test_lme) && input$test_lme == "F-test regression coefficients") {
+                includeMarkdown("./md/s310_code_lme4.Rmd")
+            } else if (naf(input$test_lme) && input$test_lme == "LRT regression coefficients") {
+                includeMarkdown("./md/s310_code_lme5.Rmd")
+            }
+        }
+    })
+    
+    output$s310_Routput_lme <- renderPrint({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.10") {
+            if (naf(input$test_lme) && input$test_lme == "LRT random effects") {
+                if (!exists('fm_s310_aids1')) {
+                    withProgress({
+                        fm_s310_aids1 <<- lme(CD4 ~ obstime + I(obstime^2) + (obstime + I(obstime^2)):drug, 
+                                              data = aids, random = ~ obstime | patient)
+                    }, message = "Fitting the model...")
+                }
+                if (!exists('fm_s310_aids2')) {
+                    withProgress({
+                    fm_s310_aids2 <<- lme(CD4 ~ obstime + I(obstime^2) + (obstime + I(obstime^2)):drug, data = aids,
+                                         random = ~ obstime + I(obstime^2) | patient,
+                                         control = lmeControl(opt = "optim"))
+                    }, message = "Fitting the model...")
+                }
+                htmlPrint2(
+                    '# classical LRT with default chi-squared distribution',
+                    anova(fm_s310_aids1, fm_s310_aids2),
+                    '\n',
+                    '# p-value from mixture of chi-squared distsributions',
+                    mean(pchisq(6.343359, df = c(2,3), lower.tail = FALSE))
+                )
+            } else if (naf(input$test_lme) && input$test_lme == "AIC/BIC random effects") {
+                fm_s310_pbc1 <- lme(log(serBilir) ~ ns(year, 2) * sex, data = pbc2, 
+                                    random = ~ year | id)
+                fm_s310_pbc2 <- lme(log(serBilir) ~ ns(year, 2) * sex, data = pbc2, 
+                                    random = list(id = pdDiag(form = ~ ns(year, 2))))
+                htmlPrint2(
+                    '# AIC and BIC values',
+                    anova(fm_s310_pbc1, fm_s310_pbc2)
+                )
+            } else if (naf(input$test_lme) && input$test_lme == "t-test regression coefficients") {
+                if (!exists('fm_s310_pro1')) {
+                    withProgress({
+                        fm_s310_pro1 <<- lme(pro ~ ns(time, 3) * treat, data = prothro,
+                                         random = list(id = pdDiag(form = ~ ns(time, 3))))
+                    }, message = "Fitting the model...")
+                }
+                htmlPrint(summary(fm_s310_pro1))
+            } else if (naf(input$test_lme) && input$test_lme == "F-test regression coefficients") {
+                if (!exists('fm_s310_pro1')) {
+                    withProgress({
+                        fm_s310_pro1 <<- lme(pro ~ ns(time, 3) * treat, data = prothro,
+                                         random = list(id = pdDiag(form = ~ ns(time, 3))))
+                    }, message = "Fitting the model...")
+                }
+                htmlPrint2(
+                    '# marginal F-tests',
+                    anova(fm_s310_pro1, type = "marginal"),
+                    "\n",
+                    "# F-test for the overal time effect",
+                    anova(fm_s310_pro1, Terms = c('ns(time, 3)', 'ns(time, 3):treat')),
+                    "\n",
+                    '# F-test for the overal treatment effect',
+                    "# anova(fm_s310_pro1, Terms = c('treat', 'ns(time, 3):treat'))",
+                    '# produces an error because all terms must all have the same denominator DF'
+                )
+            } else if (naf(input$test_lme) && input$test_lme == "LRT regression coefficients") {
+                if (!exists('fm_s310_pro1_ML')) {
+                    withProgress({
+                        fm_s310_pro1_ML <<- lme(pro ~ ns(time, 3) * treat, data = prothro,
+                                    random = list(id = pdDiag(form = ~ ns(time, 3))),
+                                    method = "ML")
+                    }, message = "Fitting the model...")
+                }
+                if (!exists('fm_s310_pro2_ML')) {
+                    withProgress({
+                        fm_s310_pro2_ML <<- lme(pro ~ ns(time, 3), data = prothro,
+                                    random = list(id = pdDiag(form = ~ ns(time, 3))),
+                                    method = "ML")
+                    }, message = "Fitting the model...")
+                }
+                htmlPrint2(
+                    '# likelihood ratio test for the overal treatment effect',
+                    anova(fm_s310_pro2_ML, fm_s310_pro1_ML)
+                )
+            }
+        }
+    })
+    
+    ######################################################################################
+    ######################################################################################
+    
+    #################
+    # Section 3.11 #
+    #################
+    
+    output$s311_plot_choice <- renderUI({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.11") {
+            chs <- c("fitted", "time")
+            cond_var <- "Condition on drug"
+            fluidRow(column(4, radioButtons("s311_typePlot", "Type of plot:", c("Scatterplot", "QQnorm"))),
+                     column(4, radioButtons("s311_type_res", "Residuals type:", c("Subject", "Marginal"))),
+                     column(4, selectInput("s311_var_res", "Select variable:", chs, chs[1]),
+                            checkboxInput("s311_drug", cond_var)))
+        }
+    })
+    
+    output$s311_code_plot <- renderText({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.11") {
+            if (naf(input$s311_typePlot) && input$s311_typePlot == "Scatterplot"
+                && naf(input$s311_type_res) && input$s311_type_res == "Subject"
+                && naf(input$s311_var_res) && input$s311_var_res == "fitted" && !input$s311_drug) {
+                includeMarkdown("./md/s311_code_plot_ResPFitt.Rmd")
+            } else if (naf(input$s311_typePlot) && input$s311_typePlot == "Scatterplot"
+                       && naf(input$s311_type_res) && input$s311_type_res == "Subject"
+                       && naf(input$s311_var_res) && input$s311_var_res == "fitted" && input$s311_drug) {
+                includeMarkdown("./md/s311_code_plot_ResPFitt-treat.Rmd")
+            } else if (naf(input$s311_typePlot) && input$s311_typePlot == "Scatterplot"
+                       && naf(input$s311_type_res) && input$s311_type_res == "Subject"
+                       && naf(input$s311_var_res) && input$s311_var_res == "time" && !input$s311_drug) {
+                includeMarkdown("./md/s311_code_plot_ResPTime.Rmd")
+            } else if (naf(input$s311_typePlot) && input$s311_typePlot == "Scatterplot"
+                       && naf(input$s311_type_res) && input$s311_type_res == "Subject"
+                       && naf(input$s311_var_res) && input$s311_var_res == "time" && input$s311_drug) {
+                includeMarkdown("./md/s311_code_plot_ResPTime-treat.Rmd")
+            } else if (naf(input$s311_typePlot) && input$s311_typePlot == "QQnorm"
+                       && naf(input$s311_type_res) && input$s311_type_res == "Subject" && !input$s311_drug) {
+                includeMarkdown("./md/s311_code_QQplot_ResP.Rmd")
+            } else if (naf(input$s311_typePlot) && input$s311_typePlot == "QQnorm"
+                       && naf(input$s311_type_res) && input$s311_type_res == "Subject" && input$s311_drug) {
+                includeMarkdown("./md/s311_code_QQplot_ResP-treat.Rmd")
+            } else if (naf(input$s311_typePlot) && input$s311_typePlot == "Scatterplot"
+                       && naf(input$s311_type_res) && input$s311_type_res == "Marginal"
+                       && naf(input$s311_var_res) && input$s311_var_res == "fitted" && !input$s311_drug) {
+                includeMarkdown("./md/s311_code_plot_ResMargFitt.Rmd")
+            } else if (naf(input$s311_typePlot) && input$s311_typePlot == "Scatterplot"
+                       && naf(input$s311_type_res) && input$s311_type_res == "Marginal"
+                       && naf(input$s311_var_res) && input$s311_var_res == "fitted" && input$s311_drug) {
+                includeMarkdown("./md/s311_code_plot_ResMargFitt-treat.Rmd")
+            } else if (naf(input$s311_typePlot) && input$s311_typePlot == "Scatterplot"
+                       && naf(input$s311_type_res) && input$s311_type_res == "Marginal"
+                       && naf(input$s311_var_res) && input$s311_var_res == "time" && !input$s311_drug) {
+                includeMarkdown("./md/s311_code_plot_ResMargTime.Rmd")
+            } else if (naf(input$s311_typePlot) && input$s311_typePlot == "Scatterplot"
+                       && naf(input$s311_type_res) && input$s311_type_res == "Marginal"
+                       && naf(input$s311_var_res) && input$s311_var_res == "time" && input$s311_drug) {
+                includeMarkdown("./md/s311_code_plot_ResMargTime-treat.Rmd")
+            } else if (naf(input$s311_typePlot) && input$s311_typePlot == "QQnorm"
+                       && naf(input$s311_type_res) && input$s311_type_res == "Marginal"
+                       && !input$s311_drug) {
+                includeMarkdown("./md/s311_code_QQplot_ResMarg.Rmd")
+            } else if (naf(input$s311_typePlot) && input$s311_typePlot == "QQnorm"
+                       && naf(input$s311_type_res) && input$s311_type_res == "Marginal"
+                       && input$s311_drug) {
+                includeMarkdown("./md/s311_code_QQplot_ResMarg-treat.Rmd")
+            }
+        }
+    })
+    
+    ######################################################################################
+    ######################################################################################
+    
+    ###############
+    # Section 4.1 #
+    ###############
+    
+    output$s41_code_glm <- renderText({
+        if (input$chapter == "Chapter 4" && input$section == "Section 4.1") {
+            includeMarkdown("./md/s41_code_glm.Rmd")
+        }
+    })
+    
+    output$s41_Routput_glm <- renderPrint({
+        if (input$chapter == "Chapter 4" && input$section == "Section 4.1") {
+            fm_s41 <- glm(serCholD ~ age + sex + drug, data = pbc2.id, family = binomial)
+            htmlPrint(summary(fm_s41))
+        }
+    })
+    
+    ######################################################################################
+    ######################################################################################
+    
+    ###############
+    # Section 4.3 #
+    ###############
+    
+    output$s43_choice <- renderUI({
+        if (input$chapter == "Chapter 4" && input$section == "Section 4.3")
+            radioButtons("fit_effPlt", "Select:", 
+                         c("Model fit", "Effect plot"))
+    })
+    
+    output$s43_Agechoice <- renderUI({
+        if (input$chapter == "Chapter 4" && input$section == "Section 4.3"
+            && naf(input$fit_effPlt) && input$fit_effPlt == "Effect plot")
+            fluidRow(column(7, sliderInput("age_select_pbc_gee", "Age", min = 30, max = 65, 
+                                           value = 49, animate = TRUE, step = 5)),
+                     column(5, radioButtons('scale_s43', 'Scale', 
+                                            c('log Odds', 'Probabilities'))))
+    })
+    
+    output$s43_code_gee <- renderText({
+        if (input$chapter == "Chapter 4" && input$section == "Section 4.3") {
+            if (naf(input$fit_effPlt) && input$fit_effPlt == "Effect plot") {
+                includeMarkdown("./md/s43_code_gee_effectPlot.Rmd")
+            } else {
+                includeMarkdown("./md/s43_code_gee.Rmd")
+            }
+        }
+    })
+    
+    output$s43_Routput_gee <- renderPrint({
+        if (input$chapter == "Chapter 4" && input$section == "Section 4.3") {
+            if (naf(input$fit_effPlt) && input$fit_effPlt == "Model fit") {
+                fm_s43 <- geeglm(serCholD ~ year * drug, family = binomial, data = pbc2,
+                                 id = id, corstr = "exchangeable")
+                htmlPrint(summary(fm_s43))
+            }
+        }
+    })
+    
+    ######################################################################################
+    ######################################################################################
+    
+    ###############
+    # Section 4.5 #
+    ###############
+    
+    output$s45_choice <- renderUI({
+        if (input$chapter == "Chapter 4" && input$section == "Section 4.5")
+            radioButtons("gee_Work_Corr", "Select:", 
+                         c("Coefficients", "Robust Standard Errors", 
+                           "Naive Standard Errors"))
+    })
+    
+    
+    output$s45_code_gee <- renderText({
+        if (input$chapter == "Chapter 4" && input$section == "Section 4.5") {
+            includeMarkdown("./md/s45_code_gee.Rmd")
+        }
+    })
+    
+    output$s45_Routput_gee <- renderPrint({
+        if (input$chapter == "Chapter 4" && input$section == "Section 4.5"
+            && naf(input$gee_Work_Corr) && input$gee_Work_Corr == "Coefficients") {
+            extractSEs <- function (model) sqrt(diag(model$geese$vbeta))
+            extractSEs_naive <- function (model) sqrt(diag(model$geese$vbeta.naiv))
+            aids$lowCD4 <- aids$CD4 < sqrt(150)
+            aids$obstimef <- factor(aids$obstime)
+            if (!exists('fm_s45_ind')) {
+                withProgress({
+                    fm_s45_ind <<- geeglm(lowCD4 ~ obstimef, family = binomial, data = aids, 
+                                          id = patient, corstr = "independence")
+                }, message = "Fitting the model...")
+            }
+            if (!exists('fm_s45_exc')) {
+                withProgress({
+                    fm_s45_exc <<- geeglm(lowCD4 ~ obstimef, family = binomial, data = aids, 
+                                          id = patient, corstr = "exchangeable")
+                }, message = "Fitting the model...")
+            }
+            if (!exists('fm_s45_ar1')) {
+                withProgress({
+                    fm_s45_ar1 <<- geeglm(lowCD4 ~ obstimef, family = binomial, data = aids, 
+                                          id = patient, corstr = "ar1")
+                }, message = "Fitting the model...")
+            }
+            if (!exists('fm_s45_uns')) {
+                withProgress({
+                    fm_s45_uns <<- geeglm(lowCD4 ~ obstimef, family = binomial, data = aids, 
+                                          id = patient, corstr = "unstructured")
+                }, message = "Fitting the model...")
+            }
+            htmlPrint2("# estimated coefficients",
+                       round(cbind("independence" = coef(fm_s45_ind), 
+                                   "exchangeable" = coef(fm_s45_exc),
+                                   "AR1" = coef(fm_s45_ar1),
+                                   "unstructured" = coef(fm_s45_uns)), 3))
+        } else if (input$chapter == "Chapter 4" && input$section == "Section 4.5"
+                   && naf(input$gee_Work_Corr) && input$gee_Work_Corr == "Robust Standard Errors") {
+            extractSEs <- function (model) sqrt(diag(model$geese$vbeta))
+            extractSEs_naive <- function (model) sqrt(diag(model$geese$vbeta.naiv))
+            aids$lowCD4 <- aids$CD4 < sqrt(150)
+            aids$obstimef <- factor(aids$obstime)
+            if (!exists('fm_s45_ind')) {
+                withProgress({
+                    fm_s45_ind <<- geeglm(lowCD4 ~ obstimef, family = binomial, data = aids, 
+                                          id = patient, corstr = "independence")
+                }, message = "Fitting the model...")
+            }
+            if (!exists('fm_s45_exc')) {
+                withProgress({
+                    fm_s45_exc <<- geeglm(lowCD4 ~ obstimef, family = binomial, data = aids, 
+                                          id = patient, corstr = "exchangeable")
+                }, message = "Fitting the model...")
+            }
+            if (!exists('fm_s45_ar1')) {
+                withProgress({
+                    fm_s45_ar1 <<- geeglm(lowCD4 ~ obstimef, family = binomial, data = aids, 
+                                          id = patient, corstr = "ar1")
+                }, message = "Fitting the model...")
+            }
+            if (!exists('fm_s45_uns')) {
+                withProgress({
+                    fm_s45_uns <<- geeglm(lowCD4 ~ obstimef, family = binomial, data = aids, 
+                                          id = patient, corstr = "unstructured")
+                }, message = "Fitting the model...")
+            }
+            htmlPrint2("# Sandwich/Robust Standard Errors",
+                       round(cbind("independence" = extractSEs(fm_s45_ind), 
+                                   "exchangeable" = extractSEs(fm_s45_exc),
+                                   "AR1" = extractSEs(fm_s45_ar1),
+                                   "unstructured" = extractSEs(fm_s45_uns)), 3))
+        } else if (input$chapter == "Chapter 4" && input$section == "Section 4.5"
+                   && naf(input$gee_Work_Corr) && input$gee_Work_Corr == "Naive Standard Errors") {
+            extractSEs <- function (model) sqrt(diag(model$geese$vbeta))
+            extractSEs_naive <- function (model) sqrt(diag(model$geese$vbeta.naiv))
+            aids$lowCD4 <- aids$CD4 < sqrt(150)
+            aids$obstimef <- factor(aids$obstime)
+            if (!exists('fm_s45_ind')) {
+                withProgress({
+                    fm_s45_ind <<- geeglm(lowCD4 ~ obstimef, family = binomial, data = aids, 
+                                          id = patient, corstr = "independence")
+                }, message = "Fitting the model...")
+            }
+            if (!exists('fm_s45_exc')) {
+                withProgress({
+                    fm_s45_exc <<- geeglm(lowCD4 ~ obstimef, family = binomial, data = aids, 
+                                          id = patient, corstr = "exchangeable")
+                }, message = "Fitting the model...")
+            }
+            if (!exists('fm_s45_ar1')) {
+                withProgress({
+                    fm_s45_ar1 <<- geeglm(lowCD4 ~ obstimef, family = binomial, data = aids, 
+                                          id = patient, corstr = "ar1")
+                }, message = "Fitting the model...")
+            }
+            if (!exists('fm_s45_uns')) {
+                withProgress({
+                    fm_s45_uns <<- geeglm(lowCD4 ~ obstimef, family = binomial, data = aids, 
+                                          id = patient, corstr = "unstructured")
+                }, message = "Fitting the model...")
+            }
+            htmlPrint2("# Naive/Model-based Standard Errors",
+                round(cbind("independence" = extractSEs_naive(fm_s45_ind), 
+                            "exchangeable" = extractSEs_naive(fm_s45_exc),
+                            "AR1" = extractSEs_naive(fm_s45_ar1),
+                            "unstructured" = extractSEs_naive(fm_s45_uns)), 3))
+        }
+     })
+    
+    
+    ######################################################################################
+    ######################################################################################
+    
+    ###############
+    # Section 4.6 #
+    ###############
+    
+    output$s46_choice <- renderUI({
+        if (input$chapter == "Chapter 4" && input$section == "Section 4.6")
+            radioButtons("test_Type", "Select:", 
+                         c("simple Wald test", "complex effects"))
+    })
+    
+    
+    output$s46_code_gee <- renderText({
+        if (input$chapter == "Chapter 4" && input$section == "Section 4.6"
+            && naf(input$test_Type) &&input$test_Type == "simple Wald test") {
+            includeMarkdown("./md/s46_code_wald.Rmd")
+        } else if (input$chapter == "Chapter 4" && input$section == "Section 4.6"
+                   && naf(input$test_Type) &&input$test_Type == "complex effects") {
+            includeMarkdown("./md/s46_code_gee.Rmd")
+        }
+    })
+    
+    output$s46_Routput_gee <- renderPrint({
+        if (input$chapter == "Chapter 4" && input$section == "Section 4.6"
+            && naf(input$test_Type) && input$test_Type == "simple Wald test") {
+            aids$lowCD4 <- aids$CD4 < sqrt(150)
+            aids$obstimef <- factor(aids$obstime)
+            fm_s46_aids1 <- geeglm(lowCD4 ~ obstimef, family = binomial, data = aids, 
+                                   id = patient, corstr = "ar1")
+            fm_s46_aids2 <- geeglm(lowCD4 ~ obstimef * drug, family = binomial, data = aids, 
+                                   id = patient, corstr = "ar1")
+            htmlPrint2("# Wald test for overall treatment effect",
+                anova(fm_s46_aids1, fm_s46_aids2)
+            )
+        } else if (input$chapter == "Chapter 4" && input$section == "Section 4.6"
+                   && naf(input$test_Type) && input$test_Type == "complex effects") {
+            fm_s46_pbc <- geeglm(serCholD ~ ns(year, 3) * drug + ns(age, 3), family = binomial, 
+                                 data = pbc2, id = id, corstr = "exchangeable")
+            rowDiff <- function (object, newdata, orig_data, adjust.p = FALSE, ...) {
+                form <- formula(object)
+                namesVars <- all.vars(form)
+                respVar <- namesVars[1]
+                newdata[[respVar]] <- 0.01
+                betas <- if (!inherits(object, "lme")) coef(object) else fixef(object)
+                V <- if (inherits(object, "geeglm")) object$geese$vbeta else vcov(object)
+                orig_data <- orig_data[complete.cases(orig_data[namesVars]), ]
+                mfX <- model.frame(terms(form), data = orig_data)
+                X <- model.matrix(attr(mfX, "terms"), newdata)
+                ind <- combn(nrow(X), 2)
+                k <- ncol(ind)
+                out <- matrix(0, k, 5)
+                for (i in seq_len(k)) {
+                    XX <- X[ind[1, i], , drop = FALSE] - X[ind[2, i], , drop = FALSE]
+                    est <- drop(XX %*% betas)
+                    se <- sqrt(diag(XX %*% V %*% t(XX)))
+                    out[i, 1] <- est
+                    out[i, 2] <- se
+                    out[i, 3] <- est - 1.96 * se
+                    out[i, 4] <- est + 1.96 * se
+                    out[i, 5] <- 2 * pnorm(abs(est / se), lower.tail = FALSE)
+                }
+                if (k > 2 && adjust.p) {
+                    out[, 5] <- p.adjust(out[, 5], ...)
+                }
+                colnames(out) <- c("Diff", "Std.Err.", "95%low", "95%upp", "p-value")
+                rownames(out) <- paste(ind[1, ], "-", ind[2, ])
+                out
+            }
+            
+            htmlPrint2("# parameters do not have a straightforward intepretation",
+                       summary(fm_s46_pbc)
+            )
+            
+            nDF <- with(pbc2, expand.grid(
+                year = 7, drug = levels(drug), age = 49
+            ))
+            
+            htmlPrint2("# we want to test treatment differences for 49 year old males",
+                       "# at year 7 -- we create the corresponding data frame",
+                       nDF,
+                       "\n",
+                       "# we compute the difference of the two rows;",
+                       "# in this case this the log odds ratio between",
+                       "# the aforementioned patients",
+                       rowDiff(fm_s46_pbc, nDF, pbc2)
+            )
+        }
+    })
+    
+    ######################################################################################
+    ######################################################################################
+    
+    ##############
+    # Help Files #
+    ##############
+    
+    output$Chapter0_help <- renderText({
+        if (input$chapter == "Chapter 0")
+            includeHTML("./html/Chapter0_help.Rhtml")
+    })
+
+    output$Chapter1_help <- renderText({
+        if (input$chapter == "Chapter 1")
+            includeHTML("./html/Chapter1_help.Rhtml")
+    })
+
+    output$Chapter2_help <- renderText({
+        if (input$chapter == "Chapter 2")
+            includeHTML("./html/Chapter2_help.Rhtml")
+    })
+    
+    output$Chapter3_help <- renderText({
+        if (input$chapter == "Chapter 3")
+            includeHTML("./html/Chapter3_help.Rhtml")
+    })
+
+    output$Chapter4_help <- renderText({
+        if (input$chapter == "Chapter 4")
+            includeHTML("./html/Chapter4_help.Rhtml")
+    })
+    
+    ######################################################################################
+    ######################################################################################
+    
+    ##########
+    # Slides #
+    ##########
+    
+    output$slides <- renderText({
+        if (input$chapter != "") {
+            nam <- switch(input$chapter,
+                          "Chapter 0" = 0,
+                          "Chapter 1" = 1, "Chapter 2" = 2, "Chapter 3" = 3,
+                          "Chapter 4" = 4, "Chapter 5" = 5, "Chapter 6" = 6,
+                          "Practicals" = 7)
+            return(paste0('<iframe style="height:600px; width:100%"', 
+                          'src = "slides_chapter', nam, '.pdf"></iframe>'))
+        }
+    })
+
+    ######################################################################################
+    ######################################################################################
+    
+    #########
+    # Plots #
+    #########
+    
+    output$plot <- renderPlot({
+        if (input$chapter == "Chapter 1" && input$section == "Section 1.1") {
+            if (!is.null(input$data) && input$data == "Glaucoma") {
+                index <- c(rep(T, 2), rep(F, 4), rep(T, 4), rep(F, 6), rep(T, 2), rep(F, 8), T,
+                           F, T, rep(F, 7), F, T, rep(F, 15), rep(T, 2), rep(F, 6), rep(T, 4),
+                           rep(F, 4), rep(T, 3))
+                id. <- as.character(input$id)
+                eye. <- if (input$eye == "right") 1 else 2
+                if (input$s11_loess) {
+                    print(xyplot(thres ~ years | pos, 
+                                 data = glaucoma[glaucoma$id == id. & glaucoma$eye == eye., ],
+                                 panel = function (x, y, ...) {
+                                     panel.xyplot(x, y, type = "l", col = 1, ...)
+                                     panel.loess(x, y, col = 2, lwd = 2)
+                                 }, as.table = TRUE, layout = c(9, 8), skip = index,
+                                 strip = FALSE,
+                                 xlab = "Time (years)", ylab = "Sensitivity Estimate (dB)"))
+                } else {
+                    print(xyplot(thres ~ years | pos, 
+                                 data = glaucoma[glaucoma$id == id. & glaucoma$eye == eye., ],
+                           type = "l", col = 1, as.table = TRUE, layout = c(9, 8), skip = index,
+                           strip = FALSE,
+                           xlab = "Time (years)", ylab = "Sensitivity Estimate (dB)"))
+                }
+            }
+            
+            if (!is.null(input$data) && input$data == "AIDS") {
+                if (input$s11_loess && !input$s11_sample) {
+                    print(xyplot(sqrt(CD4) ~ obstime | drug, group = patient, 
+                                 panel = function (x, y, ...) {
+                                     panel.xyplot(x, y, type = "l", col = 1, ...)
+                                     panel.loess(x, y, col = 2, lwd = 2)
+                                 }, data = aids, xlab = "Time (months)", 
+                                 ylab = "square root CD4 cell count"))
+                } else if (!input$s11_loess && input$s11_sample) {
+                    ids <- c(455, 313, 345, 301, 17, 20, 208, 381, 389, 100, 254, 224, 
+                             280, 288, 398, 405)
+                    print(xyplot(sqrt(CD4) ~ obstime | patient, data = aids, subset = patient %in% ids, 
+                           type = "l", col = 1, layout = c(4, 4), as.table = TRUE,
+                           xlab = "Time (months)",  
+                           ylab = "square root CD4 cell count"))
+                    
+                } else if (input$s11_loess && input$s11_sample) {
+                    ids <- c(455, 313, 345, 301, 17, 20, 208, 381, 389, 100, 254, 224, 
+                             280, 288, 398, 405)
+                    print(xyplot(sqrt(CD4) ~ obstime | patient, 
+                           panel = function (x, y, ...) {
+                               panel.xyplot(x, y, type = "l", col = 1, ...)
+                               if (length(unique(x)) > 3)
+                                   panel.spline(x, y, col = 2, lwd = 2)
+                           }, data = aids, subset = patient %in% ids, layout = c(4, 4), as.table = TRUE,
+                           xlab = "Time (months)",  
+                           ylab = "square root CD4 cell count"))
+                } else {
+                    print(xyplot(sqrt(CD4) ~ obstime | drug, group = patient, data = aids,
+                                 type = "l", col = 1, xlab = "Time (months)", 
+                                 ylab = "square root CD4 cell count"))
+                }
+            }
+            if (!is.null(input$data) && input$data == "PBC") {
+                if (input$s11_loess && !input$s11_sample) {
+                    print(xyplot(log(serBilir) ~ year | drug, group = id, data = pbc2,
+                                 panel = function (x, y, ...) {
+                                     panel.xyplot(x, y, type = "l", col = 1, ...)
+                                     panel.loess(x, y, col = 2, lwd = 2)
+                                 }, xlab = "Time (years)",
+                                 ylab = "log serum Bilirubin"))
+                } else if (!input$s11_loess && input$s11_sample) {
+                    ids <- c(102, 36, 288, 193, 177, 202, 70, 301, 88, 104, 
+                             43, 209, 28, 184, 176, 157)
+                    print(xyplot(log(serBilir) ~ year | id, data = pbc2, subset = id %in% ids, 
+                           type = "l", col = 1, layout = c(4, 4), as.table = TRUE, 
+                           xlab = "Time (years)", ylab = "log serum Bilirubin"))
+                } else if (input$s11_loess && input$s11_sample) {
+                    ids <- c(102, 36, 288, 193, 177, 202, 70, 301, 88, 104, 
+                             43, 209, 28, 184, 176, 157)
+                    print(xyplot(log(serBilir) ~ year | id,
+                           panel = function (x, y, ...) {
+                               panel.xyplot(x, y, type = "l", col = 1, ...)
+                               if (length(unique(x)) > 5)
+                                   panel.loess(x, y, col = 2, lwd = 2)
+                           }, data = pbc2, subset = id %in% ids, layout = c(4, 4), as.table = TRUE, 
+                           xlab = "Time (years)", ylab = "log serum Bilirubin"))
+                } else {
+                    print(xyplot(log(serBilir) ~ year | drug, group = id, data = pbc2,
+                                 type = "l", col = 1, xlab = "Time (years)",
+                                 ylab = "log serum Bilirubin"))
+                }
+            }
+            if (!is.null(input$data) && input$data == "Prothro") {
+                if (input$s11_loess && !input$s11_sample) {
+                    print(xyplot(pro ~ time | treat, group = id, data = prothro,
+                                 panel = function (x, y, ...) {
+                                     panel.xyplot(x, y, type = "l", col = 1, ...)
+                                     panel.loess(x, y, col = 2, lwd = 2)
+                                 }, xlab = "Time (years)",
+                                 ylab = "Prothrobin"))
+                } else if (!input$s11_loess && input$s11_sample) {
+                    ids <- c(171, 176, 406, 158, 133, 118, 461, 343, 207, 81, 
+                             556, 250, 421, 535, 206, 262)
+                    print(xyplot(pro ~ time | factor(id), data = prothro, subset = id %in% ids, 
+                           type = "l", col = 1, layout = c(4, 4), as.table = TRUE, 
+                           xlab = "Time (years)", ylab = "Prothrobin"))
+                    
+                } else if (input$s11_loess && input$s11_sample) {
+                    ids <- c(171, 176, 406, 158, 133, 118, 461, 343, 207, 81, 
+                             556, 250, 421, 535, 206, 262)
+                    print(xyplot(pro ~ time | factor(id),
+                           panel = function (x, y, ...) {
+                               panel.xyplot(x, y, type = "l", col = 1, ...)
+                               if (length(unique(x)) > 5)
+                                   panel.loess(x, y, col = 2, lwd = 2)
+                           }, data = prothro, subset = id %in% ids, layout = c(4, 4), as.table = TRUE, 
+                           xlab = "Time (years)", ylab = "Prothrobin"))
+                } else {
+                    print(xyplot(pro ~ time | treat, group = id, data = prothro,
+                                 type = "l", col = 1, xlab = "Time (years)",
+                                 ylab = "Prothrobin"))
+                }
+            }
+        }
+        
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.4" &&
+            input$fit_effPlt == "Effect plot") {
+            fm_s24_pbc <- gls(log(serBilir) ~ ns(year, 2) * sex + age + age:sex, data = pbc2,
+                              correlation = corCAR1(form = ~ year | id))
+            
+            # the following function creates the predicted values
+            # and the 95% CIs
+            effectPlotData <- function (object, newdata, orig_data) {
+                library("lattice")
+                form <- formula(object)
+                respVar <- all.vars(form)[1]
+                newdata[[respVar]] <- 0.01 
+                betas <- if (inherits(object, "gls")) coef(object) else fixef(object)
+                V <- vcov(object)
+                mfX <- model.frame(terms(form), data = orig_data)
+                X <- model.matrix(attr(mfX, "terms"), newdata)
+                pred <- c(X %*% betas)
+                ses <- sqrt(diag(X %*% V %*% t(X)))
+                newdata$pred <- pred
+                newdata$low <- pred - 1.96 * ses
+                newdata$upp <- pred + 1.96 * ses
+                newdata
+            }
+            
+            newDF <- with(pbc2, expand.grid(year = seq(0, 12, length.out = 25),
+                                            sex = levels(sex),
+                                            age = input$age_select_pbc))
+            
+            newDF_low <- with(pbc2, expand.grid(year = seq(0, 12, length.out = 25),
+                                                sex = levels(sex),
+                                                age = 30))
+            
+            newDF_high <- with(pbc2, expand.grid(year = seq(0, 12, length.out = 25),
+                                                 sex = levels(sex),
+                                                 age = 65))
+            
+            vals <- c(unlist(effectPlotData(fm_s24_pbc, newDF_low, pbc2)[c('low', 'upp')]),
+                      unlist(effectPlotData(fm_s24_pbc, newDF_high, pbc2)[c('low', 'upp')]))
+            
+            print(xyplot(pred + low + upp ~ year | sex, data = effectPlotData(fm_s24_pbc, newDF, pbc2), 
+                         lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2, type = "l",
+                         xlab = "Follow-up time (years)",
+                         ylab = "log Serum Billirubin", ylim = range(vals)))
+        }
+        
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.7" &&
+            input$corr_plot) {
+            Fun <- switch(input$corrStr,
+                          "Compound Symmetry" = corCompSymm,
+                          "AR1" = corAR1, 
+                          "continuous AR1" = corCAR1,
+                          "exponential" = corExp,
+                          "linear" = corLin,
+                          "Gaussian" = corGaus)
+            col4 <- colorRampPalette(c("#7F0000","red","#FF7F00","yellow","#7FFF7F", 
+                                       "cyan", "#007FFF", "blue","#00007F"))
+            corrplot.mixed(testCS(Fun, input$corrStr_param), col = rev(col4(200)))
+        }
+        
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.11") {
+            if (naf(input$s211_typePlot) && input$s211_typePlot == "QQnorm") {
+                form <- if (naf(input$s211_type_res) && input$s211_type_res == "Pearson") {
+                    '~ resid(., "p")'
+                } else {
+                    '~ resid(., "n")'
+                }
+                if (naf(input$s211_sex) && input$s211_sex) {
+                    form <- if (naf(input$s211_datachoice) && input$s211_datachoice == "AIDS") {
+                        paste(form, "| drug")
+                    } else { 
+                        paste(form, "| sex")
+                    }
+                }
+                form <- as.formula(form)
+                if (naf(input$s211_datachoice) && input$s211_datachoice == "AIDS") {
+                    if (!exists("fm_s211_aids")) {
+                        withProgress({
+                            fm <- gls(CD4 ~ obstime + obstime:drug, data = aids,
+                                  correlation = corSymm(form = ~ 1 | patient),
+                                  weights = varIdent(form = ~ 1 | obstime))
+                        }, message = "Fitting the model...")
+                        fm_s29_aids2 <<- fm
+                        fm_s211_aids <<- fm
+                    }
+                    print(qqnorm(fm_s211_aids, form))
+                } else {
+                    print(qqnorm(gls(log(serBilir) ~ year + year:drug + year*sex + age, 
+                                     data = pbc2, correlation = corCAR1(form = ~ year | id)), 
+                                 form))
+                }
+            } else {
+                v <- if (naf(input$s211_var_res) && input$s211_var_res == "fitted") "fitted(.)" else input$s211_var_res
+                form <- if (naf(input$s211_type_res) && input$s211_type_res == "Pearson") {
+                    paste('resid(., "p") ~', v)
+                } else {
+                    paste('resid(., "n") ~', v)
+                }
+                if (naf(input$s211_sex) && input$s211_sex) {
+                    form <- if (naf(input$s211_datachoice) && input$s211_datachoice == "AIDS") {
+                        paste(form, "| drug")
+                    } else { 
+                        paste(form, "| sex")
+                    }
+                }
+                form <- as.formula(form)
+                if (naf(input$s211_datachoice) && input$s211_datachoice == "AIDS") {
+                    if (!exists("fm_s211_aids")) {
+                        withProgress({
+                            fm <- gls(CD4 ~ obstime + obstime:drug, data = aids,
+                                  correlation = corSymm(form = ~ 1 | patient),
+                                  weights = varIdent(form = ~ 1 | obstime))
+                        }, message = 'Fitting the model...')
+                        fm_s29_aids2 <<- fm
+                        fm_s211_aids <<- fm
+                    }
+                    print(plot(fm_s211_aids, form, type = c("p", "smooth"), lwd = 3))
+                } else {
+                    print(plot(gls(log(serBilir) ~ year + year:drug + year*sex + age, 
+                                   data = pbc2, correlation = corCAR1(form = ~ year | id)), 
+                               form, type = c("p", "smooth"), lwd = 3))
+                }
+            }
+        }
+        
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.2" &&
+            input$fit_effPlt == "Effect plot") {
+            pbc2$basePro <- with(pbc2, ave(prothrombin, id, FUN = function (x) x[1]))
+            if (!exists("fm_s32_pbc")) {
+                withProgress({
+                    fm_s32_pbc <<- lme(log(serBilir) ~ ns(year, 2) * sex + (age + basePro) * sex, 
+                                   data = pbc2, random = ~ ns(year, 2) | id)
+                }, message = "Fitting the model...")
+            }
+            
+            # the following function creates the predicted values
+            # and the 95% CIs
+            effectPlotData <- function (object, newdata, orig_data) {
+                form <- formula(object)
+                respVar <- all.vars(form)[1]
+                newdata[[respVar]] <- 0.01 
+                betas <- if (inherits(object, "gls")) coef(object) else fixef(object)
+                V <- vcov(object)
+                mfX <- model.frame(terms(form), data = orig_data)
+                X <- model.matrix(attr(mfX, "terms"), newdata)
+                pred <- c(X %*% betas)
+                ses <- sqrt(diag(X %*% V %*% t(X)))
+                newdata$pred <- pred
+                newdata$low <- pred - 1.96 * ses
+                newdata$upp <- pred + 1.96 * ses
+                newdata
+            }
+            
+            newDF <- with(pbc2, expand.grid(year = seq(0, 12, length.out = 25),
+                                            sex = levels(sex), serBilir = 0,
+                                            age = input$age_select_pbc,
+                                            basePro = input$pro_select_pbc))
+            
+            newDF <- effectPlotData(fm_s32_pbc, newDF, pbc2)
+            if (nrow(newDF)) {
+                print(xyplot(pred + low + upp ~ year | sex, data = newDF, 
+                             lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2, type = "l",
+                             xlab = "Follow-up time (years)",
+                             ylab = "log Serum Billirubin"))
+            }
+        }
+        
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.3" &&
+            input$corr_plot) {
+            params <- if (naf(input$diag_covMat) && !input$diag_covMat) {
+                switch(input$reStr,
+                       "intercepts" = list(sigma2 = input$sigma2, D = input$sigma2_b0),
+                       "intercepts & slopes" = {
+                           cov01 <- sqrt(input$sigma2_b0) * sqrt(input$sigma2_b1) * input$rho_b0b1
+                           DD <- matrix(c(input$sigma2_b0, cov01, cov01, input$sigma2_b1), 2, 2)
+                           list(sigma2 = input$sigma2, D = DD)
+                       },
+                       "intercepts, slopes & slopes^2" = {
+                           cov01 <- sqrt(input$sigma2_b0) * sqrt(input$sigma2_b1) * input$rho_b0b1
+                           cov02 <- sqrt(input$sigma2_b0) * sqrt(input$sigma2_b2) * input$rho_b0b2
+                           cov12 <- sqrt(input$sigma2_b1) * sqrt(input$sigma2_b2) * input$rho_b1b2
+                           DD <- matrix(c(input$sigma2_b0, cov01, cov02, cov01, input$sigma2_b1,
+                                          cov12, cov02, cov12, input$sigma2_b2), 3, 3)
+                           list(sigma2 = input$sigma2, D = DD)
+                       })
+            } else { 
+                switch(input$reStr,
+                       "intercepts" = list(sigma2 = input$sigma2, D = input$sigma2_b0),
+                       "intercepts & slopes" = {
+                           DD <- matrix(c(input$sigma2_b0, 0, 0, input$sigma2_b1), 2, 2)
+                           list(sigma2 = input$sigma2, D = DD)
+                       },
+                       "intercepts, slopes & slopes^2" = {
+                           DD <- matrix(c(input$sigma2_b0, 0, 0, 0, input$sigma2_b1,
+                                          0, 0, 0, input$sigma2_b2), 3, 3)
+                           list(sigma2 = input$sigma2, D = DD)
+                       })
+            }
+            col4 <- colorRampPalette(c("#7F0000","red","#FF7F00","yellow","#7FFF7F", 
+                                       "cyan", "#007FFF", "blue","#00007F"))
+            corrplot.mixed(cov2cor(testRES(input$reStr, params)), col = rev(col4(200)))
+        }
+        
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.11") {
+            if (!exists('fm_s311_pro')) {
+                withProgress({
+                    fm_s311_pro <<- lme(pro ~ ns(time, 3) * treat, data = prothro,
+                                   random = list(id = pdDiag(form = ~ ns(time, 3))))
+                }, message = "Fitting the model...")
+            }
+            form <- if (naf(input$s311_typePlot) && input$s311_typePlot == "Scatterplot") {
+                if (naf(input$s311_var_res) && input$s311_var_res == "fitted") {
+                    if (naf(input$s311_type_res) && input$s311_type_res == "Marginal") {
+                        'resid(., type = "p", level = 0) ~ fitted(., level = 0)'
+                    } else {
+                        'resid(., type = "p") ~ fitted(.)'
+                    }
+                } else {
+                    if (naf(input$s311_type_res) && input$s311_type_res == "Marginal") {
+                        'resid(., type = "p", level = 0) ~ time'
+                    } else {
+                        'resid(., type = "p") ~ time'
+                    }
+                }
+            } else if (naf(input$s311_typePlot) && input$s311_typePlot == "QQnorm") {
+                if (naf(input$s311_type_res) && input$s311_type_res == "Marginal") {
+                    '~ resid(., type = "p", level = 0)'
+                } else {
+                    '~ resid(., type = "p")'
+                }
+            }
+            if (naf(input$s311_drug) && input$s311_drug) {
+                form <- paste(form, "| treat")
+            }
+            form <- as.formula(form)
+            if (naf(input$s311_typePlot) && input$s311_typePlot == "Scatterplot") {
+                print(plot(fm_s311_pro, form, type = c("p", "smooth"), lwd = 3))
+            } else {
+                print(qqnorm(fm_s311_pro, form))
+            }
+        }
+        
+        if (input$chapter == "Chapter 4" && input$section == "Section 4.3" &&
+            naf(input$fit_effPlt) && input$fit_effPlt == "Effect plot") {
+            fm_s43_splines <- geeglm(serCholD ~ ns(year, 3) + ns(age, 3) + drug + sex, 
+                                     family = binomial, data = pbc2, id = id, 
+                                     corstr = "exchangeable")
+            
+            # the following function creates the predicted values
+            # and the 95% CIs
+            effectPlotData <- function (object, newdata, orig_data) {
+                form <- formula(object)
+                namesVars <- all.vars(form)
+                respVar <- namesVars[1]
+                newdata[[respVar]] <- 0.01
+                betas <- if (!inherits(object, "lme")) coef(object) else fixef(object)
+                V <- if (inherits(object, "geeglm")) object$geese$vbeta else vcov(object)
+                orig_data <- orig_data[complete.cases(orig_data[namesVars]), ]
+                mfX <- model.frame(terms(form), data = orig_data)
+                X <- model.matrix(attr(mfX, "terms"), newdata)
+                pred <- c(X %*% betas)
+                ses <- sqrt(diag(X %*% V %*% t(X)))
+                newdata$pred <- pred
+                newdata$low <- pred - 1.96 * ses
+                newdata$upp <- pred + 1.96 * ses
+                newdata
+            }
+            
+            newDF <- with(pbc2, expand.grid(
+                year = seq(0, 12, length.out = 25),
+                age = input$age_select_pbc_gee,
+                drug = levels(drug),
+                sex = levels(sex)
+            ))
+            
+            newDF_low <- with(pbc2, expand.grid(
+                year = seq(0, 12, length.out = 25),
+                age = 30,
+                drug = levels(drug),
+                sex = levels(sex)
+            ))
+            
+            newDF_high <- with(pbc2, expand.grid(
+                year = seq(0, 12, length.out = 25),
+                age = 65,
+                drug = levels(drug),
+                sex = levels(sex)
+            ))
+            
+            vals <- c(unlist(effectPlotData(fm_s43_splines, newDF_low, pbc2)[c('low', 'upp')]),
+                      unlist(effectPlotData(fm_s43_splines, newDF_high, pbc2)[c('low', 'upp')]))
+            
+            if (input$scale_s43 == 'log Odds') {
+                print(xyplot(pred + low + upp ~ year | sex * drug, 
+                             data = effectPlotData(fm_s43_splines, newDF, pbc2), 
+                             lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2, type = "l",
+                             xlab = "Follow-up time (years)",
+                             ylab = "log Odds", ylim = range(vals)))
+            } else {
+                expit <- function (x) exp(x) / (1 + exp(x))
+                print(xyplot(expit(pred) + expit(low) + expit(upp) ~ year | sex * drug, 
+                       data = effectPlotData(fm_s43_splines, newDF, pbc2), 
+                       lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2, type = "l",
+                       xlab = "Follow-up time (years)",
+                       ylab = "Probabilities", ylim = c(0.1, 1)))
+            }
+        }
+    })
+    
+})

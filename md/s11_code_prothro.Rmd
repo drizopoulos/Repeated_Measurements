@@ -1,0 +1,4 @@
+```{r}
+xyplot(pro ~ time | treat, group = id, data = prothro, type = "l", col = 1, 
+       xlab = "Time (years)", ylab = "Prothrobin")
+```

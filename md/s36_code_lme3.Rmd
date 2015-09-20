@@ -1,0 +1,10 @@
+```{r}
+#######################################
+# crossed random effects using lmer() #
+#######################################
+
+fm_s36_glaucoma5 <- lmer(thres ~ years + (1 | id) + (1 |field), data = glaucoma)
+
+summary(fm_s36_glaucoma5)
+```
+

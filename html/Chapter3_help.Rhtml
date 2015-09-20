@@ -1,0 +1,310 @@
+<style>
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 5px;
+}
+</style>
+<h3 align="left">
+    <strong>
+        <span style="color:blue">Help Files for Chapter 3</span>
+    </strong>
+</h3>
+<br/>
+<h4 align="left">
+    <strong>
+        <span style="color:red">nlme package</span>
+    </strong>
+</h4>
+<ul style="list-style-type:circle">
+  <li> Function <a href="https://goo.gl/4fngXl" target="_blank">lme()</a> fits linear 
+  mixed effects models for repeated measurements data; main arguments:
+  <ul style="list-style-type:square">
+    <li>
+        <font face="Courier New">fixed</font>: a two-sided R  
+        <a href="https://goo.gl/8kHEh5" target="_blank">formula</a> specifying the fixed 
+        effects terms to include in the model.
+    </li>
+    <li>
+        <font face="Courier New">random</font>: an one-sided R  
+        <a href="https://goo.gl/8kHEh5" target="_blank">formula</a> specifying the random 
+        effects terms to include in the model. This default specification assumes that the
+        covariance matrix of the random effects is a general unstructured covariances. In
+        some occasions it may be required to impose a structure on this matrix (e.g., when
+        including many random effects). To invoke these structures the 
+        <font face="Courier New">random</font> must be specified as a named 
+        <a href="https://goo.gl/mY2VvR" target="_blank">list</a>, in which the names denote
+        the grouping variables. Some options for these structures are:
+        <table style="width:70%" aling="center">
+            <tr>
+                <td><strong>Name</strong></td>
+                <td><strong>R function</strong></td>
+                <td><strong><font face="Courier New">form</font> argument</strong></td>
+            </tr>
+            <tr>
+                <td>Diagonal</td>
+                <td><a href="https://goo.gl/Uq3HMa" target="_blank">pdDiag</a></td>
+                <td><font face="Courier New">form = ~ time</font></td>
+            </tr>
+            <tr>
+                <td>Diagonal</td>
+                <td><a href="https://goo.gl/LG7g81" target="_blank">pdIdent</a></td>
+                <td><font face="Courier New">form = ~ time</font></td>
+            </tr>
+        </table>
+        For example, to fit a model with random intercepts and random slopes with a diagonal
+        covariance matrix we can use 
+        <font face="Courier New">lme(..., random = list(id = pdDiag(form = ~ time)))</font>, where 
+        <font face="Courier New">id</font> denotes the grouping variable.
+    </li>
+    <li>
+        <font face="Courier New">data</font>: a 
+        <a href="https://goo.gl/PVVYyn" target="_blank">data frame</a> that contains the 
+        aforementioned variables.
+    </li>
+    
+    <li>
+        <font face="Courier New">correlation</font>: a structure for the 
+        <a href="https://goo.gl/4QC8OI" target="_blank">correlations</a> (off-diagonal
+        elements of the covariance matrix). This structure is specified with constructor 
+        function. The basic argument of these functions is called 
+        <font face="Courier New">form</font>, which is a formula specifying which 
+        measurements in the dataset are correlated (e.g., the measurements belonging to the
+        same subject), and the distance between those measurements. The ones we have seen
+        in the course are (<font face="Courier New">time</font> denotes the time variable):
+        <table style="width:70%" aling="center">
+            <tr>
+                <td><strong>Name</strong></td>
+                <td><strong>R function</strong></td>
+                <td><strong><font face="Courier New">form</font> argument</strong></td>
+            </tr>
+            <tr>
+                <td>Unstructured</td>
+                <td><a href="https://goo.gl/a6iwxw" target="_blank">corSymm</a></td>
+                <td><font face="Courier New">form = ~ 1 | id</font></td>
+            </tr>
+            <tr>
+                <td>Compound Symmetry</td>
+                <td><a href="https://goo.gl/nq5XUs" target="_blank">corCompSymm</a></td>
+                <td><font face="Courier New">form = ~ 1 | id</font></td>
+            </tr>
+            <tr>
+                <td>AR1</td>
+                <td><a href="https://goo.gl/oPOumV" target="_blank">corAR1</a></td>
+                <td><font face="Courier New">form = ~ time | id</font></td>
+            </tr>
+            <tr>
+                <td>continuous AR1</td>
+                <td><a href="https://goo.gl/Zhbzfc" target="_blank">corCAR1</a></td>
+                <td><font face="Courier New">form = ~ time | id</font></td>
+            </tr>
+            <tr>
+                <td>exponential</td>
+                <td><a href="https://goo.gl/CfU91s" target="_blank">corExp</a></td>
+                <td><font face="Courier New">form = ~ time | id</font></td>
+            </tr>
+            <tr>
+                <td>Gaussian</td>
+                <td><a href="https://goo.gl/fTyrVg" target="_blank">corGaus</a></td>
+                <td><font face="Courier New">form = ~ time | id</font></td>
+            </tr>
+        </table>
+        <br/>
+    </li>
+    <li>
+        <font face="Courier New">weights</font>: a structure for the 
+        <a href="https://goo.gl/q5Tamv" target="_blank">variance function</a> (diagonal 
+        elements of the covariance matrix). Similarly to the 
+        <font face="Courier New">correlation</font> argument we also need to provide here
+        a constructor function the specifies the variances of the repeated measurements.
+        For example, in longitudinal data the variability could increase in time. Again
+        the basic argument of these constructor functions is 
+        <font face="Courier New">form</font>, which is a formula used to describe the 
+        variance function. There are <a href="https://goo.gl/q5Tamv" 
+        target="_blank">several options</a> available, but the ones we have seen are 
+        <a href="https://goo.gl/2E3JzV" target="_blank">varIdent</a> and
+        <a href="https://goo.gl/nOZBqT" target="_blank">varExp</a>. In the former, the
+        <font face="Courier New">form</font> is used to specify that we have a different 
+        variance parameter for each unique value of the 
+        <font face="Courier New">time</font> time, 
+        by setting <font face="Courier New">form = ~ 1 | time</font>. Analogously,
+        in the latter the same argument is used to specify that the variances are an
+        exponential function <font face="Courier New">time</font> by setting 
+        <font face="Courier New">form = ~ time</font>.
+    </li>
+  </ul>
+  </li>
+  
+  <br/>
+  
+  <li>Function <a href="https://goo.gl/88h4GZ" target="_blank">anova.lme()</a> can be used 
+  to perform F and likelihood ratio tests in linear mixed models. When a single mixed 
+  model is provided to this function it computes F-tests; the relevant arguments are:
+    <ul style="list-style-type:square">
+      <li>
+        <font face="Courier New">object</font>: a model fitted by function  
+        <a href="https://goo.gl/4fngXl" target="_blank">lme()</a>.
+      </li>
+      <li>
+        <font face="Courier New">type</font>: should be set to 
+        <font face="Courier New">"marginal"</font> for marginal F-test (i.e., for each 
+        individual term in the model).
+      </li>
+      <li>
+        <font face="Courier New">Terms</font> and <font face="Courier New">L</font>: can 
+        be used to specify which coefficients we would like to test. By using the former
+        the user specifies the actual terms from the model, whereas with the latter we 
+        define explicitly the contrasts matrix.
+      </li>
+    </ul>
+    When two or more models fitted by <a href="https://goo.gl/4fngXl" target="_blank">lme()</a> 
+    are provided to this function it computes likelihood ratio tests, and also reported 
+    the AIC and BIC values. In case of non-nested models argument 
+    <font face="Courier New">test</font> can be set to 
+    <font face="Courier New">FALSE</font>, in which case only the AIC and BIC values are
+    reported.
+  </li>
+  <br/>
+  <li>Function <a href="https://goo.gl/NfR8eM" target="_blank">plot.lme()</a> can be used 
+  to produce scatterplots of the Pearson or normalized residuals versus the fitted values or
+  other covariates; the relevant arguments are:
+    <ul style="list-style-type:square">
+      <li>
+        <font face="Courier New">x</font>: a model fitted by function  
+        <a href="https://goo.gl/4fngXl" target="_blank">lme()</a>.
+      </li>
+      <li>
+        <font face="Courier New">form</font>: a two-sided formula specifying what to plot.
+        For example,
+        <ul style="list-style-type:none; margin:0; padding:0">
+            <li><font face="Courier New">resid(., type = "p") ~ fitted(.)</font>: scatterplot
+            of the Pearson residuals versus fitted values.</li>
+            <li><font face="Courier New">resid(., type = "n") ~ fitted(.)</font>: scatterplot
+            of the normalized residuals versus fitted values.</li>
+            <li><font face="Courier New">resid(., type = "p") ~ age</font>: scatterplot of 
+            the Pearson residuals versus age.</li>
+            <li><font face="Courier New">resid(., type = "p") ~ age | sex</font>: scatterplot
+            of the Pearson residuals versus age, with separate panels per sex.</li>
+        </ul>  
+      </li>
+  </ul>
+  </li>
+    <br/>
+  <li>Function <a href="https://goo.gl/E8vfZx" target="_blank">qqnorm.lme()</a> can be used 
+  to produce QQ-plots of the Pearson or normalized residuals; the relevant arguments are:
+    <ul style="list-style-type:square">
+      <li>
+        <font face="Courier New">y</font>: a model fitted by function  
+        <a href="https://goo.gl/4fngXl" target="_blank">lme()</a>.
+      </li>
+      <li>
+        <font face="Courier New">form</font>: an one-sided formula specifying what to plot.
+        For example,
+        <ul style="list-style-type:none; margin:0; padding:0">
+            <li><font face="Courier New">~ resid(., type = "p")</font>: QQ-plot of Pearson
+            residuals.</li>
+            <li><font face="Courier New">~ resid(., type = "n")</font>: QQ-plot of 
+            normalized residuals.</li>
+            <li><font face="Courier New">~ resid(., type = "p") | sex</font>: QQ-plot
+            of the Pearson residuals with separate panels per sex.</li>
+        </ul>  
+      </li>
+  </ul>
+  </li>
+</ul>
+<br/>
+<br/>
+<h4 align="left">
+    <strong>
+        <span style="color:red">lme4 package</span>
+    </strong>
+</h4>
+<ul style="list-style-type:circle">
+  <li> Function <a href="https://goo.gl/U7tf8T" target="_blank">lmer()</a> fits linear 
+  mixed effects models for repeated measurements data; main arguments:
+    <ul style="list-style-type:square">
+        <li> 
+        <font face="Courier New">formula</font>: a two-sided R  
+        <a href="https://goo.gl/8kHEh5" target="_blank">formula</a> describing both the 
+        fixed-effects and random-effects part of the model, with the response on the left 
+        of a <font face="Courier New">"~"</font> operator and the terms, separated by 
+        <font face="Courier New">"+"</font> operators, on the 
+        right. Random-effects terms are distinguished by vertical bars 
+        (<font face="Courier New">"|"</font>) separating expressions for design matrices 
+        from grouping factors. Two vertical bars (<font face="Courier New">"||"</font>) 
+        can be used to specify multiple uncorrelated random effects for the same grouping 
+        variable. Some examples:
+        <table style="width:100%" aling="center">
+            <tr>
+                <td><strong>Description</strong></td>
+                <td><strong>lmer() syntax</strong></td>
+            </tr>
+            <tr>
+                <td>random intercepts</td>
+                <td><font face="Courier New">lmer(y ~ time + (1 | id))</font></td>
+            </tr>
+            <tr>
+                <td>random intercepts & slopes diagonal covariance matrix</td>
+                <td><font face="Courier New">lmer(y ~ time + (time || id))</font></td>
+            </tr>
+            <tr>
+                <td>nested random intercepts</td>
+                <td><font face="Courier New">lmer(y ~ time + (1 | id / eye))</font></td>
+            </tr>
+            <tr>
+                <td>crossed random intercepts</td>
+                <td><font face="Courier New">lmer(y ~ time + (1 | id) + (1 | visit))</font></td>
+            </tr>
+        </table>
+        <br/>
+        </li>
+        <li>
+        <font face="Courier New">data</font>: a 
+        <a href="https://goo.gl/PVVYyn" target="_blank">data frame</a> that contains the 
+        aforementioned variables.
+        </li>
+    </ul>
+    <li>
+    Functions <font face="Courier New">anova.merMod</font> and
+    <font face="Courier New">plot.merMod</font> work in a similar manner as for models 
+    fitted by <a href="https://goo.gl/4fngXl" target="_blank">lme()</a> -- for more information
+    check the <a href="https://goo.gl/U7tf8T" target="_blank">manual of lme4</a>.
+    </li>
+  </li>
+</ul>
+
+<br/>
+<br/>
+<h3 align="left">
+  <strong> Other useful functions and material</strong>
+</h3>
+<ul style="list-style-type:circle">
+<li>
+  <a href="https://goo.gl/u69ACN" target="_blank">summary.lme()</a> summarizes the fitted 
+  marginal model, including the values of the log-likelihood, AIC, and BIC, the estimated
+  coefficients with corresponding standard errors and p-values, and the estimated parameters
+  for the assumed structure of the covariance matrix.
+ </li>
+ <li>
+ <a href="https://goo.gl/NuLN62" target="_blank">fixef()</a> returns the estimated fixed effects.
+ </li>
+ <li>
+ <a href="https://goo.gl/v6GVjw" target="_blank">ranef()</a> returns the estimated fixed effects.
+ </li>
+<li>
+  <a href="https://goo.gl/BzdTr1" target="_blank">coef()</a> extracts the estimated coefficients.
+ </li>
+ <li>
+  <a href="http://goo.gl/Tni47b" target="_blank">vcov()</a> returns the estimated covariance
+  matrix of the coefficients.
+ </li>
+ <li>
+  <a href="https://goo.gl/7ny8V3" target="_blank">intervals()</a> calculates confidence 
+  intervals for the coefficients.
+ </li>
+ <li>
+  <a href="http://goo.gl/KUeG1Q" target="_blank">formulas in R</a>.
+ </li>
+</ul>

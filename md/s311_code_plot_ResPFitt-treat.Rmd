@@ -1,0 +1,9 @@
+```{r}
+# nonlinear time effects & interaction with treatment
+fm_s311_pro <- lme(pro ~ ns(time, 3) * treat, data = prothro,
+                    random = list(id = pdDiag(form = ~ ns(time, 3))))
+
+plot(fm_s311_pro, resid(., type = "p") ~ fitted(.) | treat, type = c("p", "smooth"), 
+     lwd = 3)
+```
+

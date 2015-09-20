@@ -1,0 +1,31 @@
+```{r}
+# model with exponential correlation matrix & constant variance
+fm_s29_pro1 <- gls(pro ~ time + time:treat, data = prothro,
+                   correlation = corExp(form = ~ time | id))
+
+# model with Gaussian correlation matrix & constant variance
+fm_s29_pro2 <- gls(pro ~ time + time:treat, data = prothro,
+                   correlation = corGaus(form = ~ time | id))
+
+# model with exponential correlation matrix & exponential
+# variance function
+fm_s29_pro3 <- gls(pro ~ time + time:treat, data = prothro,
+                   correlation = corExp(form = ~ time | id),
+                   weights = varExp(form = ~ time))
+
+# model with Gaussian correlation matrix & exponential
+# variance function
+fm_s29_pro4 <- gls(pro ~ time + time:treat, data = prothro,
+                   correlation = corGaus(form = ~ time | id),
+                   weights = varExp(form = ~ time))
+
+# AIC and BIC all models
+anova(fm_s29_pro1, fm_s29_pro2, fm_s29_pro3, fm_s29_pro4, test = FALSE)
+
+# LRT exponential correlation with & without variance function
+anova(fm_s29_pro1, fm_s29_pro3)
+
+# LRT Gaussian correlation with & without variance function
+anova(fm_s29_pro2, fm_s29_pro4)
+```
+

@@ -1,0 +1,38 @@
+```{r}
+pbc2$basePro <- with(pbc2, ave(prothrombin, id, FUN = function (x) x[1]))
+fm_s32_pbc <- lme(log(serBilir) ~ ns(year, 2) * sex + (age + basePro) * sex, 
+                  data = pbc2, random = ~ ns(year, 2) | id)
+
+# the following function creates the predicted values
+# and the 95% CIs
+effectPlotData <- function (object, newdata, orig_data) {
+    form <- formula(object)
+    namesVars <- all.vars(form)
+    respVar <- namesVars[1]
+    newdata[[respVar]] <- 0.01
+    betas <- if (!inherits(object, "lme")) coef(object) else fixef(object)
+    V <- if (inherits(object, "geeglm")) object$geese$vbeta else vcov(object)
+    orig_data <- orig_data[complete.cases(orig_data[namesVars]), ]
+    mfX <- model.frame(terms(form), data = orig_data)
+    X <- model.matrix(attr(mfX, "terms"), newdata)
+    pred <- c(X %*% betas)
+    ses <- sqrt(diag(X %*% V %*% t(X)))
+    newdata$pred <- pred
+    newdata$low <- pred - 1.96 * ses
+    newdata$upp <- pred + 1.96 * ses
+    newdata
+}
+
+# the data frame that contains the combination of values to
+# create the plot
+newDF <- with(pbc2, expand.grid(year = seq(0, 12, length.out = 25),
+                                sex = levels(sex), age = 49, basePro = 10.6))
+
+# the effects plot
+xyplot(pred + low + upp ~ year | sex, 
+       data = effectPlotData(fm_s32_pbc, newDF, pbc2), 
+       lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2, type = "l",
+       xlab = "Follow-up time (years)",
+       ylab = "log Serum Billirubin")
+```
+

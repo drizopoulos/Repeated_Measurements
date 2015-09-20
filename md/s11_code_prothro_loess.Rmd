@@ -1,0 +1,7 @@
+```{r}
+xyplot(pro ~ time | treat, group = id, data = prothro, 
+       panel = function (x, y, ...) {
+           panel.xyplot(x, y, type = "l", col = 1, ...)
+           panel.loess(x, y, col = 2, lwd = 2)
+       }, xlab = "Time (years)", ylab = "Prothrobin")
+```

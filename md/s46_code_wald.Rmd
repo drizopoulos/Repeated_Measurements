@@ -1,0 +1,12 @@
+```{r}
+aids$lowCD4 <- aids$CD4 < sqrt(150)
+aids$obstimef <- factor(aids$obstime)
+
+fm_s46_aids1 <- geeglm(lowCD4 ~ obstimef, family = binomial, data = aids, 
+                       id = patient, corstr = "ar1")
+
+fm_s46_aids2 <- geeglm(lowCD4 ~ obstimef * drug, family = binomial, data = aids, 
+                       id = patient, corstr = "ar1")
+
+anova(fm_s46_aids1, fm_s46_aids2)
+```

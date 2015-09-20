@@ -1,0 +1,28 @@
+```{r}
+# to calculate the area we need a couple of extra steps:
+# First a function to calculate the area based on the data 
+# of a single patient
+area <- function (y, x, i) {
+    x.i <- x[1:i]
+    y.i <- y[1:i]
+    if (length(y.i) == 1)
+        return(0)
+    f <- approxfun(x.i, y.i, rule = 2, ties = "ordered")
+    integrate(f, lower = 0, upper = max(x))$value
+}
+
+# then we split the data set per patient and use this function
+# we put the result in the column 'area_prothr'
+spl <- split(pbc2[c("id", "prothrombin", "year")], pbc2$id)
+pbc2$area_prothr <- unlist(lapply(spl, function (d) {
+    sapply(seq_len(nrow(d)), function (i) area(d$year, d$prothrombin, i))
+}), use.names = FALSE)
+
+
+# time-varying prothrombin -- area formulation
+fm_s38_pbc2 <- lme(log(serBilir) ~ ns(year, 2) * sex + age + area_prothr, 
+                   data = pbc2, random = list(id = pdDiag(form = ~ ns(year, 2))))
+
+summary(fm_s38_pbc2)
+```
+

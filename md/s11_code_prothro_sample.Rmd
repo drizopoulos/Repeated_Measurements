@@ -1,0 +1,9 @@
+```{r}
+# 16 sample patients
+ids <- c(171, 176, 406, 158, 133, 118, 461, 343, 207, 81, 
+         556, 250, 421, 535, 206, 262)
+
+xyplot(pro ~ time | factor(id), data = prothro, subset = id %in% ids, 
+       type = "l", col = 1, layout = c(4, 4), as.table = TRUE, 
+       xlab = "Time (years)", ylab = "Prothrobin")
+```

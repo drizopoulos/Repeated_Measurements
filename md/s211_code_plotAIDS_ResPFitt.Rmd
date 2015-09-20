@@ -1,0 +1,9 @@
+```{r}
+fm_s211_aids <- gls(CD4 ~ obstime + obstime:drug, data = aids,
+                    correlation = corSymm(form = ~ 1 | patient),
+                    weights = varIdent(form = ~ 1 | obstime))
+
+plot(fm_s211_aids, resid(., type = "p") ~ fitted(.), 
+     type = c("p", "smooth"), lwd = 3)
+```
+

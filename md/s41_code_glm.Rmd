@@ -1,0 +1,5 @@
+```{r}
+fm_s41 <- glm(serCholD ~ age + sex + drug, data = pbc2.id, family = binomial)
+
+summary(fm_s41)
+```

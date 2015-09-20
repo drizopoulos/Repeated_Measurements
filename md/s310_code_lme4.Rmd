@@ -1,0 +1,15 @@
+```{r}
+# nonlinear time effects & interaction with treatment
+fm_s310_pro1 <- lme(pro ~ ns(time, 3) * treat, data = prothro,
+                    random = list(id = pdDiag(form = ~ ns(time, 3))))
+
+# marginal F-tests
+anova(fm_s310_pro1, type = "marginal")
+
+# F-test for the overal time effect
+anova(fm_s310_pro1, Terms = c('ns(time, 3)', 'ns(time, 3):treat'))
+
+# F-test for the overal treatment effect
+anova(fm_s310_pro1, Terms = c('treat', 'ns(time, 3):treat'))
+```
+

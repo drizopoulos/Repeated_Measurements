@@ -1,0 +1,21 @@
+```{r}
+#####################################
+# nested random effects using lme() #
+#####################################
+
+fm_s36_glaucoma3 <- lme(thres ~ years, data = glaucoma,
+                        random = list(id = pdSymm(form = ~ years), 
+                                      eye = pdSymm(form = ~ 1)))
+
+summary(fm_s36_glaucoma3)
+
+
+######################################
+# nested random effects using lmer() #
+######################################
+
+fm_s36_glaucoma4 <- lmer(thres ~ years + (years | id) + (1 | id:eye), data = glaucoma)
+
+summary(fm_s36_glaucoma4)
+```
+

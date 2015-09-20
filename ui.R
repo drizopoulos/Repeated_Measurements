@@ -1,0 +1,143 @@
+# Define UI
+shinyUI(fluidPage(
+    # Application title
+    headerPanel("Statistical Analysis of Repeated Measurements Data"),
+    
+    sidebarPanel(
+        wellPanel(
+            selectInput('chapter', 'Choose chapter', 
+                        choices = c(paste("Chapter", 0:6), "Practicals"))
+        ),
+        
+        wellPanel(
+            uiOutput("section_choice"), 
+            uiOutput("s11_data_choice"),
+            uiOutput("s11_glaucoma_choice"),
+            uiOutput("s24_choice"),
+            uiOutput("s24_Agechoice"),
+            uiOutput("s27_cs_choice"),
+            uiOutput("s27_cs_choice_slider"),
+            uiOutput("s29_test_choice"),
+            uiOutput("s211_plot_datachoice"),
+            uiOutput("s211_plot_choice"),
+            uiOutput("s32_choice"),
+            uiOutput("s32_Agechoice"),
+            uiOutput("s32_Prochoice"),
+            uiOutput("s33_res_choice"),
+            uiOutput("s33_slider_sigma2_b0"),
+            uiOutput("s33_slider_sigma2_b1"),
+            uiOutput("s33_slider_sigma2_b2"),
+            uiOutput("s33_slider_rho_b0b1"),
+            uiOutput("s33_slider_rho_b0b2"),
+            uiOutput("s33_slider_rho_b1b2"),
+            uiOutput("s33_slider_sigma2"),
+            uiOutput("s36_choice"),
+            uiOutput("s38_choice"),
+            uiOutput("s310_test_choice"),
+            uiOutput("s311_plot_choice"),
+            uiOutput("s43_choice"),
+            uiOutput("s43_Agechoice"),
+            uiOutput("s45_choice"),
+            uiOutput("s46_choice")
+        ), width = 3),
+    
+    mainPanel(
+        fluidRow(column(9, tabsetPanel(
+            tabPanel("Code", 
+                     htmlOutput('start_page'), 
+                     ##########################
+                     htmlOutput('s11_code_aids'), 
+                     htmlOutput('s11_code_pbc'), 
+                     htmlOutput('s11_code_prothro'),
+                     htmlOutput('s11_code_glaucoma'),
+                     #########################
+                     htmlOutput('s22_code_lm'),
+                     htmlOutput('s24_code_gls'),
+                     htmlOutput('s24_code_gls_effectPlot'),
+                     htmlOutput('s27_check_tab'),
+                     htmlOutput('s29_code_anova_gls'),
+                     htmlOutput('s29_code_anova_gls2'),
+                     htmlOutput('s29_code_anova_gls3'),
+                     htmlOutput('s29_code_anova_gls4'),
+                     htmlOutput('s29_code_anova_gls5'),
+                     htmlOutput('s211_code_plot1'),
+                     htmlOutput('s211_code_plot2'),
+                     htmlOutput('s211_code_plot3'),
+                     htmlOutput('s211_code_plot4'),
+                     htmlOutput('s211_code_plot5'),
+                     htmlOutput('s211_code_plot6'),
+                     htmlOutput('s211_code_plot7'),
+                     htmlOutput('s211_code_plot8'),
+                     htmlOutput('s211_code_plot9'),
+                     htmlOutput('s211_code_plot10'),
+                     htmlOutput('s211_code_plot11'),
+                     htmlOutput('s211_code_plot12'),
+                     htmlOutput('s211_code_plot13'),
+                     htmlOutput('s211_code_plot14'),
+                     htmlOutput('s211_code_plot15'),
+                     htmlOutput('s211_code_plot16'),
+                     htmlOutput('s211_code_plot17'),
+                     htmlOutput('s211_code_plot18'),
+                     htmlOutput('s211_code_plot19'),
+                     htmlOutput('s211_code_plot20'),
+                     htmlOutput('s211_code_plot21'),
+                     htmlOutput('s211_code_plot22'),
+                     htmlOutput('s211_code_plot23'),
+                     htmlOutput('s211_code_plot24'),
+                     #########################
+                     htmlOutput('s32_code_lme'),
+                     htmlOutput('s32_code_lme_effectPlot'),
+                     htmlOutput('s33_check_tab'),
+                     htmlOutput('s36_code_lme'),
+                     htmlOutput('s37_code_lme'),
+                     htmlOutput('s38_code_lme'),
+                     htmlOutput('s310_code_lme'),
+                     htmlOutput('s311_code_plot'),
+                     #########################
+                     htmlOutput('s41_code_glm'),
+                     htmlOutput('s43_code_gee'),
+                     htmlOutput('s45_code_gee'),
+                     htmlOutput('s46_code_gee')
+                     ),
+            
+            tabPanel("Output", 
+                     htmlOutput('s22_Routput_lm'),
+                     htmlOutput('s24_Routput_gls'),
+                     htmlOutput('s27_Routput_gls'),
+                     htmlOutput('s29_Routput_gls'),
+                     htmlOutput('s29_Routput_gls2'),
+                     htmlOutput('s29_Routput_gls3'),
+                     htmlOutput('s29_Routput_gls4'),
+                     htmlOutput('s29_Routput_gls5'),
+                     ##########################
+                     htmlOutput('s32_Routput_lme'),
+                     htmlOutput('s33_Routput_ws'),
+                     htmlOutput('s33_Routput_ws2'),
+                     htmlOutput('s33_Routput_lme'),
+                     htmlOutput('s33_Routput_lme2'),
+                     htmlOutput('s36_Routput_lme'),
+                     htmlOutput('s37_Routput_lme'),
+                     htmlOutput('s38_Routput_lme'),
+                     htmlOutput('s310_Routput_lme'),
+                     ##########################
+                     htmlOutput('s41_Routput_glm'),
+                     htmlOutput('s43_Routput_gee'),
+                     htmlOutput('s45_Routput_gee'),
+                     htmlOutput('s46_Routput_gee'),
+                     ##########################
+                     plotOutput('plot')),
+            
+            tabPanel("Help", 
+                     htmlOutput('Chapter0_help'),
+                     htmlOutput('Chapter1_help'),
+                     htmlOutput('Chapter2_help'), 
+                     htmlOutput('Chapter3_help'),
+                     htmlOutput('Chapter4_help'),
+                     htmlOutput('Chapter5_help'),
+                     htmlOutput('Chapter6_help')),
+            
+            tabPanel("Slides", htmlOutput('slides'))
+        )
+        
+    )))
+))

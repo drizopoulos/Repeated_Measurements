@@ -1,0 +1,10 @@
+```{r}
+# 16 sample patients
+ids <- c(455, 313, 345, 301, 17, 20, 208, 381, 389, 100, 254, 224, 
+         280, 288, 398, 405)
+
+xyplot(sqrt(CD4) ~ obstime | patient, data = aids, subset = patient %in% ids, 
+       type = "l", col = 1, layout = c(4, 4), as.table = TRUE,
+       xlab = "Time (months)",  
+       ylab = "square root CD4 cell count")
+```

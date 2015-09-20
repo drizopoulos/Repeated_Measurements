@@ -1,0 +1,15 @@
+```{r}
+# nonlinear time effects & interaction with treatment
+fm_s310_pro1_ML <- lme(pro ~ ns(time, 3) * treat, data = prothro,
+                    random = list(id = pdDiag(form = ~ ns(time, 3))),
+                    method = "ML")
+
+# only nonlinear time effects without treatment
+fm_s310_pro2_ML <- lme(pro ~ ns(time, 3), data = prothro,
+                    random = list(id = pdDiag(form = ~ ns(time, 3))),
+                    method = "ML")
+
+# likelihood ratio test for the overal treatment effect
+anova(fm_s310_pro2_ML, fm_s310_pro1_ML)
+```
+

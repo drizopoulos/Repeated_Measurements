@@ -1,0 +1,35 @@
+```{r}
+###########################
+# Mixed Model using lme() #
+###########################
+
+fm_s32_aids1 <- lme(CD4 ~ obstime + obstime:drug, data = aids,
+                    random = ~ obstime | patient)
+
+summary(fm_s32_aids1)
+
+# marginal covariance matrix
+getVarCov(fm_s32_aids1, individuals = 450, type = "marginal")
+
+# corresponding correlation matrix
+cov2cor(getVarCov(fm_s32_aids1, individuals = 450, type = "marginal")[[1]])
+
+# covariance of the random effects
+getVarCov(fm_s32_aids1)
+
+# corresponding correlation matrix
+cov2cor(getVarCov(fm_s32_aids1))
+
+############################
+# Mixed Model using lmer() #
+############################
+
+fm_s32_aids2 <- lmer(CD4 ~ obstime + obstime:drug + (obstime | patient),
+                     data = aids)
+
+summary(fm_s32_aids2)
+
+# covariance matrix of the random effects
+VarCorr(fm_s32_aids2)
+```
+

@@ -1,0 +1,12 @@
+```{r}
+index <- c(rep(T, 2), rep(F, 4), rep(T, 4), rep(F, 6), rep(T, 2), rep(F, 8), T,
+           F, T, rep(F, 7), F, T, rep(F, 15), rep(T, 2), rep(F, 6), rep(T, 4),
+           rep(F, 4), rep(T, 3))
+
+xyplot(thres ~ years | pos, data = glaucoma, subset = id == 21 & eye == 2,
+       panel = function (x, y, ...) {
+           panel.xyplot(x, y, type = "l", col = 1, ...)
+           panel.loess(x, y, col = 2, lwd = 2)
+       }, as.table = TRUE, layout = c(9, 8), skip = index, strip = FALSE,
+       xlab = "Time (years)", ylab = "Sensitivity Estimate (dB)")
+```

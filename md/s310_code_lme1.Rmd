@@ -1,0 +1,18 @@
+```{r}
+# model with random intercepts & slopes
+fm_s310_aids1 <- lme(CD4 ~ obstime + I(obstime^2) + (obstime + I(obstime^2)):drug, 
+                     data = aids, random = ~ obstime | patient)
+
+# model with random intercepts, slopes & slopes^2
+fm_s310_aids2 <- lme(CD4 ~ obstime + I(obstime^2) + (obstime + I(obstime^2)):drug, 
+                     data = aids, random = ~ obstime + I(obstime^2) | patient,
+                     control = lmeControl(opt = "optim"))
+
+# classical LRT with default chi-squared distribution
+aov <- anova(fm_s310_aids1, fm_s310_aids2)
+aov
+
+# p-value from mixture of chi-squared distsributions
+mean(pchisq(aov$L.Ratio[2], df = c(2, 3), lower.tail = FALSE))
+```
+
