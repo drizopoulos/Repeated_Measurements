@@ -33,7 +33,7 @@ install.packages(c("shiny", "nlme", "lattice", "lme4", "MCMCglmm",
 ```
 and then the app can be directly invoked using the command:
 ```r
-shiny::runGitHub("Courses", "drizopoulos", ref = "Repeated_Measurements")
+shiny::runGitHub("Repeated_Measurements", "drizopoulos")
 ```
 <br/>
 <p>The app will automatically load these packages and also load the data sets used in 
