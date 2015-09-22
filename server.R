@@ -7,6 +7,7 @@ shinyServer(function(input, output) {
                 "Chapter 2" = paste("Section", c("2.2", "2.4", "2.7", "2.9", "2.11")),
                 "Chapter 3" = paste("Section", c("3.2", "3.3", "3.6*", "3.7", "3.8*", "3.10", "3.11")),
                 "Chapter 4" = paste("Section", c("4.1", "4.3", "4.5", "4.6")),
+                "Chapter 6" = paste("Section", c("6.3")),
                 "Practicals" = paste("Practical", 1:5)
             )
             selectInput("section", "Select section:", chs, chs[1])
@@ -1520,6 +1521,101 @@ shinyServer(function(input, output) {
     ######################################################################################
     ######################################################################################
     
+    ###############
+    # Section 6.3 #
+    ###############
+    
+    output$s63_choice <- renderUI({
+        if (input$chapter == "Chapter 6" && input$section == "Section 6.3")
+            fluidRow(column(6, radioButtons("imp_choice", "Syntax for:", 
+                                            c("Create Data", "LOCF", "Mean Imputation",
+                                              "Analysis"))),
+                     column(6, radioButtons("data_plot", "Show:", c("Data", "Boxplot CD4", 
+                                                                    "Results"))))
+    })
+    
+    output$s63_code <- renderText({
+        if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
+            && naf(input$imp_choice) &&input$imp_choice == "Create Data") {
+            includeMarkdown("./md/s63_code_CompleteData.Rmd")
+        } else if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
+                   && naf(input$imp_choice) &&input$imp_choice == "LOCF") {
+            includeMarkdown("./md/s63_code_locf.Rmd")
+        } else if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
+                   && naf(input$imp_choice) &&input$imp_choice == "Mean Imputation") {
+            includeMarkdown("./md/s63_code_meanImp.Rmd")
+        } else if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
+                 && naf(input$imp_choice) &&input$imp_choice == "Analysis") {
+            includeMarkdown("./md/s63_code_analysis.Rmd")
+        }
+    })
+    
+    output$s63_Routput_table <- renderDataTable({
+        if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
+            && naf(input$imp_choice) &&input$imp_choice == "Create Data"
+            && naf(input$data_plot) && input$data_plot == "Data") {
+            aids_missings <- aids[c('patient', 'CD4', 'obstime', 'AZT', 'prevOI')]
+            planned_visits <- c(0, 2, 6, 12, 18)
+            data_patient <- split(aids_missings, aids_missings$patient)
+            aids_missings <- do.call(rbind, lapply(data_patient, function (d) {
+                out <- d[rep(1, length(planned_visits)), ]
+                out$CD4 <- rep(NA, nrow(out))
+                out$CD4[match(d$obstime, planned_visits)] <- d$CD4
+                out$obstime <- planned_visits
+                out
+            }))
+            row.names(aids_missings) <- seq_len(nrow(aids_missings))
+            aids_missings
+        } else if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
+                   && naf(input$imp_choice) &&input$imp_choice == "LOCF"
+                   && naf(input$data_plot) && input$data_plot == "Data") {
+            aids_missings <- aids[c('patient', 'CD4', 'obstime', 'AZT', 'prevOI')]
+            planned_visits <- c(0, 2, 6, 12, 18)
+            data_patient <- split(aids_missings, aids_missings$patient)
+            aids_missings <- do.call(rbind, lapply(data_patient, function (d) {
+                out <- d[rep(1, length(planned_visits)), ]
+                out$CD4 <- rep(NA, nrow(out))
+                out$CD4[match(d$obstime, planned_visits)] <- d$CD4
+                out$obstime <- planned_visits
+                out
+            }))
+            row.names(aids_missings) <- seq_len(nrow(aids_missings))
+            locf <- function (x) {
+                na.ind <- is.na(x)
+                noNA_x <- x[!na.ind]
+                idx <- cumsum(!na.ind)
+                noNA_x[idx]
+            }
+            aids_missings$CD4locf <- with(aids_missings, ave(CD4, patient, FUN = locf))
+            aids_missings[c('patient', 'CD4', 'CD4locf', 'obstime', 'AZT', 'prevOI')]
+        } else if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
+                   && naf(input$imp_choice) &&input$imp_choice == "Mean Imputation"
+                   && naf(input$data_plot) && input$data_plot == "Data") {
+            aids_missings <- aids[c('patient', 'CD4', 'obstime', 'AZT', 'prevOI')]
+            planned_visits <- c(0, 2, 6, 12, 18)
+            data_patient <- split(aids_missings, aids_missings$patient)
+            aids_missings <- do.call(rbind, lapply(data_patient, function (d) {
+                out <- d[rep(1, length(planned_visits)), ]
+                out$CD4 <- rep(NA, nrow(out))
+                out$CD4[match(d$obstime, planned_visits)] <- d$CD4
+                out$obstime <- planned_visits
+                out
+            }))
+            row.names(aids_missings) <- seq_len(nrow(aids_missings))
+            means <- with(aids_missings, tapply(CD4, obstime, mean, na.rm = TRUE))
+            mean_imp <- function (x) {
+                na.ind <- is.na(x)
+                x[na.ind] <- means[na.ind]
+                x
+            }
+            aids_missings$CD4mean_imp <- with(aids_missings, ave(CD4, patient, FUN = mean_imp))
+            aids_missings[c('patient', 'CD4', 'CD4mean_imp', 'obstime', 'AZT', 'prevOI')]
+        }
+    })
+    
+    ######################################################################################
+    ######################################################################################
+    
     ##############
     # Help Files #
     ##############
@@ -2002,6 +2098,46 @@ shinyServer(function(input, output) {
                        xlab = "Follow-up time (years)",
                        ylab = "Probabilities", ylim = c(0.1, 1)))
             }
+        }
+        
+        if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
+            && naf(input$data_plot) &&input$data_plot == "Boxplot CD4") {
+            ##############
+            aids_missings <- aids[c('patient', 'CD4', 'obstime', 'AZT', 'prevOI')]
+            planned_visits <- c(0, 2, 6, 12, 18)
+            data_patient <- split(aids_missings, aids_missings$patient)
+            aids_missings <- do.call(rbind, lapply(data_patient, function (d) {
+                out <- d[rep(1, length(planned_visits)), ]
+                out$CD4 <- rep(NA, nrow(out))
+                out$CD4[match(d$obstime, planned_visits)] <- d$CD4
+                out$obstime <- planned_visits
+                out
+            }))
+            row.names(aids_missings) <- seq_len(nrow(aids_missings))
+            ##############
+            locf <- function (x) {
+                na.ind <- is.na(x)
+                noNA_x <- x[!na.ind]
+                idx <- cumsum(!na.ind)
+                noNA_x[idx]
+            }
+            aids_missings$CD4locf <- with(aids_missings, ave(CD4, patient, FUN = locf))
+            ##############
+            means <- with(aids_missings, tapply(CD4, obstime, mean, na.rm = TRUE))
+            mean_imp <- function (x) {
+                na.ind <- is.na(x)
+                x[na.ind] <- means[na.ind]
+                x
+            }
+            aids_missings$CD4mean_imp <- with(aids_missings, ave(CD4, patient, FUN = mean_imp))
+            ##############
+            ll <- with(aids_missings, list(
+                "Available Cases" = CD4,
+                "LOCF" = CD4locf,
+                "Mean Imputation" = CD4mean_imp
+            ))
+            boxplot(ll, varwidth = TRUE, col = "lightgrey", 
+                    ylab = "square root CD4 cell count")
         }
     })
     

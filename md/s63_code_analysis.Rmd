@@ -1,0 +1,19 @@
+```{r}
+# the following piece of code assumes that the data set with the 
+# the LOCF and mean imputed CD cell counts has been created
+
+fm_s63_aids1 <- lme(CD4 ~ obstime * (AZT + prevOI), data = aids_missings,
+                    random = ~ obstime | patient, na.action = na.exclude)
+
+fm_s63_aids2 <- lme(CD4locf ~ obstime * (AZT + prevOI), data = aids_missings,
+                    random = ~ obstime | patient)
+
+fm_s63_aids3 <- lme(CD4mean_imp ~ obstime * (AZT + prevOI), data = aids_missings,
+                    random = ~ obstime | patient, control = lmeControl(opt = "optim"))
+
+cbind(
+    "Available Cases" = fixef(fm_s63_aids1),
+    "LOCF" = fixef(fm_s63_aids2),
+    "Mean Imputation" = fixef(fm_s63_aids3)
+)
+```

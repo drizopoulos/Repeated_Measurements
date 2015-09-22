@@ -38,7 +38,8 @@ shinyUI(fluidPage(
             uiOutput("s43_choice"),
             uiOutput("s43_Agechoice"),
             uiOutput("s45_choice"),
-            uiOutput("s46_choice")
+            uiOutput("s46_choice"),
+            uiOutput("s63_choice")
         ), width = 3),
     
     mainPanel(
@@ -97,7 +98,8 @@ shinyUI(fluidPage(
                      htmlOutput('s41_code_glm'),
                      htmlOutput('s43_code_gee'),
                      htmlOutput('s45_code_gee'),
-                     htmlOutput('s46_code_gee')
+                     htmlOutput('s46_code_gee'),
+                     htmlOutput('s63_code')
                      ),
             
             tabPanel("Output", 
@@ -124,6 +126,7 @@ shinyUI(fluidPage(
                      htmlOutput('s43_Routput_gee'),
                      htmlOutput('s45_Routput_gee'),
                      htmlOutput('s46_Routput_gee'),
+                     dataTableOutput("s63_Routput_table"),
                      ##########################
                      plotOutput('plot')),
             

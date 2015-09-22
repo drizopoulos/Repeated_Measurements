@@ -1,0 +1,19 @@
+```{r}
+# the following piece of code assumes that the data set with the 
+# missing CD4 cell counts has been created
+
+# function to perform LOCF
+locf <- function (x) {
+    na.ind <- is.na(x)
+    noNA_x <- x[!na.ind]
+    idx <- cumsum(!na.ind)
+    noNA_x[idx]
+}
+
+# we use this function in the CD4 cell counts;
+# function ave() applies the above defined function to the
+# CD4 cell count data of each patient
+aids_missings$CD4locf <- with(aids_missings, ave(CD4, patient, FUN = locf))
+
+aids_missings
+```

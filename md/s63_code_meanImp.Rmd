@@ -1,0 +1,21 @@
+```{r}
+# the following piece of code assumes that the data set with the 
+# missing CD4 cell counts has been created
+
+# vector of average CD4 cell counts per time point
+means <- with(aids_missings, tapply(CD4, obstime, mean, na.rm = TRUE))
+
+# function to perform unconditional mean Imputation
+mean_imp <- function (x) {
+    na.ind <- is.na(x)
+    x[na.ind] <- means[na.ind]
+    x
+}
+
+# we use this function in the CD4 cell counts;
+# function ave() applies the above defined function to the
+# CD4 cell count data of each patient
+aids_missings$CD4mean_imp <- with(aids_missings, ave(CD4, patient, FUN = mean_imp))
+
+aids_missings
+```

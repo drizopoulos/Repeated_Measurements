@@ -52,7 +52,7 @@ library("corrplot")
 and also load the data sets from 
 <a href="https://github.com/drizopoulos/Courses" target="_blank">GitHub</a> using the commands:
 ```r
-con <- url("https://raw.github.com/drizopoulos/Courses/Repeated_Measurements/Data.RData")
+con <- url("https://raw.github.com/drizopoulos/Repeated_Measurements/master/Data.RData")
 load(con)
 close(con)
 ```

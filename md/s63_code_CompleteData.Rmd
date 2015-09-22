@@ -1,0 +1,27 @@
+```{r}
+# we extract the variables of interest from the AIDS dataset
+aids_missings <- aids[c('patient', 'CD4', 'obstime', 'AZT', 'prevOI')]
+
+# a vector witj the planned visit times
+planned_visits <- c(0, 2, 6, 12, 18)
+
+# we split the data per patient, i.e., a list of data frames
+# with the data of each patient
+data_patient <- split(aids_missings, aids_missings$patient)
+
+# a function to work on each element of the list
+create_full_data <- function (d) {
+    out <- d[rep(1, length(planned_visits)), ]
+    out$CD4 <- rep(NA, nrow(out))
+    out$CD4[match(d$obstime, planned_visits)] <- d$CD4
+    out$obstime <- planned_visits
+    out
+}
+
+# apply the function from above in each element of the list, and
+# bind the results together
+aids_missings <- do.call(rbind, lapply(data_patient, create_full_data))
+row.names(aids_missings) <- seq_len(nrow(aids_missings))
+
+aids_missings
+```
