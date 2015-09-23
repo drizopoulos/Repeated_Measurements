@@ -1531,7 +1531,8 @@ shinyServer(function(input, output) {
                                             c("Create Data", "LOCF", "Mean Imputation",
                                               "Analysis"))),
                      column(6, radioButtons("data_plot", "Show:", c("Data", "Boxplot CD4", 
-                                                                    "Results"))))
+                                                                    "Results", 
+                                                                    "Coefficients' Plot"))))
     })
     
     output$s63_code <- renderText({
@@ -1610,6 +1611,92 @@ shinyServer(function(input, output) {
             }
             aids_missings$CD4mean_imp <- with(aids_missings, ave(CD4, patient, FUN = mean_imp))
             aids_missings[c('patient', 'CD4', 'CD4mean_imp', 'obstime', 'AZT', 'prevOI')]
+        } else if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
+                   && naf(input$imp_choice) &&input$imp_choice == "Analysis"
+                   && naf(input$data_plot) && input$data_plot == "Data") {
+            aids_missings <- aids[c('patient', 'CD4', 'obstime', 'AZT', 'prevOI')]
+            planned_visits <- c(0, 2, 6, 12, 18)
+            data_patient <- split(aids_missings, aids_missings$patient)
+            aids_missings <- do.call(rbind, lapply(data_patient, function (d) {
+                out <- d[rep(1, length(planned_visits)), ]
+                out$CD4 <- rep(NA, nrow(out))
+                out$CD4[match(d$obstime, planned_visits)] <- d$CD4
+                out$obstime <- planned_visits
+                out
+            }))
+            row.names(aids_missings) <- seq_len(nrow(aids_missings))
+            locf <- function (x) {
+                na.ind <- is.na(x)
+                noNA_x <- x[!na.ind]
+                idx <- cumsum(!na.ind)
+                noNA_x[idx]
+            }
+            aids_missings$CD4locf <- with(aids_missings, ave(CD4, patient, FUN = locf))
+            means <- with(aids_missings, tapply(CD4, obstime, mean, na.rm = TRUE))
+            mean_imp <- function (x) {
+                na.ind <- is.na(x)
+                x[na.ind] <- means[na.ind]
+                x
+            }
+            aids_missings$CD4mean_imp <- with(aids_missings, ave(CD4, patient, FUN = mean_imp))
+            aids_missings[c('patient', 'CD4', 'CD4locf', 'CD4mean_imp', 'obstime', 
+                            'AZT', 'prevOI')]
+        }
+    })
+    
+    output$s63_Routput <- renderPrint({
+        if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
+            && naf(input$data_plot) &&input$data_plot == "Results") {
+            aids_missings <- aids[c('patient', 'CD4', 'obstime', 'AZT', 'prevOI')]
+            planned_visits <- c(0, 2, 6, 12, 18)
+            data_patient <- split(aids_missings, aids_missings$patient)
+            aids_missings <- do.call(rbind, lapply(data_patient, function (d) {
+                out <- d[rep(1, length(planned_visits)), ]
+                out$CD4 <- rep(NA, nrow(out))
+                out$CD4[match(d$obstime, planned_visits)] <- d$CD4
+                out$obstime <- planned_visits
+                out
+            }))
+            row.names(aids_missings) <- seq_len(nrow(aids_missings))
+            ##############
+            locf <- function (x) {
+                na.ind <- is.na(x)
+                noNA_x <- x[!na.ind]
+                idx <- cumsum(!na.ind)
+                noNA_x[idx]
+            }
+            aids_missings$CD4locf <- with(aids_missings, ave(CD4, patient, FUN = locf))
+            ##############
+            means <- with(aids_missings, tapply(CD4, obstime, mean, na.rm = TRUE))
+            mean_imp <- function (x) {
+                na.ind <- is.na(x)
+                x[na.ind] <- means[na.ind]
+                x
+            }
+            aids_missings$CD4mean_imp <- with(aids_missings, ave(CD4, patient, FUN = mean_imp))
+            ##############
+            if (!exists("fm_s63_aids1")) {
+                withProgress({
+                    fm_s63_aids1 <<- lme(CD4 ~ obstime * (AZT + prevOI), data = aids_missings,
+                                         random = ~ obstime | patient, na.action = na.exclude)
+                }, message = 'Fitting the model...')
+            }
+            if (!exists("fm_s63_aids2")) {
+                withProgress({
+                    fm_s63_aids2 <<- lme(CD4locf ~ obstime * (AZT + prevOI), data = aids_missings,
+                                         random = ~ obstime | patient)
+                }, message = 'Fitting the model...')
+            }
+            if (!exists("fm_s63_aids3")) {
+                withProgress({
+                    fm_s63_aids3 <<- lme(CD4mean_imp ~ obstime * (AZT + prevOI), data = aids_missings,
+                                         random = ~ obstime | patient, control = lmeControl(opt = "optim"))
+                }, message = 'Fitting the model...')
+            }
+            htmlPrint2("# fixed effects from the three models",
+                       cbind("Available Cases" = fixef(fm_s63_aids1),
+                             "LOCF" = fixef(fm_s63_aids2),
+                             "Mean Imputation" = fixef(fm_s63_aids3)))
         }
     })
     
@@ -2139,6 +2226,95 @@ shinyServer(function(input, output) {
             boxplot(ll, varwidth = TRUE, col = "lightgrey", 
                     ylab = "square root CD4 cell count")
         }
+        
+        if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
+            && naf(input$data_plot) &&input$data_plot == "Coefficients' Plot") {
+            ##############
+            aids_missings <- aids[c('patient', 'CD4', 'obstime', 'AZT', 'prevOI')]
+            planned_visits <- c(0, 2, 6, 12, 18)
+            data_patient <- split(aids_missings, aids_missings$patient)
+            aids_missings <- do.call(rbind, lapply(data_patient, function (d) {
+                out <- d[rep(1, length(planned_visits)), ]
+                out$CD4 <- rep(NA, nrow(out))
+                out$CD4[match(d$obstime, planned_visits)] <- d$CD4
+                out$obstime <- planned_visits
+                out
+            }))
+            row.names(aids_missings) <- seq_len(nrow(aids_missings))
+            ##############
+            locf <- function (x) {
+                na.ind <- is.na(x)
+                noNA_x <- x[!na.ind]
+                idx <- cumsum(!na.ind)
+                noNA_x[idx]
+            }
+            aids_missings$CD4locf <- with(aids_missings, ave(CD4, patient, FUN = locf))
+            ##############
+            means <- with(aids_missings, tapply(CD4, obstime, mean, na.rm = TRUE))
+            mean_imp <- function (x) {
+                na.ind <- is.na(x)
+                x[na.ind] <- means[na.ind]
+                x
+            }
+            aids_missings$CD4mean_imp <- with(aids_missings, ave(CD4, patient, FUN = mean_imp))
+            ##############
+            if (!exists("fm_s63_aids1")) {
+                withProgress({
+                    fm_s63_aids1 <<- lme(CD4 ~ obstime * (AZT + prevOI), data = aids_missings,
+                                random = ~ obstime | patient, na.action = na.exclude)
+                }, message = 'Fitting the model...')
+            }
+            if (!exists("fm_s63_aids2")) {
+                withProgress({
+                    fm_s63_aids2 <<- lme(CD4locf ~ obstime * (AZT + prevOI), data = aids_missings,
+                                random = ~ obstime | patient)
+                }, message = 'Fitting the model...')
+            }
+            if (!exists("fm_s63_aids3")) {
+                withProgress({
+                    fm_s63_aids3 <<- lme(CD4mean_imp ~ obstime * (AZT + prevOI), data = aids_missings,
+                                random = ~ obstime | patient, control = lmeControl(opt = "optim"))
+                }, message = 'Fitting the model...')
+            }
+            ##############
+            prepanel.ci <- function (x, y, lx, ux, subscripts, ...) {
+                x <- as.numeric(x)
+                lx <- as.numeric(lx[subscripts])
+                ux <- as.numeric(ux[subscripts])
+                list(xlim = range(x, ux, lx, finite = TRUE))
+            }
+            panel.ci <- function (x, y, lx, ux, subscripts, pch = 16, ...) {
+                x <- as.numeric(x)
+                y <- as.numeric(y)
+                lx <- as.numeric(lx[subscripts])
+                ux <- as.numeric(ux[subscripts])
+                panel.abline(h = c(unique(y)), 
+                             col = "grey", lty = 2, lwd = 1.5)
+                panel.arrows(lx, y, ux, y,
+                             length = 0.1, unit = "native",
+                             angle = 90, code = 3, lwd = 4, col = "blue")
+                panel.xyplot(x, y, pch = pch, col = 2, cex = 1.6, ...)
+            }
+            f <- function (model) {
+                ints <- intervals(model)
+                list(ints$fixed, ints$reStruct[[1]], rbind("sigma" = ints$sigma))
+            }
+            mat <- rbind(data.matrix(do.call(rbind, f(fm_s63_aids1))), 
+                         data.matrix(do.call(rbind, f(fm_s63_aids2))),
+                         data.matrix(do.call(rbind, f(fm_s63_aids3))))
+            coef.nam <- rownames(mat)
+            coef.nam[coef.nam == 'sd((Intercept))'] <- 'sd(b0)'
+            coef.nam[coef.nam == 'sd(obstime)'] <- 'sd(b1)'
+            coef.nam[coef.nam == 'cor((Intercept),obstime)'] <- 'cor(b0, b1)'
+            rownames(mat) <- NULL
+            dat <- as.data.frame(mat)
+            dat$coef.nam <- factor(coef.nam, levels = unique(coef.nam))
+            dat$model <- gl(3, nrow(mat)/3, labels = c('Available Cases', 'LOCF', 'Mean Imputation'))
+            
+            print(dotplot(model ~  est. | coef.nam, lx = dat$lower, ux = dat$upper, data = dat, xlab = "",
+                    prepanel = prepanel.ci, panel = panel.ci, as.table = TRUE,
+                    par.settings = list(fontsize = list(text = 15)),
+                    scales = list(x = list(relation = "free"))))
+        }
     })
-    
 })

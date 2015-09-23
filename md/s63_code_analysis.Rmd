@@ -11,6 +11,8 @@ fm_s63_aids2 <- lme(CD4locf ~ obstime * (AZT + prevOI), data = aids_missings,
 fm_s63_aids3 <- lme(CD4mean_imp ~ obstime * (AZT + prevOI), data = aids_missings,
                     random = ~ obstime | patient, control = lmeControl(opt = "optim"))
 
+
+# fixed effects from the three models
 cbind(
     "Available Cases" = fixef(fm_s63_aids1),
     "LOCF" = fixef(fm_s63_aids2),

@@ -127,6 +127,7 @@ shinyUI(fluidPage(
                      htmlOutput('s45_Routput_gee'),
                      htmlOutput('s46_Routput_gee'),
                      dataTableOutput("s63_Routput_table"),
+                     htmlOutput('s63_Routput'),
                      ##########################
                      plotOutput('plot')),
             
