@@ -5,17 +5,21 @@
 fm_s63_aids1 <- lme(CD4 ~ obstime * (AZT + prevOI), data = aids_missings,
                     random = ~ obstime | patient, na.action = na.exclude)
 
-fm_s63_aids2 <- lme(CD4locf ~ obstime * (AZT + prevOI), data = aids_missings,
+fm_s63_aids2 <- lme(CD4cc ~ obstime * (AZT + prevOI), data = aids_missings,
+                    random = ~ obstime | patient, na.action = na.exclude)
+
+fm_s63_aids3 <- lme(CD4locf ~ obstime * (AZT + prevOI), data = aids_missings,
                     random = ~ obstime | patient)
 
-fm_s63_aids3 <- lme(CD4mean_imp ~ obstime * (AZT + prevOI), data = aids_missings,
+fm_s63_aids4 <- lme(CD4mean_imp ~ obstime * (AZT + prevOI), data = aids_missings,
                     random = ~ obstime | patient, control = lmeControl(opt = "optim"))
 
 
-# fixed effects from the three models
+# fixed effects from the four models
 cbind(
     "Available Cases" = fixef(fm_s63_aids1),
-    "LOCF" = fixef(fm_s63_aids2),
-    "Mean Imputation" = fixef(fm_s63_aids3)
+    "Complete Cases" = fixef(fm_s63_aids2),
+    "LOCF" = fixef(fm_s63_aids3),
+    "Mean Imputation" = fixef(fm_s63_aids4)
 )
 ```

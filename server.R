@@ -1528,8 +1528,8 @@ shinyServer(function(input, output) {
     output$s63_choice <- renderUI({
         if (input$chapter == "Chapter 6" && input$section == "Section 6.3")
             fluidRow(column(6, radioButtons("imp_choice", "Syntax for:", 
-                                            c("Create Data", "LOCF", "Mean Imputation",
-                                              "Analysis"))),
+                                            c("Create Data", "Complete Cases", "LOCF", 
+                                              "Mean Imputation", "Analysis"))),
                      column(6, radioButtons("data_plot", "Show:", c("Data", "Boxplot CD4", 
                                                                     "Results", 
                                                                     "Coefficients' Plot"))))
@@ -1537,17 +1537,33 @@ shinyServer(function(input, output) {
     
     output$s63_code <- renderText({
         if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
-            && naf(input$imp_choice) &&input$imp_choice == "Create Data") {
+            && naf(input$imp_choice) &&input$imp_choice == "Create Data"
+            && naf(input$data_plot) && input$data_plot %in% c("Data", "Boxplot CD4", "Results", "Coefficients' Plot")) {
             includeMarkdown("./md/s63_code_CompleteData.Rmd")
         } else if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
-                   && naf(input$imp_choice) &&input$imp_choice == "LOCF") {
+                   && naf(input$imp_choice) &&input$imp_choice == "Complete Cases"
+                   && naf(input$data_plot) && input$data_plot %in% c("Data", "Boxplot CD4", "Results", "Coefficients' Plot")) {
+            includeMarkdown("./md/s63_code_cc.Rmd")
+        } else if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
+                   && naf(input$imp_choice) &&input$imp_choice == "LOCF"
+                   && naf(input$data_plot) && input$data_plot %in% c("Data", "Boxplot CD4", "Results", "Coefficients' Plot")) {
             includeMarkdown("./md/s63_code_locf.Rmd")
         } else if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
-                   && naf(input$imp_choice) &&input$imp_choice == "Mean Imputation") {
+                   && naf(input$imp_choice) &&input$imp_choice == "Mean Imputation"
+                   && naf(input$data_plot) && input$data_plot %in% c("Data", "Boxplot CD4", "Results", "Coefficients' Plot")) {
             includeMarkdown("./md/s63_code_meanImp.Rmd")
         } else if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
-                 && naf(input$imp_choice) &&input$imp_choice == "Analysis") {
+                   && naf(input$imp_choice) &&input$imp_choice == "Analysis"
+                   && naf(input$data_plot) && input$data_plot %in% c("Data", "Results")) {
             includeMarkdown("./md/s63_code_analysis.Rmd")
+        } else if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
+                   && naf(input$imp_choice) &&input$imp_choice == "Analysis"
+                   && naf(input$data_plot) && input$data_plot == "Boxplot CD4") {
+            includeMarkdown("./md/s63_code_boxplot.Rmd")
+        } else if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
+                   && naf(input$imp_choice) &&input$imp_choice == "Analysis"
+                   && naf(input$data_plot) && input$data_plot == "Coefficients' Plot") {
+            includeMarkdown("./md/s63_code_coefplot.Rmd")
         }
     })
     
@@ -1567,6 +1583,25 @@ shinyServer(function(input, output) {
             }))
             row.names(aids_missings) <- seq_len(nrow(aids_missings))
             aids_missings
+        } else if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
+                   && naf(input$imp_choice) &&input$imp_choice == "Complete Cases"
+                   && naf(input$data_plot) && input$data_plot == "Data") {
+            aids_missings <- aids[c('patient', 'CD4', 'obstime', 'AZT', 'prevOI')]
+            planned_visits <- c(0, 2, 6, 12, 18)
+            data_patient <- split(aids_missings, aids_missings$patient)
+            aids_missings <- do.call(rbind, lapply(data_patient, function (d) {
+                out <- d[rep(1, length(planned_visits)), ]
+                out$CD4 <- rep(NA, nrow(out))
+                out$CD4[match(d$obstime, planned_visits)] <- d$CD4
+                out$obstime <- planned_visits
+                out
+            }))
+            row.names(aids_missings) <- seq_len(nrow(aids_missings))
+            length.noNA <- function (x) sum(!is.na(x))
+            index <- with(aids_missings, ave(CD4, patient, FUN = length.noNA))
+            aids_missings$CD4cc <- aids_missings$CD4
+            aids_missings$CD4cc[index < 5] <- NA
+            aids_missings[c('patient', 'CD4', 'CD4cc', 'obstime', 'AZT', 'prevOI')]
         } else if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
                    && naf(input$imp_choice) &&input$imp_choice == "LOCF"
                    && naf(input$data_plot) && input$data_plot == "Data") {
@@ -1625,6 +1660,10 @@ shinyServer(function(input, output) {
                 out
             }))
             row.names(aids_missings) <- seq_len(nrow(aids_missings))
+            length.noNA <- function (x) sum(!is.na(x))
+            index <- with(aids_missings, ave(CD4, patient, FUN = length.noNA))
+            aids_missings$CD4cc <- aids_missings$CD4
+            aids_missings$CD4cc[index < 5] <- NA
             locf <- function (x) {
                 na.ind <- is.na(x)
                 noNA_x <- x[!na.ind]
@@ -1639,7 +1678,7 @@ shinyServer(function(input, output) {
                 x
             }
             aids_missings$CD4mean_imp <- with(aids_missings, ave(CD4, patient, FUN = mean_imp))
-            aids_missings[c('patient', 'CD4', 'CD4locf', 'CD4mean_imp', 'obstime', 
+            aids_missings[c('patient', 'CD4', 'CD4cc', 'CD4locf', 'CD4mean_imp', 'obstime', 
                             'AZT', 'prevOI')]
         }
     })
@@ -1658,6 +1697,11 @@ shinyServer(function(input, output) {
                 out
             }))
             row.names(aids_missings) <- seq_len(nrow(aids_missings))
+            ##############
+            length.noNA <- function (x) sum(!is.na(x))
+            index <- with(aids_missings, ave(CD4, patient, FUN = length.noNA))
+            aids_missings$CD4cc <- aids_missings$CD4
+            aids_missings$CD4cc[index < 5] <- NA
             ##############
             locf <- function (x) {
                 na.ind <- is.na(x)
@@ -1683,20 +1727,27 @@ shinyServer(function(input, output) {
             }
             if (!exists("fm_s63_aids2")) {
                 withProgress({
-                    fm_s63_aids2 <<- lme(CD4locf ~ obstime * (AZT + prevOI), data = aids_missings,
-                                         random = ~ obstime | patient)
+                    fm_s63_aids2 <<- lme(CD4cc ~ obstime * (AZT + prevOI), data = aids_missings,
+                                         random = ~ obstime | patient, na.action = na.exclude)
                 }, message = 'Fitting the model...')
             }
             if (!exists("fm_s63_aids3")) {
                 withProgress({
-                    fm_s63_aids3 <<- lme(CD4mean_imp ~ obstime * (AZT + prevOI), data = aids_missings,
+                    fm_s63_aids3 <<- lme(CD4locf ~ obstime * (AZT + prevOI), data = aids_missings,
+                                         random = ~ obstime | patient)
+                }, message = 'Fitting the model...')
+            }
+            if (!exists("fm_s63_aids4")) {
+                withProgress({
+                    fm_s63_aids4 <<- lme(CD4mean_imp ~ obstime * (AZT + prevOI), data = aids_missings,
                                          random = ~ obstime | patient, control = lmeControl(opt = "optim"))
                 }, message = 'Fitting the model...')
             }
             htmlPrint2("# fixed effects from the three models",
                        cbind("Available Cases" = fixef(fm_s63_aids1),
-                             "LOCF" = fixef(fm_s63_aids2),
-                             "Mean Imputation" = fixef(fm_s63_aids3)))
+                             "Complete Cases" = fixef(fm_s63_aids2),
+                             "LOCF" = fixef(fm_s63_aids3),
+                             "Mean Imputation" = fixef(fm_s63_aids4)))
         }
     })
     
@@ -2202,6 +2253,12 @@ shinyServer(function(input, output) {
             }))
             row.names(aids_missings) <- seq_len(nrow(aids_missings))
             ##############
+            length.noNA <- function (x) sum(!is.na(x))
+            index <- with(aids_missings, ave(CD4, patient, FUN = length.noNA))
+            # 5 measurements to NA in order to exclude them in the analysis
+            aids_missings$CD4cc <- aids_missings$CD4
+            aids_missings$CD4cc[index < 5] <- NA
+            ##############
             locf <- function (x) {
                 na.ind <- is.na(x)
                 noNA_x <- x[!na.ind]
@@ -2220,6 +2277,7 @@ shinyServer(function(input, output) {
             ##############
             ll <- with(aids_missings, list(
                 "Available Cases" = CD4,
+                "Complete Cases" = CD4cc,
                 "LOCF" = CD4locf,
                 "Mean Imputation" = CD4mean_imp
             ))
@@ -2242,6 +2300,12 @@ shinyServer(function(input, output) {
             }))
             row.names(aids_missings) <- seq_len(nrow(aids_missings))
             ##############
+            length.noNA <- function (x) sum(!is.na(x))
+            index <- with(aids_missings, ave(CD4, patient, FUN = length.noNA))
+            # 5 measurements to NA in order to exclude them in the analysis
+            aids_missings$CD4cc <- aids_missings$CD4
+            aids_missings$CD4cc[index < 5] <- NA
+            ##############
             locf <- function (x) {
                 na.ind <- is.na(x)
                 noNA_x <- x[!na.ind]
@@ -2261,19 +2325,25 @@ shinyServer(function(input, output) {
             if (!exists("fm_s63_aids1")) {
                 withProgress({
                     fm_s63_aids1 <<- lme(CD4 ~ obstime * (AZT + prevOI), data = aids_missings,
-                                random = ~ obstime | patient, na.action = na.exclude)
+                                         random = ~ obstime | patient, na.action = na.exclude)
                 }, message = 'Fitting the model...')
             }
             if (!exists("fm_s63_aids2")) {
                 withProgress({
-                    fm_s63_aids2 <<- lme(CD4locf ~ obstime * (AZT + prevOI), data = aids_missings,
-                                random = ~ obstime | patient)
+                    fm_s63_aids2 <<- lme(CD4cc ~ obstime * (AZT + prevOI), data = aids_missings,
+                                         random = ~ obstime | patient, na.action = na.exclude)
                 }, message = 'Fitting the model...')
             }
             if (!exists("fm_s63_aids3")) {
                 withProgress({
-                    fm_s63_aids3 <<- lme(CD4mean_imp ~ obstime * (AZT + prevOI), data = aids_missings,
-                                random = ~ obstime | patient, control = lmeControl(opt = "optim"))
+                    fm_s63_aids3 <<- lme(CD4locf ~ obstime * (AZT + prevOI), data = aids_missings,
+                                         random = ~ obstime | patient)
+                }, message = 'Fitting the model...')
+            }
+            if (!exists("fm_s63_aids4")) {
+                withProgress({
+                    fm_s63_aids4 <<- lme(CD4mean_imp ~ obstime * (AZT + prevOI), data = aids_missings,
+                                         random = ~ obstime | patient, control = lmeControl(opt = "optim"))
                 }, message = 'Fitting the model...')
             }
             ##############
@@ -2292,8 +2362,8 @@ shinyServer(function(input, output) {
                              col = "grey", lty = 2, lwd = 1.5)
                 panel.arrows(lx, y, ux, y,
                              length = 0.1, unit = "native",
-                             angle = 90, code = 3, lwd = 4, col = "blue")
-                panel.xyplot(x, y, pch = pch, col = 2, cex = 1.6, ...)
+                             angle = 90, code = 3, lwd = 3, col = "blue")
+                panel.xyplot(x, y, pch = pch, col = 2, cex = 1.5, ...)
             }
             f <- function (model) {
                 ints <- intervals(model)
@@ -2301,7 +2371,8 @@ shinyServer(function(input, output) {
             }
             mat <- rbind(data.matrix(do.call(rbind, f(fm_s63_aids1))), 
                          data.matrix(do.call(rbind, f(fm_s63_aids2))),
-                         data.matrix(do.call(rbind, f(fm_s63_aids3))))
+                         data.matrix(do.call(rbind, f(fm_s63_aids3))),
+                         data.matrix(do.call(rbind, f(fm_s63_aids4))))
             coef.nam <- rownames(mat)
             coef.nam[coef.nam == 'sd((Intercept))'] <- 'sd(b0)'
             coef.nam[coef.nam == 'sd(obstime)'] <- 'sd(b1)'
@@ -2309,11 +2380,12 @@ shinyServer(function(input, output) {
             rownames(mat) <- NULL
             dat <- as.data.frame(mat)
             dat$coef.nam <- factor(coef.nam, levels = unique(coef.nam))
-            dat$model <- gl(3, nrow(mat)/3, labels = c('Available Cases', 'LOCF', 'Mean Imputation'))
+            dat$model <- gl(4, nrow(mat)/4, labels = c('Available Cases', 'Complete Cases', 
+                                                       'LOCF', 'Mean Imputation'))
             
             print(dotplot(model ~  est. | coef.nam, lx = dat$lower, ux = dat$upper, data = dat, xlab = "",
                     prepanel = prepanel.ci, panel = panel.ci, as.table = TRUE,
-                    par.settings = list(fontsize = list(text = 15)),
+                    par.settings = list(fontsize = list(text = 14)),
                     scales = list(x = list(relation = "free"))))
         }
     })

@@ -1,0 +1,15 @@
+```{r}
+# the following piece of code assumes that the data set with the 
+# missing CD4 cell counts has been created
+
+# find which patients have all five measurements
+length.noNA <- function (x) sum(!is.na(x))
+index <- with(aids_missings, ave(CD4, patient, FUN = length.noNA))
+
+# we set the CD4 cell counts of all patient with less than
+# 5 measurements to NA in order to exclude them in the analysis
+aids_missings$CD4cc <- aids_missings$CD4
+aids_missings$CD4cc[index < 5] <- NA
+
+aids_missings
+```

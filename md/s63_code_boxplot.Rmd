@@ -1,0 +1,52 @@
+```{r}
+# Create the data set that every patient is supposed to have
+# 5 measurements
+aids_missings <- aids[c('patient', 'CD4', 'obstime', 'AZT', 'prevOI')]
+planned_visits <- c(0, 2, 6, 12, 18)
+data_patient <- split(aids_missings, aids_missings$patient)
+aids_missings <- do.call(rbind, lapply(data_patient, function (d) {
+    out <- d[rep(1, length(planned_visits)), ]
+    out$CD4 <- rep(NA, nrow(out))
+    out$CD4[match(d$obstime, planned_visits)] <- d$CD4
+    out$obstime <- planned_visits
+    out
+}))
+row.names(aids_missings) <- seq_len(nrow(aids_missings))
+
+# Complete Cases: Keep only patients who have all 
+# 5 measurements
+length.noNA <- function (x) sum(!is.na(x))
+index <- with(aids_missings, ave(CD4, patient, FUN = length.noNA))
+aids_missings$CD4cc <- aids_missings$CD4
+aids_missings$CD4cc[index < 5] <- NA
+
+# LOCF: Use the last available value to fill in missing data
+locf <- function (x) {
+    na.ind <- is.na(x)
+    noNA_x <- x[!na.ind]
+    idx <- cumsum(!na.ind)
+    noNA_x[idx]
+}
+aids_missings$CD4locf <- with(aids_missings, ave(CD4, patient, FUN = locf))
+
+# Mean Imputation: Use the mean per time point to fill in missing data
+means <- with(aids_missings, tapply(CD4, obstime, mean, na.rm = TRUE))
+mean_imp <- function (x) {
+    na.ind <- is.na(x)
+    x[na.ind] <- means[na.ind]
+    x
+}
+aids_missings$CD4mean_imp <- with(aids_missings, ave(CD4, patient, FUN = mean_imp))
+
+# we collect all versions of CD4 cell counts in a list
+ll <- with(aids_missings, list(
+    "Available Cases" = CD4,
+    "Complete Cases" = CD4cc,
+    "LOCF" = CD4locf,
+    "Mean Imputation" = CD4mean_imp
+))
+
+# we produce the boxplot
+boxplot(ll, varwidth = TRUE, col = "lightgrey", 
+        ylab = "square root CD4 cell count")
+```
