@@ -5,7 +5,7 @@ shinyServer(function(input, output) {
             chs <- switch(input$chapter,
                 "Chapter 1" = paste("Section", c("1.1")),
                 "Chapter 2" = paste("Section", c("2.2", "2.4", "2.7", "2.9", "2.11")),
-                "Chapter 3" = paste("Section", c("3.2", "3.3", "3.6*", "3.7", "3.8*", "3.10", "3.11")),
+                "Chapter 3" = paste("Section", c("3.2", "3.3", "3.4", "3.6*", "3.7", "3.8*", "3.10", "3.11")),
                 "Chapter 4" = paste("Section", c("4.1", "4.3", "4.5", "4.6")),
                 "Chapter 6" = paste("Section", c("6.3")),
                 "Practicals" = paste("Practical", 1:5)
@@ -850,6 +850,27 @@ shinyServer(function(input, output) {
         if(input$chapter == "Chapter 3" && input$section == "Section 3.3" 
            && naf(input$reStr) && input$reStr == "intercepts, slopes & slopes^2") {
             includeHTML("./html/white_space_long.Rhtml")
+        }
+    })
+    
+    ######################################################################################
+    ######################################################################################
+    
+    ###############
+    # Section 3.4 #
+    ###############
+    
+    output$s34_choice <- renderUI({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.4") {
+            fluidRow(column(12, checkboxInput("s34_data", "Data", TRUE),
+                            checkboxInput("s34_marg", "Marginal Predictions"),
+                            checkboxInput("s34_subj", "Subject-specific Predictions")))
+        }
+    })
+    
+    output$s34_code_lme <- renderText({
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.4") {
+                includeMarkdown("./md/s34_code_lme_preds.Rmd")
         }
     })
     
@@ -2060,8 +2081,10 @@ shinyServer(function(input, output) {
             pbc2$basePro <- with(pbc2, ave(prothrombin, id, FUN = function (x) x[1]))
             if (!exists("fm_s32_pbc")) {
                 withProgress({
-                    fm_s32_pbc <<- lme(log(serBilir) ~ ns(year, 2) * sex + (age + basePro) * sex, 
+                    fm <- lme(log(serBilir) ~ ns(year, 2) * sex + (age + basePro) * sex, 
                                    data = pbc2, random = ~ ns(year, 2) | id)
+                    fm_s32_pbc <<- fm
+                    fm_s34_pbc <<- fm
                 }, message = "Fitting the model...")
             }
             
@@ -2131,6 +2154,88 @@ shinyServer(function(input, output) {
             col4 <- colorRampPalette(c("#7F0000","red","#FF7F00","yellow","#7FFF7F", 
                                        "cyan", "#007FFF", "blue","#00007F"))
             corrplot.mixed(cov2cor(testRES(input$reStr, params)), col = rev(col4(200)))
+        }
+        
+        if (input$chapter == "Chapter 3" && input$section == "Section 3.4") {
+            pbc2$basePro <- with(pbc2, ave(prothrombin, id, FUN = function (x) x[1]))
+            if (!exists("fm_s34_pbc")) {
+                withProgress({
+                    fm <- lme(log(serBilir) ~ ns(year, 2) * sex + (age + basePro) * sex, 
+                              data = pbc2, random = ~ ns(year, 2) | id)
+                    fm_s32_pbc <<- fm
+                    fm_s34_pbc <<- fm
+                }, message = "Fitting the model...")
+            }
+            pbc2$fitted_marg <- fitted(fm_s34_pbc, level = 0)
+            pbc2$fitted_subj <- fitted(fm_s34_pbc, level = 1)
+            ids <- c(38, 39, 51, 68, 70, 82, 90, 93, 134, 148, 
+                     173, 200, 216, 242, 269, 290)
+            
+            if (input$s34_data && !input$s34_marg && !input$s34_subj) {
+                print(xyplot(log(serBilir) ~ year | id, data = pbc2, type = "p",
+                             subset = id %in% ids, layout = c(4, 4), as.table = TRUE, 
+                             xlab = "Time (years)", ylab = "log serum Bilirubin"))
+            }
+            if (input$s34_data && input$s34_marg && !input$s34_subj) {
+                print(xyplot(log(serBilir) + fitted_marg + fitted_subj ~ year | id, data = pbc2,
+                             panel = function (x, y, ...) {
+                                 x.mat <- matrix(x, ncol = 3)
+                                 y.mat <- matrix(y, ncol = 3)
+                                 panel.xyplot(x.mat[, 1], y.mat[, 1], type = "p", col = "black")
+                                 panel.xyplot(x.mat[, 2], y.mat[, 2], type = "l", lwd = 2, col = "red")
+                             }, subset = id %in% ids, layout = c(4, 4), as.table = TRUE, 
+                             xlab = "Time (years)", ylab = "log serum Bilirubin"))
+            }
+            if (input$s34_data && !input$s34_marg && input$s34_subj) {
+                print(xyplot(log(serBilir) + fitted_marg + fitted_subj ~ year | id, data = pbc2,
+                             panel = function (x, y, ...) {
+                                 x.mat <- matrix(x, ncol = 3)
+                                 y.mat <- matrix(y, ncol = 3)
+                                 panel.xyplot(x.mat[, 1], y.mat[, 1], type = "p", col = "black")
+                                 panel.xyplot(x.mat[, 3], y.mat[, 3], type = "l", lwd = 2, col = "blue")
+                             }, subset = id %in% ids, layout = c(4, 4), as.table = TRUE, 
+                             xlab = "Time (years)", ylab = "log serum Bilirubin"))
+            }
+            if (input$s34_data && input$s34_marg && input$s34_subj) {
+                print(xyplot(log(serBilir) + fitted_marg + fitted_subj ~ year | id, data = pbc2,
+                             panel = function (x, y, ...) {
+                                 x.mat <- matrix(x, ncol = 3)
+                                 y.mat <- matrix(y, ncol = 3)
+                                 panel.xyplot(x.mat[, 1], y.mat[, 1], type = "p", col = "black")
+                                 panel.xyplot(x.mat[, 2], y.mat[, 2], type = "l", lwd = 2, col = "red")
+                                 panel.xyplot(x.mat[, 3], y.mat[, 3], type = "l", lwd = 2, col = "blue")
+                             }, subset = id %in% ids, layout = c(4, 4), as.table = TRUE, 
+                             xlab = "Time (years)", ylab = "log serum Bilirubin"))
+            }
+            if (!input$s34_data && input$s34_marg && input$s34_subj) {
+                print(xyplot(log(serBilir) + fitted_marg + fitted_subj ~ year | id, data = pbc2,
+                             panel = function (x, y, ...) {
+                                 x.mat <- matrix(x, ncol = 3)
+                                 y.mat <- matrix(y, ncol = 3)
+                                 panel.xyplot(x.mat[, 2], y.mat[, 2], type = "l", lwd = 2, col = "red")
+                                 panel.xyplot(x.mat[, 3], y.mat[, 3], type = "l", lwd = 2, col = "blue")
+                             }, subset = id %in% ids, layout = c(4, 4), as.table = TRUE, 
+                             xlab = "Time (years)", ylab = "log serum Bilirubin"))
+            }
+            if (!input$s34_data && !input$s34_marg && input$s34_subj) {
+                print(xyplot(log(serBilir) + fitted_marg + fitted_subj ~ year | id, data = pbc2,
+                             panel = function (x, y, ...) {
+                                 x.mat <- matrix(x, ncol = 3)
+                                 y.mat <- matrix(y, ncol = 3)
+                                 panel.xyplot(x.mat[, 3], y.mat[, 3], type = "l", lwd = 2, col = "blue")
+                             }, subset = id %in% ids, layout = c(4, 4), as.table = TRUE, 
+                             xlab = "Time (years)", ylab = "log serum Bilirubin"))
+            }
+            if (!input$s34_data && input$s34_marg && !input$s34_subj) {
+                print(xyplot(log(serBilir) + fitted_marg + fitted_subj ~ year | id, data = pbc2,
+                             panel = function (x, y, ...) {
+                                 x.mat <- matrix(x, ncol = 3)
+                                 y.mat <- matrix(y, ncol = 3)
+                                 panel.xyplot(x.mat[, 2], y.mat[, 2], type = "l", lwd = 2, col = "red")
+                             }, subset = id %in% ids, layout = c(4, 4), as.table = TRUE, 
+                             xlab = "Time (years)", ylab = "log serum Bilirubin"))
+            }
+            
         }
         
         if (input$chapter == "Chapter 3" && input$section == "Section 3.11") {
