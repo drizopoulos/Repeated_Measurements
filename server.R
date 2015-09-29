@@ -1551,7 +1551,8 @@ shinyServer(function(input, output) {
             fluidRow(column(6, radioButtons("imp_choice", "Syntax for:", 
                                             c("Create Data", "Complete Cases", "LOCF", 
                                               "Mean Imputation", "Analysis"))),
-                     column(6, radioButtons("data_plot", "Show:", c("Data", "Boxplot CD4", 
+                     column(6, radioButtons("data_plot", "Show:", c("Data", "Dropout Patterns",
+                                                                    "Boxplot CD4", 
                                                                     "Results", 
                                                                     "Coefficients' Plot"))))
     })
@@ -1559,24 +1560,32 @@ shinyServer(function(input, output) {
     output$s63_code <- renderText({
         if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
             && naf(input$imp_choice) &&input$imp_choice == "Create Data"
-            && naf(input$data_plot) && input$data_plot %in% c("Data", "Boxplot CD4", "Results", "Coefficients' Plot")) {
+            && naf(input$data_plot) && input$data_plot %in% c("Data", "Dropout Patterns", 
+                                                              "Boxplot CD4", "Results", "Coefficients' Plot")) {
             includeMarkdown("./md/s63_code_CompleteData.Rmd")
         } else if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
                    && naf(input$imp_choice) &&input$imp_choice == "Complete Cases"
-                   && naf(input$data_plot) && input$data_plot %in% c("Data", "Boxplot CD4", "Results", "Coefficients' Plot")) {
+                   && naf(input$data_plot) && input$data_plot %in% c("Data", "Dropout Patterns", 
+                                                                     "Boxplot CD4", "Results", "Coefficients' Plot")) {
             includeMarkdown("./md/s63_code_cc.Rmd")
         } else if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
                    && naf(input$imp_choice) &&input$imp_choice == "LOCF"
-                   && naf(input$data_plot) && input$data_plot %in% c("Data", "Boxplot CD4", "Results", "Coefficients' Plot")) {
+                   && naf(input$data_plot) && input$data_plot %in% c("Data", "Dropout Patterns", 
+                                                                     "Boxplot CD4", "Results", "Coefficients' Plot")) {
             includeMarkdown("./md/s63_code_locf.Rmd")
         } else if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
                    && naf(input$imp_choice) &&input$imp_choice == "Mean Imputation"
-                   && naf(input$data_plot) && input$data_plot %in% c("Data", "Boxplot CD4", "Results", "Coefficients' Plot")) {
+                   && naf(input$data_plot) && input$data_plot %in% c("Data", "Dropout Patterns",
+                                                                     "Boxplot CD4", "Results", "Coefficients' Plot")) {
             includeMarkdown("./md/s63_code_meanImp.Rmd")
         } else if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
                    && naf(input$imp_choice) &&input$imp_choice == "Analysis"
                    && naf(input$data_plot) && input$data_plot %in% c("Data", "Results")) {
             includeMarkdown("./md/s63_code_analysis.Rmd")
+        } else if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
+                   && naf(input$imp_choice) &&input$imp_choice == "Analysis"
+                   && naf(input$data_plot) && input$data_plot == "Dropout Patterns") {
+            includeMarkdown("./md/s63_code_patterns.Rmd")
         } else if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
                    && naf(input$imp_choice) &&input$imp_choice == "Analysis"
                    && naf(input$data_plot) && input$data_plot == "Boxplot CD4") {
@@ -2389,6 +2398,62 @@ shinyServer(function(input, output) {
             boxplot(ll, varwidth = TRUE, col = "lightgrey", 
                     ylab = "square root CD4 cell count")
         }
+
+        if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
+            && naf(input$data_plot) &&input$data_plot == "Dropout Patterns") {
+            ##############
+            aids_missings <- aids[c('patient', 'CD4', 'obstime', 'AZT', 'prevOI')]
+            planned_visits <- c(0, 2, 6, 12, 18)
+            data_patient <- split(aids_missings, aids_missings$patient)
+            aids_missings <- do.call(rbind, lapply(data_patient, function (d) {
+                out <- d[rep(1, length(planned_visits)), ]
+                out$CD4 <- rep(NA, nrow(out))
+                out$CD4[match(d$obstime, planned_visits)] <- d$CD4
+                out$obstime <- planned_visits
+                out
+            }))
+            row.names(aids_missings) <- seq_len(nrow(aids_missings))
+            ##############
+            length.noNA <- function (x) sum(!is.na(x))
+            index <- with(aids_missings, ave(CD4, patient, FUN = length.noNA))
+            # 5 measurements to NA in order to exclude them in the analysis
+            aids_missings$CD4cc <- aids_missings$CD4
+            aids_missings$CD4cc[index < 5] <- NA
+            ##############
+            locf <- function (x) {
+                na.ind <- is.na(x)
+                noNA_x <- x[!na.ind]
+                idx <- cumsum(!na.ind)
+                noNA_x[idx]
+            }
+            aids_missings$CD4locf <- with(aids_missings, ave(CD4, patient, FUN = locf))
+            ##############
+            means <- with(aids_missings, tapply(CD4, obstime, mean, na.rm = TRUE))
+            mean_imp <- function (x) {
+                na.ind <- is.na(x)
+                x[na.ind] <- means[na.ind]
+                x
+            }
+            aids_missings$CD4mean_imp <- with(aids_missings, ave(CD4, patient, FUN = mean_imp))
+            ##############
+            pattern <- function (x) max(which(!is.na(x)))
+            
+            aids_missings$dropout_pattern <- with(aids_missings, ave(CD4, patient, FUN = pattern))
+            aids_missings$dropout_pattern <- factor(aids_missings$dropout_pattern, 
+                                                    labels = c(paste("Dropout Time:", c(0, 2, 6, 12)), "Completers"))
+            
+            print(xyplot(CD4 ~ obstime | dropout_pattern, data = aids_missings, group = patient, 
+                         panel = function (x, y, ...) {
+                             if (panel.number() == 1) {
+                                 panel.bwplot(x, y, horizontal = FALSE, col = "black", box.width = 2,
+                                              pch = "|", fill = "grey")
+                             } else {
+                                 panel.xyplot(x, y, type = "l", col = "lightgrey", ...)
+                                 panel.loess(x, y, type = "l", lwd = 2, col = "red", 
+                                             span = if (panel.number() == 2) 2 else 2/3)
+                             }
+                         }, as.table = TRUE, xlab = "Time (months)",  ylab = "square root CD4 cell count"))
+        }
         
         if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
             && naf(input$data_plot) &&input$data_plot == "Coefficients' Plot") {
@@ -2466,9 +2531,9 @@ shinyServer(function(input, output) {
                 panel.abline(h = c(unique(y)), 
                              col = "grey", lty = 2, lwd = 1.5)
                 panel.arrows(lx, y, ux, y,
-                             length = 0.1, unit = "native",
-                             angle = 90, code = 3, lwd = 3, col = "blue")
-                panel.xyplot(x, y, pch = pch, col = 2, cex = 1.5, ...)
+                             length = 0.2, unit = "native",
+                             angle = 90, code = 3, lwd = 2, col = "blue")
+                panel.xyplot(x, y, pch = pch, col = 2, cex = 1.2, ...)
             }
             f <- function (model) {
                 ints <- intervals(model)

@@ -2,7 +2,7 @@
 # we extract the variables of interest from the AIDS dataset
 aids_missings <- aids[c('patient', 'CD4', 'obstime', 'AZT', 'prevOI')]
 
-# a vector witj the planned visit times
+# a vector with the planned visit times
 planned_visits <- c(0, 2, 6, 12, 18)
 
 # we split the data per patient, i.e., a list of data frames
