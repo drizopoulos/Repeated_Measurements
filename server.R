@@ -8,7 +8,7 @@ shinyServer(function(input, output) {
                 "Chapter 3" = paste("Section", c("3.2", "3.3", "3.4", "3.6*", "3.7", "3.8*", "3.10", "3.11")),
                 "Chapter 4" = paste("Section", c("4.1", "4.3", "4.5", "4.6")),
                 "Chapter 6" = paste("Section", c("6.3")),
-                "Practicals" = paste("Practical", 1:5)
+                "Practicals" = paste("Practical", 1:4)
             )
             selectInput("section", "Select section:", chs, chs[1])
         }

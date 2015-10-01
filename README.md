@@ -8,6 +8,7 @@ also some additional illustrations. The app requires [R](http://cran.r-project.o
 * [lme4](http://cran.r-project.org/package=lme4) (version >= 1.1-8)
 * [geepack](http://cran.r-project.org/package=geepack) (version >= 1.2-0)
 * [MCMCglmm](http://cran.r-project.org/package=MCMCglmm) (version >= 2.21)
+* [MASS](http://cran.r-project.org/package=MASS) (version >= 7.3-44)
 * [shiny](http://cran.r-project.org/package=shiny) (version >= 0.12.1)
 * [lattice](http://cran.r-project.org/package=lattice) (version >= 0.20-33)
 * [splines](http://cran.r-project.org/) (available within base R)
@@ -15,7 +16,7 @@ also some additional illustrations. The app requires [R](http://cran.r-project.o
 
 These packages can be installed using the following function call:
 ```r
-install.packages(c("shiny", "nlme", "lattice", "lme4", "MCMCglmm", 
+install.packages(c("shiny", "nlme", "lattice", "lme4", "MCMCglmm", "MASS",
                    "geepack", "corrplot"), dependencies = TRUE)
 ```
 and then the app can be directly invoked using the command:
@@ -33,6 +34,7 @@ library("nlme")
 library("lme4")
 library("geepack")
 library("MCMCglmm")
+library("MASS")
 library("splines")
 library("corrplot")
 ```
