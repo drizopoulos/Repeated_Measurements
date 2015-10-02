@@ -40,7 +40,11 @@ shinyUI(fluidPage(
             uiOutput("s43_Agechoice"),
             uiOutput("s45_choice"),
             uiOutput("s46_choice"),
-            uiOutput("s63_choice")
+            uiOutput("s63_choice"),
+            uiOutput("sPract_1"),
+            uiOutput("sPract_2"),
+            uiOutput("sPract_3"),
+            uiOutput("sPract_4")
         ), width = 3),
     
     mainPanel(
@@ -101,7 +105,9 @@ shinyUI(fluidPage(
                      htmlOutput('s43_code_gee'),
                      htmlOutput('s45_code_gee'),
                      htmlOutput('s46_code_gee'),
-                     htmlOutput('s63_code')
+                     htmlOutput('s63_code'),
+                     htmlOutput('sPract_motivate'),
+                     htmlOutput('sPract_code')
                      ),
             
             tabPanel("Output", 
@@ -130,6 +136,7 @@ shinyUI(fluidPage(
                      htmlOutput('s46_Routput_gee'),
                      dataTableOutput("s63_Routput_table"),
                      htmlOutput('s63_Routput'),
+                     htmlOutput('sPract_Routput'),
                      ##########################
                      plotOutput('plot')),
             
@@ -140,7 +147,8 @@ shinyUI(fluidPage(
                      htmlOutput('Chapter3_help'),
                      htmlOutput('Chapter4_help'),
                      htmlOutput('Chapter5_help'),
-                     htmlOutput('Chapter6_help')),
+                     htmlOutput('Chapter6_help'),
+                     htmlOutput('Chapter7_help')),
             
             tabPanel("Slides", htmlOutput('slides'))
         )

@@ -1785,6 +1785,89 @@ shinyServer(function(input, output) {
     ######################################################################################
     
     ##############
+    # Practicals #
+    ##############
+    
+    output$sPract_1 <- renderUI({
+        if (input$chapter == "Practicals" && input$section == "Practical 1")
+            actionButton("solutions1", "Reveal answers", "danger")
+    })
+    output$sPract_2 <- renderUI({
+        if (input$chapter == "Practicals" && input$section == "Practical 2")
+            actionButton("solutions2", "Reveal answers", "danger")
+    })
+    output$sPract_3 <- renderUI({
+        if (input$chapter == "Practicals" && input$section == "Practical 3")
+            actionButton("solutions3", "Reveal answers", "danger")
+    })
+    output$sPract_4 <- renderUI({
+        if (input$chapter == "Practicals" && input$section == "Practical 4")
+            actionButton("solutions4", "Reveal answers", "danger")
+    })
+    
+    v <- reactiveValues(Pract1 = NULL, Pract2 = NULL, Pract3 = NULL, Pract4 = NULL)
+    
+    observeEvent(input$solutions1, {
+        v$Pract1 <- includeMarkdown("./md/sPract1_code.Rmd")
+    })
+    observeEvent(input$solutions2, {
+        v$Pract2 <- includeMarkdown("./md/sPract2_code.Rmd")
+    })
+    observeEvent(input$solutions3, {
+        v$Pract3 <- includeMarkdown("./md/sPract3_code.Rmd")
+    })
+    observeEvent(input$solutions4, {
+        v$Pract4 <- includeMarkdown("./md/sPract4_code.Rmd")
+    })
+    
+    output$sPract_motivate <- renderText({
+        if (input$chapter == "Practicals" && input$section == "Practical 1" 
+            && is.null(v$Pract1)) {
+            includeHTML("./html/Practical1_motivate.Rhtml")
+        } else if (input$chapter == "Practicals" && input$section == "Practical 2"
+                   && is.null(v$Pract2)) {
+            includeHTML("./html/Practical2_motivate.Rhtml")
+        } else if (input$chapter == "Practicals" && input$section == "Practical 3"
+                   && is.null(v$Pract3)) {
+            includeHTML("./html/Practical3_motivate.Rhtml")
+        } else if (input$chapter == "Practicals" && input$section == "Practical 4"
+                   && is.null(v$Pract4)) {
+            includeHTML("./html/Practical4_motivate.Rhtml")
+        }
+    })
+
+    output$sPract_code <- renderText({
+        if (input$chapter == "Practicals" && input$section == "Practical 1") {
+            v$Pract1
+        } else if (input$chapter == "Practicals" && input$section == "Practical 2") {
+            v$Pract2
+        } else if (input$chapter == "Practicals" && input$section == "Practical 3") {
+            v$Pract3
+        } else if (input$chapter == "Practicals" && input$section == "Practical 4") {
+            v$Pract4
+        }
+    })
+    
+    output$sPract_Routput <- renderPrint({
+        if (input$chapter == "Practicals" && input$section == "Practical 1" 
+            && !is.null(v$Pract1)) {
+            htmlPrint2("#Practical 1")
+        } else if (input$chapter == "Practicals" && input$section == "Practical 2"
+                   && !is.null(v$Pract2)) {
+            htmlPrint2("#Practical 2")
+        } else if (input$chapter == "Practicals" && input$section == "Practical 3"
+                   && !is.null(v$Pract3)) {
+            htmlPrint2("#Practical 3")
+        } else if (input$chapter == "Practicals" && input$section == "Practical 4"
+                   && !is.null(v$Pract4)) {
+            htmlPrint2("#Practical 4")
+        }
+    })
+    
+    ######################################################################################
+    ######################################################################################
+    
+    ##############
     # Help Files #
     ##############
     
@@ -1811,6 +1894,21 @@ shinyServer(function(input, output) {
     output$Chapter4_help <- renderText({
         if (input$chapter == "Chapter 4")
             includeHTML("./html/Chapter4_help.Rhtml")
+    })
+
+    output$Chapter5_help <- renderText({
+        if (input$chapter == "Chapter 5")
+            includeHTML("./html/Chapter5_help.Rhtml")
+    })
+
+    output$Chapter6_help <- renderText({
+        if (input$chapter == "Chapter 6")
+            includeHTML("./html/Chapter4_help.Rhtml")
+    })
+
+    output$Chapter7_help <- renderText({
+        if (input$chapter == "Practicals")
+            includeHTML("./html/Chapter7_help.Rhtml")
     })
     
     ######################################################################################

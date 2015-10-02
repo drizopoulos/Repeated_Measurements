@@ -34,6 +34,16 @@ htmlPrint2 <- function (...) {
           out[n]))
 }
 
+actionButton <- function(inputId, label, style = "" , additionalClass = "") {
+    if (style %in% c("primary","info","success","warning","danger","inverse","link")) {
+        class.style <- paste("btn",style,sep="-")
+    } else class.style = ""
+    
+    tags$button(id=inputId, type="button", 
+                class=paste("btn action-button", class.style, additionalClass), label)
+}
+
+
 
 testCS <- function (cs, value) {
     d <- data.frame(id = rep(1, 6), time = c(0, 0.5, 1, 1.2, 5, 7.5))
