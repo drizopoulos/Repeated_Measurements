@@ -1838,12 +1838,16 @@ shinyServer(function(input, output) {
 
     output$sPract_code <- renderText({
         if (input$chapter == "Practicals" && input$section == "Practical 1") {
+            v$Pract2 <- v$Pract3 <- v$Pract4 <- NULL
             v$Pract1
         } else if (input$chapter == "Practicals" && input$section == "Practical 2") {
+            v$Pract1 <- v$Pract3 <- v$Pract4 <- NULL
             v$Pract2
         } else if (input$chapter == "Practicals" && input$section == "Practical 3") {
+            v$Pract2 <- v$Pract1 <- v$Pract4 <- NULL
             v$Pract3
         } else if (input$chapter == "Practicals" && input$section == "Practical 4") {
+            v$Pract2 <- v$Pract3 <- v$Pract1 <- NULL
             v$Pract4
         }
     })
@@ -1903,7 +1907,7 @@ shinyServer(function(input, output) {
 
     output$Chapter6_help <- renderText({
         if (input$chapter == "Chapter 6")
-            includeHTML("./html/Chapter4_help.Rhtml")
+            includeHTML("./html/Chapter6_help.Rhtml")
     })
 
     output$Chapter7_help <- renderText({

@@ -1,81 +1,49 @@
-<style>
-table, th, td {
-    border: 1px solid black;
-    border-collapse: collapse;
-}
-th, td {
-    padding: 5px;
-}
-</style>
 <h3 align="left">
     <strong>
         <span style="color:blue">Help Files for Chapter 6</span>
     </strong>
 </h3>
 <br/>
-<h4 align="left">
-    <strong>
-        <span style="color:red">geepack package</span>
-    </strong>
-</h4>
-<ul style="list-style-type:circle">
-  <li> Function <a href="https://goo.gl/1S1uix" target="_blank">geeglm()</a> fits generalized
-  estimating equations for clustered data; main arguments:
-  <ul style="list-style-type:square">
-    <li>
-        <font face="Courier New">formula</font>: a two-sided R  
-        <a href="https://goo.gl/8kHEh5" target="_blank">formula</a> specifying the response
-        variable and the terms to include in the model.
-    </li>
-    <li>
-        <font face="Courier New">family</font>: a 
-        <a href="https://goo.gl/4EicoR" target="_blank">family</a> object providign a 
-        description of the error distribution and link function to be used in the model.
-    </li>
-    <li>
-        <font face="Courier New">data</font>: a 
-        <a href="https://goo.gl/PVVYyn" target="_blank">data frame</a> that contains the 
-        aforementioned variables.
-    </li>
-    <li>
-        <font face="Courier New">id</font>: a vector which identifies the clusters. The 
-        length of <font face="Courier New">id</font> should be the same as the number of 
-        observations. Data are assumed to be sorted so that observations on a cluster are 
-        contiguous rows for all entities in the formula.
-    </li>
-    
-    <li>
-        <font face="Courier New">corstr</font>: character string indicating the assumed 
-        working correlation matrix; options are <font face="Courier New">"independence"</font>,
-        <font face="Courier New">"exchangeable"</font>, <font face="Courier New">"ar1"</font>,
-        <font face="Courier New">"unstructured"</font>, and <font face="Courier New">"userdefined"</font>.
-    </li>
-  </ul>
-  </li>
-  
-  <br/>
-  
-  <li>Function <a href="https://goo.gl/1S1uix" target="_blank">anova.geeglm()</a> can be used 
-  to Wald test in GEE models. When a single marginal model is provided to this function it 
-  computes sequential Wald tests. When two or more models fitted by 
-  <a href="https://goo.gl/1S1uix" target="_blank">geeglm()</a> 
-    are provided to this function it computes the corresponding Wald tests between the
-    two models.
-  </li>
-  <br/>
-</ul>
+<p>
+We have not used any particular package in the chapter other than the packages we have 
+seen in the previous chapters.
+</p>
+<p>
+For completeness the following list gives some useful R packages and websites for the analysis
+of incomplete data.
+</p>
 <br/>
-<br/>
-<h3 align="left">
-  <strong> Other useful functions and material</strong>
-</h3>
 <ul style="list-style-type:circle">
 <li>
-  <a href="https://goo.gl/u69ACN" target="_blank">summary.geeglm()</a> summarizes the fitted 
-  GEE model, including the estimated coefficients with corresponding standard errors and 
-  p-values, and the estimated parameters for the assumed working correlation structure.
+  <a href="http://www.missingdata.org.uk/" target="_blank">www.missingdata.org.uk</a> is
+  a website with useful resources on missing data and multiple imputation.
  </li>
  <li>
-  <a href="http://goo.gl/KUeG1Q" target="_blank">formulas in R</a>.
+  <a href="http://www.multiple-imputation.com" target="_blank">multiple-imputation.com</a>
+  another useful website with resources about multiple imputation.
+ </li>
+  <li>
+  <a href="http://cran.r-project.org/package=mice" target="_blank">mice</a> the basic R 
+  package for multiple imputation with chained equations.
+ </li>
+  <li>
+  <a href="http://cran.r-project.org/package=smcfcs" target="_blank">smcfcs</a> is an R 
+  package for multiple imputation based on a more general framework than the 
+  <a href="http://cran.r-project.org/package=mice" target="_blank">mice</a> package. This
+  would be better suited when interactions or nonlinear effects are of interest.
+ </li>
+  <li>
+  <a href="http://cran.r-project.org/package=jomo" target="_blank">jomo</a> is an R 
+  package for multilevel joint modelling multiple imputation that can also handle 
+  categorical data.
+ </li>
+  <li>
+  <a href="http://cran.r-project.org/package=pan" target="_blank">pan</a> is an R 
+  package for multiple imputation for multivariate panel or clustered data.
+ </li>
+  <li>
+  <a href="http://cran.r-project.org/package=mitools" target="_blank">mitools</a> is an R 
+  package with tools to perform analyses and combine results from multiple-imputation 
+  datasets.
  </li>
 </ul>
