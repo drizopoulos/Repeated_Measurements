@@ -1855,16 +1855,16 @@ shinyServer(function(input, output) {
     output$sPract_Routput <- renderPrint({
         if (input$chapter == "Practicals" && input$section == "Practical 1" 
             && !is.null(v$Pract1)) {
-            htmlPrint2("#Practical 1")
+            includeHTML("./practicals/sPract1_out.html")
         } else if (input$chapter == "Practicals" && input$section == "Practical 2"
                    && !is.null(v$Pract2)) {
-            htmlPrint2("#Practical 2")
+            includeHTML("./practicals/sPract1_out")
         } else if (input$chapter == "Practicals" && input$section == "Practical 3"
                    && !is.null(v$Pract3)) {
-            htmlPrint2("#Practical 3")
+            includeHTML("./practicals/sPract1_out")
         } else if (input$chapter == "Practicals" && input$section == "Practical 4"
                    && !is.null(v$Pract4)) {
-            htmlPrint2("#Practical 4")
+            includeHTML("./practicals/sPract1_out")
         }
     })
     

@@ -1,0 +1,51 @@
+# Practical 1: Marginal Models for Continuous Data
+We start by loading the packages we will need for this practical and the data from 
+[GitHub](https://github.com/drizopoulos/Repeated_Measurements). This is achieved with the
+following commands:
+```{r}
+# packages
+library("lattice")
+library("nlme")
+library("splines")
+
+# data
+con <- url("https://raw.github.com/drizopoulos/Repeated_Measurements/master/Data.RData")
+load(con)
+close(con)
+```
+
+## Question 1
+We 
+
+```{r}
+xyplot(prothrombin ~ year | drug, group = id, data = pbc2, 
+       panel = function (x, y, ...) {
+           panel.xyplot(x, y, type = "l", col = 1, ...)
+           panel.loess(x, y, col = 2, lwd = 2)
+       }, xlab = "Time (years)", ylab = "Prothrombin Time (sec)")
+```
+
+```{r}
+xyplot(prothrombin ~ year | sex, group = id, data = pbc2, 
+       panel = function (x, y, ...) {
+           panel.xyplot(x, y, type = "l", col = 1, ...)
+           panel.loess(x, y, col = 2, lwd = 2)
+       }, xlab = "Time (years)", ylab = "Prothrombin Time (sec)")
+```
+
+```{r}
+# 16 sample patients
+ids <- c(102, 36, 288, 193, 177, 202, 70, 301, 88, 104, 
+         43, 209, 28, 184, 176, 157)
+
+xyplot(prothrombin ~ year | id,
+       panel = function (x, y, ...) {
+           panel.xyplot(x, y, type = "l", col = 1, ...)
+           if (length(unique(x)) > 5)
+               panel.loess(x, y, col = 2, lwd = 2)
+       }, data = pbc2, subset = id %in% ids, layout = c(4, 4), as.table = TRUE, 
+       xlab = "Time (years)", ylab = "Prothrombin Time (sec)")
+```
+
+## Question 2
+

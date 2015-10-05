@@ -3,7 +3,83 @@
 # Practical 1: Marginal Models for Continuous Data #
 ####################################################
 
+# First we load the package we need
+library("lattice")
+library("nlme")
+library("splines")
+
+# We load the data from GitHub
+con <- url("https://raw.github.com/drizopoulos/Repeated_Measurements/master/Data.RData")
+load(con)
+close(con)
+
+######
+# Q1 #
+######
+
+xyplot(prothrombin ~ year | drug, group = id, data = pbc2, 
+       panel = function (x, y, ...) {
+           panel.xyplot(x, y, type = "l", col = 1, ...)
+           panel.loess(x, y, col = 2, lwd = 2)
+       }, xlab = "Time (years)", ylab = "Prothrombin Time (sec)")
 
 
+xyplot(prothrombin ~ year | sex, group = id, data = pbc2, 
+       panel = function (x, y, ...) {
+           panel.xyplot(x, y, type = "l", col = 1, ...)
+           panel.loess(x, y, col = 2, lwd = 2)
+       }, xlab = "Time (years)", ylab = "Prothrombin Time (sec)")
+
+
+# 16 sample patients
+ids <- c(102, 36, 288, 193, 177, 202, 70, 301, 88, 104, 
+         43, 209, 28, 184, 176, 157)
+
+xyplot(prothrombin ~ year | id,
+       panel = function (x, y, ...) {
+           panel.xyplot(x, y, type = "l", col = 1, ...)
+           if (length(unique(x)) > 5)
+               panel.loess(x, y, col = 2, lwd = 2)
+       }, data = pbc2, subset = id %in% ids, layout = c(4, 4), as.table = TRUE, 
+       xlab = "Time (years)", ylab = "Prothrombin Time (sec)")
+
+
+######
+# Q2 #
+######
+
+fm_1 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2)
+
+######
+# Q3 #
+######
+
+fm_2 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
+            correlation = corCompSymm(form = ~ year | id))
+
+fm_3 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
+            correlation = corCAR1(form = ~ year | id))
+
+fm_4 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
+            correlation = corExp(form = ~ year | id))
+
+fm_5 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
+            correlation = corGaus(form = ~ year | id))
+
+fm_6 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
+            correlation = corCompSymm(form = ~ year | id),
+            weights = varExp(form = ~ year))
+
+fm_7 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
+            correlation = corCAR1(form = ~ year | id),
+            weights = varExp(form = ~ year))
+
+fm_8 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
+            correlation = corExp(form = ~ year | id),
+            weights = varExp(form = ~ year))
+
+fm_9 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
+            correlation = corGaus(form = ~ year | id),
+            weights = varExp(form = ~ year))
 ```
 
