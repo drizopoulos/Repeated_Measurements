@@ -35,8 +35,8 @@ xyplot(prothrombin ~ year | sex, group = id, data = pbc2,
 
 ```{r}
 # 16 sample patients
-ids <- c(102, 36, 288, 193, 177, 202, 70, 301, 88, 104, 
-         43, 209, 28, 184, 176, 157)
+ids <- c(133, 36, 180, 11, 168, 116, 70, 58, 82, 104, 
+         43, 21, 101, 210, 176, 157)
 
 xyplot(prothrombin ~ year | id,
        panel = function (x, y, ...) {
@@ -48,4 +48,63 @@ xyplot(prothrombin ~ year | id,
 ```
 
 ## Question 2
+```{r}
+fm_1 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2)
 
+summary(fm_1)
+```
+
+## Question 3
+The following call to `gls()` fit the
+```{r}
+fm_2 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
+            correlation = corCompSymm(form = ~ year | id))
+
+fm_3 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
+            correlation = corCAR1(form = ~ year | id))
+
+fm_4 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
+            correlation = corExp(form = ~ year | id))
+
+fm_5 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
+            correlation = corGaus(form = ~ year | id))
+```
+
+```{r}
+fm_6 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
+            correlation = corCompSymm(form = ~ year | id),
+            weights = varExp(form = ~ year))
+
+fm_7 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
+            correlation = corCAR1(form = ~ year | id),
+            weights = varExp(form = ~ year))
+
+fm_8 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
+            correlation = corExp(form = ~ year | id),
+            weights = varExp(form = ~ year))
+
+fm_9 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
+            correlation = corGaus(form = ~ year | id),
+            weights = varExp(form = ~ year))
+```
+
+## Question 4
+
+```{r}
+anova(fm_1, fm_2)
+anova(fm_1, fm_3)
+anova(fm_1, fm_4)
+anova(fm_1, fm_5)
+```
+
+```{r}
+anova(fm_2, fm_3, fm_4, fm_5)
+```
+
+```{r}
+anova(fm_6, fm_7, fm_8, fm_9)
+```
+
+```{r}
+anova(fm_2, fm_6)
+```

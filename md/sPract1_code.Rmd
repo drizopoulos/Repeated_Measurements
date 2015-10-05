@@ -50,10 +50,12 @@ xyplot(prothrombin ~ year | id,
 
 fm_1 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2)
 
+
 ######
 # Q3 #
 ######
 
+# correlation structures only
 fm_2 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
             correlation = corCompSymm(form = ~ year | id))
 
@@ -66,6 +68,7 @@ fm_4 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2,
 fm_5 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
             correlation = corGaus(form = ~ year | id))
 
+# correlation structures + heteroscedastic errors
 fm_6 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
             correlation = corCompSymm(form = ~ year | id),
             weights = varExp(form = ~ year))
@@ -81,5 +84,28 @@ fm_8 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2,
 fm_9 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
             correlation = corGaus(form = ~ year | id),
             weights = varExp(form = ~ year))
+
+
+######
+# Q4 #
+######
+
+# the first model is nested in all the other models
+# because it assumes that the error terms are uncorrelated 
+# and homoscedastic. Hence, we can do the following LRTs
+anova(fm_1, fm_2)
+anova(fm_1, fm_3)
+anova(fm_1, fm_4)
+anova(fm_1, fm_5)
+
+# Now we compare the models with homoscedastic errors
+anova(fm_2, fm_3, fm_4, fm_5)
+
+# and following the models with heteroscedastic errors
+anova(fm_6, fm_7, fm_8, fm_9)
+
+# we observe that models fm_2 and fm_6 have the lowest AIC/BIC values
+# these are neste and we can compare them using a LRT
+anova(fm_2, fm_6)
 ```
 

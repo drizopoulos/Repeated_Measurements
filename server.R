@@ -1788,24 +1788,28 @@ shinyServer(function(input, output) {
     # Practicals #
     ##############
     
+    v <- reactiveValues(Pract1 = NULL, Pract2 = NULL, Pract3 = NULL, Pract4 = NULL)
+    
     output$sPract_1 <- renderUI({
         if (input$chapter == "Practicals" && input$section == "Practical 1")
-            actionButton("solutions1", "Reveal answers", "danger")
+            fluidRow(column(6, actionButton("solutions1", "Reveal answers", "danger")),
+                     column(6, downloadButton('downloadP1', 'Download Report')))
     })
     output$sPract_2 <- renderUI({
         if (input$chapter == "Practicals" && input$section == "Practical 2")
-            actionButton("solutions2", "Reveal answers", "danger")
+            fluidRow(column(6, actionButton("solutions2", "Reveal answers", "danger")),
+                     column(6, downloadButton('downloadP2', 'Download Report')))
     })
     output$sPract_3 <- renderUI({
         if (input$chapter == "Practicals" && input$section == "Practical 3")
-            actionButton("solutions3", "Reveal answers", "danger")
+            fluidRow(column(6, actionButton("solutions3", "Reveal answers", "danger")),
+                     column(6, downloadButton('downloadP3', 'Download Report')))
     })
     output$sPract_4 <- renderUI({
         if (input$chapter == "Practicals" && input$section == "Practical 4")
-            actionButton("solutions4", "Reveal answers", "danger")
+            fluidRow(column(6, actionButton("solutions4", "Reveal answers", "danger")),
+                     column(6, downloadButton('downloadP4', 'Download Report')))
     })
-    
-    v <- reactiveValues(Pract1 = NULL, Pract2 = NULL, Pract3 = NULL, Pract4 = NULL)
     
     observeEvent(input$solutions1, {
         v$Pract1 <- includeMarkdown("./md/sPract1_code.Rmd")
@@ -1852,19 +1856,67 @@ shinyServer(function(input, output) {
         }
     })
     
+    output$downloadP1 <- downloadHandler(
+        filename = "Practical_1.html",
+        content = function(file) {
+            if (input$chapter == "Practicals" && input$section == "Practical 1" 
+                && !is.null(v$Pract1)) {
+                file.copy("./practicals/sPract1_out.html", file)
+            } else {
+                file.copy("./html/Practical1_motivate.Rhtml", file)
+            }
+        }
+    )
+
+    output$downloadP2 <- downloadHandler(
+        filename = "Practical_2.html",
+        content = function(file) {
+            if (input$chapter == "Practicals" && input$section == "Practical 2" 
+                && !is.null(v$Pract2)) {
+                file.copy("./practicals/sPract2_out.html", file)
+            } else {
+                file.copy("./html/Practical2_motivate.Rhtml", file)
+            }
+        }
+    )
+
+    output$downloadP3 <- downloadHandler(
+        filename = "Practical_3.html",
+        content = function(file) {
+            if (input$chapter == "Practicals" && input$section == "Practical 3" 
+                && !is.null(v$Pract3)) {
+                file.copy("./practicals/sPract3_out.html", file)
+            } else {
+                file.copy("./html/Practical3_motivate.Rhtml", file)
+            }
+        }
+    )
+
+    output$downloadP4 <- downloadHandler(
+        filename = "Practical_4.html",
+        content = function(file) {
+            if (input$chapter == "Practicals" && input$section == "Practical 4" 
+                && !is.null(v$Pract4)) {
+                file.copy("./practicals/sPract4_out.html", file)
+            } else {
+                file.copy("./html/Practical4_motivate.Rhtml", file)
+            }
+        }
+    )
+    
     output$sPract_Routput <- renderPrint({
         if (input$chapter == "Practicals" && input$section == "Practical 1" 
             && !is.null(v$Pract1)) {
             includeHTML("./practicals/sPract1_out.html")
         } else if (input$chapter == "Practicals" && input$section == "Practical 2"
                    && !is.null(v$Pract2)) {
-            includeHTML("./practicals/sPract1_out")
+            includeHTML("./practicals/sPract1_out.html")
         } else if (input$chapter == "Practicals" && input$section == "Practical 3"
                    && !is.null(v$Pract3)) {
-            includeHTML("./practicals/sPract1_out")
+            includeHTML("./practicals/sPract1_out.html")
         } else if (input$chapter == "Practicals" && input$section == "Practical 4"
                    && !is.null(v$Pract4)) {
-            includeHTML("./practicals/sPract1_out")
+            includeHTML("./practicals/sPract1_out.html")
         }
     })
     
