@@ -15,8 +15,9 @@ close(con)
 ```
 
 ## Question 1
-We 
-
+We produce the plot of the subject-specific trajectories separately per treatment group with
+a superimposed loess curve. This achieved with the following call to function 
+[xyplot()](https://goo.gl/cGSjZk):
 ```{r}
 xyplot(prothrombin ~ year | drug, group = id, data = pbc2, 
        panel = function (x, y, ...) {
@@ -25,6 +26,8 @@ xyplot(prothrombin ~ year | drug, group = id, data = pbc2,
        }, xlab = "Time (years)", ylab = "Prothrombin Time (sec)")
 ```
 
+With virtually an analogous call to [xyplot()](https://goo.gl/cGSjZk) we also produce the 
+plot of the subject-specific trajectories per sex:
 ```{r}
 xyplot(prothrombin ~ year | sex, group = id, data = pbc2, 
        panel = function (x, y, ...) {
@@ -33,26 +36,66 @@ xyplot(prothrombin ~ year | sex, group = id, data = pbc2,
        }, xlab = "Time (years)", ylab = "Prothrombin Time (sec)")
 ```
 
+From both plots we observe that we have some outlying measurements that affect the scale
+of the y-axis. We could zoom in by specifying the `ylim` argument, e.g.,
 ```{r}
-# 16 sample patients
-ids <- c(133, 36, 180, 11, 168, 116, 70, 58, 82, 104, 
-         43, 21, 101, 210, 176, 157)
-
-xyplot(prothrombin ~ year | id,
+xyplot(prothrombin ~ year | drug, group = id, data = pbc2, 
        panel = function (x, y, ...) {
            panel.xyplot(x, y, type = "l", col = 1, ...)
-           if (length(unique(x)) > 5)
-               panel.loess(x, y, col = 2, lwd = 2)
-       }, data = pbc2, subset = id %in% ids, layout = c(4, 4), as.table = TRUE, 
-       xlab = "Time (years)", ylab = "Prothrombin Time (sec)")
+           panel.loess(x, y, col = 2, lwd = 2)
+       }, xlab = "Time (years)", ylab = "Prothrombin Time (sec)",
+       ylim = c(9, 18))
 ```
 
+```{r}
+xyplot(prothrombin ~ year | sex, group = id, data = pbc2, 
+       panel = function (x, y, ...) {
+           panel.xyplot(x, y, type = "l", col = 1, ...)
+           panel.loess(x, y, col = 2, lwd = 2)
+       }, xlab = "Time (years)", ylab = "Prothrombin Time (sec)",
+       ylim = c(9, 18))
+```
+
+Some observations
+
+* There is considerable variability in the profiles of prothrombin time.
+* There is an overall increasing trend indicating worsening of the condition of the 
+patients.
+* No apparent differences can be seen between the two treatment groups, and between sexes.
+
+
 ## Question 2
+A basic all to function [gls()](https://goo.gl/0KBq4B) without specifying a correlation 
+structure (i.e., argument `correlation`) or a variance function (i.e., argument `weights`)
+fits a simple linear regression model (i.e., it is equivalent to 
+[lm()](https://goo.gl/tewND3)). To include the natural cubic splines of time with 3 
+degrees of freedom we need use function [ns()](https://goo.gl/0g115B). Hence, the call to
+[gls()](https://goo.gl/0KBq4B) that includes the nonlinear time effect, the main effect 
+of age, sex and drug, and the interaction terms between the nonlinear time and sex and 
+drug is:
 ```{r}
 fm_1 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2)
 
 summary(fm_1)
 ```
+
+Interpretation of the results
+
+* The terms that involve the spline coefficients (main of time and its interaction with 
+sex and drug) do not have a straightforward interpretation. This is where the effect plots
+we have seen in Section 2.4 are of great use.
+* The main effects of age, sex, and drug do have a meaningful interpretation. In 
+particular:
+    + The coefficient of age `r round(coef(fm_1)['age'], 4)` denotes the increase in 
+  prothrombin time per year increase in age for patients of the same sex and who receive
+  the same drug, and are compared at the same follow-up time.
+    + The coefficient of drug `r round(coef(fm_1)['drugD-penicil'], 2)` denotes the difference
+  in prothrombin time between the two treatment groups at baseline for patients of the same
+  sex and age.
+
+We should **not** simplify the model at this stage. As we have mentioned in Section 2.8, we
+should first decide on the covariance structure while keeping the mean structure as 
+general as possible.
 
 ## Question 3
 The following call to `gls()` fit the
@@ -107,4 +150,93 @@ anova(fm_6, fm_7, fm_8, fm_9)
 
 ```{r}
 anova(fm_2, fm_6)
+```
+
+## Question 5
+
+```{r}
+anova(fm_6, Terms = c('ns(year, 3):sex', 'ns(year, 3):drug'))
+```
+
+```{r}
+fm_6_noInt <- gls(prothrombin ~ ns(year, 3) + sex + drug + age, data = pbc2, 
+                  correlation = corCompSymm(form = ~ year | id),
+                  weights = varExp(form = ~ year))
+
+anova(fm_6_noInt, fm_6)
+```
+
+```{r}
+fm_6ML <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
+            correlation = corCompSymm(form = ~ year | id),
+            weights = varExp(form = ~ year), method = "ML")
+
+fm_6ML_noInt <- gls(prothrombin ~ ns(year, 3) + sex + drug + age, data = pbc2, 
+                  correlation = corCompSymm(form = ~ year | id),
+                  weights = varExp(form = ~ year), method = "ML")
+
+anova(fm_6ML_noInt, fm_6ML)
+```
+
+## Question 6
+
+```{r}
+fm_6ML_noInt <- gls(prothrombin ~ ns(year, 3) + sex + drug + age, data = pbc2, 
+                  correlation = corCompSymm(form = ~ year | id),
+                  weights = varExp(form = ~ year), method = "ML")
+
+fm_6ML_noIntLin <- gls(prothrombin ~ year + sex + drug + age, data = pbc2, 
+                       correlation = corCompSymm(form = ~ year | id),
+                       weights = varExp(form = ~ year), method = "ML")
+
+anova(fm_6ML_noIntLin, fm_6ML_noInt)
+```
+
+## Question 7
+
+```{r}
+summary(fm_6ML_noIntLin)
+```
+
+```{r}
+getVarCov(fm_6ML_noIntLin, individual = 271)
+
+cov2cor(getVarCov(fm_6ML_noIntLin, individual = 271))
+```
+
+## Question 8
+
+```{r}
+effectPlotData <- function (object, newdata, orig_data) {
+    form <- formula(object)
+    namesVars <- all.vars(form)
+    respVar <- namesVars[1]
+    newdata[[respVar]] <- 0.01
+    betas <- if (!inherits(object, "lme")) coef(object) else fixef(object)
+    V <- if (inherits(object, "geeglm")) object$geese$vbeta else vcov(object)
+    orig_data <- orig_data[complete.cases(orig_data[namesVars]), ]
+    mfX <- model.frame(terms(form), data = orig_data)
+    X <- model.matrix(attr(mfX, "terms"), newdata)
+    pred <- c(X %*% betas)
+    ses <- sqrt(diag(X %*% V %*% t(X)))
+    newdata$pred <- pred
+    newdata$low <- pred - 1.96 * ses
+    newdata$upp <- pred + 1.96 * ses
+    newdata
+}
+```
+
+```{r}
+# the data frame that contains the combination of values to
+# create the plot
+newDF <- with(pbc2, expand.grid(year = seq(0, 12, length.out = 25),
+                                sex = levels(sex), drug = levels(drug), age = 49))
+```
+
+```{r}
+# the effects plot
+xyplot(pred + low + upp ~ year | sex*drug, 
+       data = effectPlotData(fm_6ML_noIntLin, newDF, pbc2), 
+       lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2, type = "l",
+       xlab = "Follow-up time (years)", ylab = "Prothrombin Time (sec)")
 ```

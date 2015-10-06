@@ -1840,6 +1840,22 @@ shinyServer(function(input, output) {
         }
     })
 
+    output$sPract_motivate2 <- renderText({
+        if (input$chapter == "Practicals" && input$section == "Practical 1" 
+            && is.null(v$Pract1)) {
+            includeHTML("./html/Practical1_motivate.Rhtml")
+        } else if (input$chapter == "Practicals" && input$section == "Practical 2"
+                   && is.null(v$Pract2)) {
+            includeHTML("./html/Practical2_motivate.Rhtml")
+        } else if (input$chapter == "Practicals" && input$section == "Practical 3"
+                   && is.null(v$Pract3)) {
+            includeHTML("./html/Practical3_motivate.Rhtml")
+        } else if (input$chapter == "Practicals" && input$section == "Practical 4"
+                   && is.null(v$Pract4)) {
+            includeHTML("./html/Practical4_motivate.Rhtml")
+        }
+    })
+    
     output$sPract_code <- renderText({
         if (input$chapter == "Practicals" && input$section == "Practical 1") {
             v$Pract2 <- v$Pract3 <- v$Pract4 <- NULL
