@@ -1,4 +1,4 @@
-# Practical 1: Marginal Models for Continuous Data
+## Practical 1: Marginal Models for Continuous Data
 We start by loading the packages we will need for this practical and the data from 
 [GitHub](https://github.com/drizopoulos/Repeated_Measurements). This is achieved with the
 following commands:
@@ -14,7 +14,7 @@ load(con)
 close(con)
 ```
 
-## Question 1
+### Question 1
 We produce the plot of the subject-specific trajectories separately per treatment group with
 a superimposed loess curve. This achieved with the following call to function 
 [xyplot()](https://goo.gl/cGSjZk):
@@ -64,12 +64,13 @@ patients.
 * No apparent differences can be seen between the two treatment groups, and between sexes.
 
 
-## Question 2
+### Question 2
 A basic all to function [gls()](https://goo.gl/0KBq4B) without specifying a correlation 
 structure (i.e., argument `correlation`) or a variance function (i.e., argument `weights`)
 fits a simple linear regression model (i.e., it is equivalent to 
-[lm()](https://goo.gl/tewND3)). To include the natural cubic splines of time with 3 
-degrees of freedom we need use function [ns()](https://goo.gl/0g115B). Hence, the call to
+[lm()](https://goo.gl/tewND3) and postulates that the repeated measurements of each 
+patient are uncorrelated). To include the natural cubic splines of time with 3 degrees of 
+freedom we need use function [ns()](https://goo.gl/0g115B). Hence, the call to
 [gls()](https://goo.gl/0KBq4B) that includes the nonlinear time effect, the main effect 
 of age, sex and drug, and the interaction terms between the nonlinear time and sex and 
 drug is:
@@ -97,8 +98,14 @@ We should **not** simplify the model at this stage. As we have mentioned in Sect
 should first decide on the covariance structure while keeping the mean structure as 
 general as possible.
 
-## Question 3
-The following call to `gls()` fit the
+### Question 3
+To extend model `fm_1` and consider different correlation matrices for the repeated 
+measurements we need to employ the `correlation` argument of [gls()](https://goo.gl/0KBq4B).
+The following piece of code fits four marginal models with a compound symmetry, continuous
+auto-regressive of order 1, exponential and Gaussian correlations, respectively, using the 
+corresponding constructor functions [corCompSymm()](https://goo.gl/nq5XUs), 
+[corCAR1()](https://goo.gl/Zhbzfc), [corExp()](https://goo.gl/CfU91s) and 
+[corGaus()](https://goo.gl/fTyrVg):
 ```{r}
 fm_2 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
             correlation = corCompSymm(form = ~ year | id))
@@ -107,12 +114,17 @@ fm_3 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2,
             correlation = corCAR1(form = ~ year | id))
 
 fm_4 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
-            correlation = corExp(form = ~ year | id))
+            correlation = corLin(form = ~ year | id))
 
 fm_5 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
             correlation = corGaus(form = ~ year | id))
 ```
 
+The models above are homoscedastic, i.e., they assume constant variance for the error 
+terms. To fit heteroscedastic marginal models we can utilize the `weights` argument of 
+[gls()](https://goo.gl/0KBq4B). The following piece of code extends the models from above
+using the constructor function [varExp()](https://goo.gl/nOZBqT) that postulates that the 
+variance of the error terms is an exponential function of time:
 ```{r}
 fm_6 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
             correlation = corCompSymm(form = ~ year | id),
@@ -123,7 +135,7 @@ fm_7 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2,
             weights = varExp(form = ~ year))
 
 fm_8 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
-            correlation = corExp(form = ~ year | id),
+            correlation = corLin(form = ~ year | id),
             weights = varExp(form = ~ year))
 
 fm_9 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
@@ -131,28 +143,34 @@ fm_9 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2,
             weights = varExp(form = ~ year))
 ```
 
-## Question 4
+### Question 4
+First we should note that model `fm_1` that assumed uncorrelated and homoscedastic errors
+is nested in all other models we have fitted. If you perform the likelihood ratio test, 
+and as we would expect, you will observe that the data do not support this model.
 
-```{r}
-anova(fm_1, fm_2)
-anova(fm_1, fm_3)
-anova(fm_1, fm_4)
-anova(fm_1, fm_5)
-```
-
+We start by comparing the four homoscedastic marginal models with the different 
+correlation structures. These models are not nested and therfore we can only compare them
+using the information criteria AIC and BIC using the [anova()](https://goo.gl/RuqkSV) 
+function:
 ```{r}
 anova(fm_2, fm_3, fm_4, fm_5)
 ```
 
+We observe that the compound symmetry model `fm_2` has the lowest AIC and BIC values. 
+Next we compare the heteroscedastic models:
 ```{r}
 anova(fm_6, fm_7, fm_8, fm_9)
 ```
 
+Again the heteroscedastic compound symmetry model `fm_6` is the winner. Finally, we 
+compare the homoscedastic versus the heteroscedastic compound symmetry models. These are 
+nested and therefore the [anova()](https://goo.gl/RuqkSV) function automatically performs
+the likelihood ratio test:
 ```{r}
 anova(fm_2, fm_6)
 ```
 
-## Question 5
+### Question 5
 
 ```{r}
 anova(fm_6, Terms = c('ns(year, 3):sex', 'ns(year, 3):drug'))
@@ -178,7 +196,7 @@ fm_6ML_noInt <- gls(prothrombin ~ ns(year, 3) + sex + drug + age, data = pbc2,
 anova(fm_6ML_noInt, fm_6ML)
 ```
 
-## Question 6
+### Question 6
 
 ```{r}
 fm_6ML_noInt <- gls(prothrombin ~ ns(year, 3) + sex + drug + age, data = pbc2, 
@@ -192,20 +210,56 @@ fm_6ML_noIntLin <- gls(prothrombin ~ year + sex + drug + age, data = pbc2,
 anova(fm_6ML_noIntLin, fm_6ML_noInt)
 ```
 
-## Question 7
-
+### Question 7
+Using the [summary()](https://goo.gl/9ymFa6) function we obtain a detailed output of our 
+final model `fm_6ML_noIntLin`
 ```{r}
 summary(fm_6ML_noIntLin)
 ```
 
+The interpretation of the regression coefficients is as follows:
+
+* For patients of the same sex and age at baseline who receive the same drug, each
+year the average prothrombin time increases by `r round(coef(fm_6ML_noIntLin)['year'], 2)`
+sec.
+
+* Female patients have on average a prothrombin time 
+`r abs(round(coef(fm_6ML_noIntLin)['sexfemale'], 2))` sec less than their male 
+counterparts of the same age who receive the same treatment and when compared on the same 
+follow-up time.
+
+* Patients who receive the active treatment have on average a prothrombin time 
+`r abs(round(coef(fm_6ML_noIntLin)['drugD-penicil'], 2))` sec less than the placebo 
+patients of the same age and sex when compared on the same follow-up time.
+
+* Each year increase in baseline age increases the average prothrombin time by
+`r abs(round(coef(fm_6ML_noIntLin)['age'], 2))` sec for patients of the same sex, who 
+receive the same treatment and are compared on the same follow-up time.
+
+To investigate the covariance structuer we use function 
+[getVarCov()](https://goo.gl/XqY8K7) which returns the estimate covariance matrix. Due to
+the fact that patients have different number of repeated measuements, argument 
+`individual` of [getVarCov()](https://goo.gl/XqY8K7) can be used to specify for which 
+subject we wisk to inspect the fitted covariance matrix. In the following example we 
+choose Patient 271 who has eight measurements:
 ```{r}
 getVarCov(fm_6ML_noIntLin, individual = 271)
+```
 
+From the diagonal elements we observe that variance of the error terms increases quite 
+fast in time. To transform the covariance to correlation we use function 
+[cov2cor()](https://goo.gl/ekib0c):
+```{r}
 cov2cor(getVarCov(fm_6ML_noIntLin, individual = 271))
 ```
 
-## Question 8
 
+## Question 8
+To create the effect plot we first need to define the function `effectPlotData()` which we
+have introduced in Section 2.4. This function takes a fitted marginal model, the data frame 
+`newdata` based on which the plot will be made, and the original data we used to fit the 
+model, and returns the predictions for each row of `newdata` with the corresponding lower 
+and upper limits of the 95% confidence intervals.
 ```{r}
 effectPlotData <- function (object, newdata, orig_data) {
     form <- formula(object)
@@ -226,15 +280,18 @@ effectPlotData <- function (object, newdata, orig_data) {
 }
 ```
 
+Next we define the data frame with the combination of values of the covariates for which
+we would like to create the plot. In our example, we set a regular sequence of 25 values 
+from 0 to 12 for the time variable, the levels of the sex variable, the levels of the drug
+variable, and we fix age at 49 years old:
 ```{r}
-# the data frame that contains the combination of values to
-# create the plot
 newDF <- with(pbc2, expand.grid(year = seq(0, 12, length.out = 25),
                                 sex = levels(sex), drug = levels(drug), age = 49))
 ```
 
+Finally, we create the plot using the following call to [xyplot()](https://goo.gl/cGSjZk)
+that utilizes in the `data` argument function `effectPlotData()`:
 ```{r}
-# the effects plot
 xyplot(pred + low + upp ~ year | sex*drug, 
        data = effectPlotData(fm_6ML_noIntLin, newDF, pbc2), 
        lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2, type = "l",
