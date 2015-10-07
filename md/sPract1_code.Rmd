@@ -119,10 +119,6 @@ anova(fm_6ML_noInt, fm_6ML)
 # Q6 #
 ######
 
-fm_6ML_noInt <- gls(prothrombin ~ ns(year, 3) + sex + drug + age, data = pbc2, 
-                  correlation = corCompSymm(form = ~ year | id),
-                  weights = varExp(form = ~ year), method = "ML")
-
 fm_6ML_noIntLin <- gls(prothrombin ~ year + sex + drug + age, data = pbc2, 
                        correlation = corCompSymm(form = ~ year | id),
                        weights = varExp(form = ~ year), method = "ML")

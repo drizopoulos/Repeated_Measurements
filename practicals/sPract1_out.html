@@ -288,11 +288,8 @@ anova(fm_6ML_noInt, fm_6ML)</code></pre>
 </div>
 <div id="question-6" class="section level3">
 <h3>Question 6</h3>
-<pre class="r"><code>fm_6ML_noInt &lt;- gls(prothrombin ~ ns(year, 3) + sex + drug + age, data = pbc2, 
-                  correlation = corCompSymm(form = ~ year | id),
-                  weights = varExp(form = ~ year), method = &quot;ML&quot;)
-
-fm_6ML_noIntLin &lt;- gls(prothrombin ~ year + sex + drug + age, data = pbc2, 
+<p>To test whether the time effect is linear or nonlinear we can only employ a likelihood ratio test. Following the same procedure as in <em>Question 5</em> above, we first fit the model under the null hypothesis, i.e., the model that assumes a linear time effect using as estimation metod the maximum likelihood. Then we use the <a href="https://goo.gl/RuqkSV">anova()</a> function to calculate the p-value:</p>
+<pre class="r"><code>fm_6ML_noIntLin &lt;- gls(prothrombin ~ year + sex + drug + age, data = pbc2, 
                        correlation = corCompSymm(form = ~ year | id),
                        weights = varExp(form = ~ year), method = &quot;ML&quot;)
 
@@ -303,6 +300,7 @@ anova(fm_6ML_noIntLin, fm_6ML_noInt)</code></pre>
 ##                 p-value
 ## fm_6ML_noIntLin        
 ## fm_6ML_noInt     0.3745</code></pre>
+<p>The results suggest that we could continue by assuming that average prothrombin time has a linear time evolution.</p>
 </div>
 <div id="question-7" class="section level3">
 <h3>Question 7</h3>

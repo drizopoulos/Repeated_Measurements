@@ -223,18 +223,21 @@ Now the likelihood ratio test is performed without any warning messages, and we 
 virtually the same p-value as in the F-test.
 
 ### Question 6
-
+To test whether the time effect is linear or nonlinear we can only employ a likelihood 
+ratio test. Following the same procedure as in *Question 5* above, we first fit the model
+under the null hypothesis, i.e., the model that assumes a linear time effect using as
+estimation metod the maximum likelihood. Then we use the 
+[anova()](https://goo.gl/RuqkSV) function to calculate the p-value:
 ```{r}
-fm_6ML_noInt <- gls(prothrombin ~ ns(year, 3) + sex + drug + age, data = pbc2, 
-                  correlation = corCompSymm(form = ~ year | id),
-                  weights = varExp(form = ~ year), method = "ML")
-
 fm_6ML_noIntLin <- gls(prothrombin ~ year + sex + drug + age, data = pbc2, 
                        correlation = corCompSymm(form = ~ year | id),
                        weights = varExp(form = ~ year), method = "ML")
 
 anova(fm_6ML_noIntLin, fm_6ML_noInt)
 ```
+
+The results suggest that we could continue by assuming that average prothrombin time has a
+linear time evolution.
 
 ### Question 7
 Using the [summary()](https://goo.gl/9ymFa6) function we obtain a detailed output of our 
