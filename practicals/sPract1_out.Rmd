@@ -104,7 +104,7 @@ measurements we need to employ the `correlation` argument of [gls()](https://goo
 The following piece of code fits four marginal models with a compound symmetry, continuous
 auto-regressive of order 1, exponential and Gaussian correlations, respectively, using the 
 corresponding constructor functions [corCompSymm()](https://goo.gl/nq5XUs), 
-[corCAR1()](https://goo.gl/Zhbzfc), [corExp()](https://goo.gl/CfU91s) and 
+[corCAR1()](https://goo.gl/Zhbzfc), [corLin()](https://goo.gl/FDw6GB) and 
 [corGaus()](https://goo.gl/fTyrVg):
 ```{r}
 fm_2 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
@@ -149,7 +149,7 @@ is nested in all other models we have fitted. If you perform the likelihood rati
 and as we would expect, you will observe that the data do not support this model.
 
 We start by comparing the four homoscedastic marginal models with the different 
-correlation structures. These models are not nested and therfore we can only compare them
+correlation structures. These models are not nested and therefore we can only compare them
 using the information criteria AIC and BIC using the [anova()](https://goo.gl/RuqkSV) 
 function:
 ```{r}
@@ -170,19 +170,42 @@ the likelihood ratio test:
 anova(fm_2, fm_6)
 ```
 
-### Question 5
+The result suggests that the heteroscedastic compound symmetry model fits the data better.
 
+### Question 5
+We continue by testing whether we can drop all the interaction terms between the nonlinear
+time effect and sex, and the nonlinear time effect and drug. The corresponding model 
+terms that we wish to test are `ns(year, 3):sex` and `ns(year, 3):drug`. Using the 
+`Terms` argument of the [anova()](https://goo.gl/RuqkSV) function we perform the 
+corresponding F-test as we have seen in Section 2.9:
 ```{r}
 anova(fm_6, Terms = c('ns(year, 3):sex', 'ns(year, 3):drug'))
 ```
 
+The results indicate that average longitudinal evolutions of prothrombin time do not 
+differ between males and female, and placebo and D-penicillamine patients. To test the
+same terms using a likelihood ratio test we need first to fit the model under the null
+hypothesis, i.e., the model that excludes these terms. The call to 
+[gls()](https://goo.gl/0KBq4B) that fits this model is:
 ```{r}
 fm_6_noInt <- gls(prothrombin ~ ns(year, 3) + sex + drug + age, data = pbc2, 
                   correlation = corCompSymm(form = ~ year | id),
                   weights = varExp(form = ~ year))
+```
 
+To peform the likelihood ratio test we need to give the model under the null `fm_6_noInt`
+and the model under the alternative hypothesis `fm_6` to the 
+[anova()](https://goo.gl/RuqkSV) function:
+```{r}
 anova(fm_6_noInt, fm_6)
 ```
+
+We obtain a result but also a **warning** message. In particular, as we have seen in 
+Section 2.9, when we want to compare models that have different $X\beta$ with a likelihood
+ratio test, we need to fit the models using Maximum Likelihood (ML) and Restricted Maximum 
+Likelihood (REML). REML is the default method to fit the model in 
+[gls()](https://goo.gl/0KBq4B), to change it we need to use argument `method`. In 
+particular,
 
 ```{r}
 fm_6ML <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
@@ -195,6 +218,9 @@ fm_6ML_noInt <- gls(prothrombin ~ ns(year, 3) + sex + drug + age, data = pbc2,
 
 anova(fm_6ML_noInt, fm_6ML)
 ```
+
+Now the likelihood ratio test is performed without any warning messages, and we obtain 
+virtually the same p-value as in the F-test.
 
 ### Question 6
 
@@ -236,11 +262,11 @@ patients of the same age and sex when compared on the same follow-up time.
 `r abs(round(coef(fm_6ML_noIntLin)['age'], 2))` sec for patients of the same sex, who 
 receive the same treatment and are compared on the same follow-up time.
 
-To investigate the covariance structuer we use function 
+To investigate the covariance structure we use function 
 [getVarCov()](https://goo.gl/XqY8K7) which returns the estimate covariance matrix. Due to
-the fact that patients have different number of repeated measuements, argument 
+the fact that patients have different number of repeated measurements, argument 
 `individual` of [getVarCov()](https://goo.gl/XqY8K7) can be used to specify for which 
-subject we wisk to inspect the fitted covariance matrix. In the following example we 
+subject we wish to inspect the fitted covariance matrix. In the following example we 
 choose Patient 271 who has eight measurements:
 ```{r}
 getVarCov(fm_6ML_noIntLin, individual = 271)

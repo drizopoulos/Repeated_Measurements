@@ -199,7 +199,7 @@ summary(fm_1)</code></pre>
 </div>
 <div id="question-3" class="section level3">
 <h3>Question 3</h3>
-<p>To extend model <code>fm_1</code> and consider different correlation matrices for the repeated measurements we need to employ the <code>correlation</code> argument of <a href="https://goo.gl/0KBq4B">gls()</a>. The following piece of code fits four marginal models with a compound symmetry, continuous auto-regressive of order 1, exponential and Gaussian correlations, respectively, using the corresponding constructor functions <a href="https://goo.gl/nq5XUs">corCompSymm()</a>, <a href="https://goo.gl/Zhbzfc">corCAR1()</a>, <a href="https://goo.gl/CfU91s">corExp()</a> and <a href="https://goo.gl/fTyrVg">corGaus()</a>:</p>
+<p>To extend model <code>fm_1</code> and consider different correlation matrices for the repeated measurements we need to employ the <code>correlation</code> argument of <a href="https://goo.gl/0KBq4B">gls()</a>. The following piece of code fits four marginal models with a compound symmetry, continuous auto-regressive of order 1, exponential and Gaussian correlations, respectively, using the corresponding constructor functions <a href="https://goo.gl/nq5XUs">corCompSymm()</a>, <a href="https://goo.gl/Zhbzfc">corCAR1()</a>, <a href="https://goo.gl/FDw6GB">corLin()</a> and <a href="https://goo.gl/fTyrVg">corGaus()</a>:</p>
 <pre class="r"><code>fm_2 &lt;- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
             correlation = corCompSymm(form = ~ year | id))
 
@@ -231,7 +231,7 @@ fm_9 &lt;- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2,
 <div id="question-4" class="section level3">
 <h3>Question 4</h3>
 <p>First we should note that model <code>fm_1</code> that assumed uncorrelated and homoscedastic errors is nested in all other models we have fitted. If you perform the likelihood ratio test, and as we would expect, you will observe that the data do not support this model.</p>
-<p>We start by comparing the four homoscedastic marginal models with the different correlation structures. These models are not nested and therfore we can only compare them using the information criteria AIC and BIC using the <a href="https://goo.gl/RuqkSV">anova()</a> function:</p>
+<p>We start by comparing the four homoscedastic marginal models with the different correlation structures. These models are not nested and therefore we can only compare them using the information criteria AIC and BIC using the <a href="https://goo.gl/RuqkSV">anova()</a> function:</p>
 <pre class="r"><code>anova(fm_2, fm_3, fm_4, fm_5)</code></pre>
 <pre><code>##      Model df      AIC      BIC    logLik
 ## fm_2     1 15 6785.024 6868.519 -3377.512
@@ -250,24 +250,28 @@ fm_9 &lt;- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2,
 <pre><code>##      Model df      AIC      BIC    logLik   Test  L.Ratio p-value
 ## fm_2     1 15 6785.024 6868.519 -3377.512                        
 ## fm_6     2 16 6732.785 6821.846 -3350.392 1 vs 2 54.23904  &lt;.0001</code></pre>
+<p>The result suggests that the heteroscedastic compound symmetry model fits the data better.</p>
 </div>
 <div id="question-5" class="section level3">
 <h3>Question 5</h3>
+<p>We continue by testing whether we can drop all the interaction terms between the nonlinear time effect and sex, and the nonlinear time effect and drug. The corresponding model terms that we wish to test are <code>ns(year, 3):sex</code> and <code>ns(year, 3):drug</code>. Using the <code>Terms</code> argument of the <a href="https://goo.gl/RuqkSV">anova()</a> function we perform the corresponding F-test as we have seen in Section 2.9:</p>
 <pre class="r"><code>anova(fm_6, Terms = c('ns(year, 3):sex', 'ns(year, 3):drug'))</code></pre>
 <pre><code>## Denom. DF: 1932 
 ##  F-test for: ns(year, 3):sex, ns(year, 3):drug 
 ##   numDF   F-value p-value
 ## 1     6 0.1635411  0.9863</code></pre>
+<p>The results indicate that average longitudinal evolutions of prothrombin time do not differ between males and female, and placebo and D-penicillamine patients. To test the same terms using a likelihood ratio test we need first to fit the model under the null hypothesis, i.e., the model that excludes these terms. The call to <a href="https://goo.gl/0KBq4B">gls()</a> that fits this model is:</p>
 <pre class="r"><code>fm_6_noInt &lt;- gls(prothrombin ~ ns(year, 3) + sex + drug + age, data = pbc2, 
                   correlation = corCompSymm(form = ~ year | id),
-                  weights = varExp(form = ~ year))
-
-anova(fm_6_noInt, fm_6)</code></pre>
+                  weights = varExp(form = ~ year))</code></pre>
+<p>To peform the likelihood ratio test we need to give the model under the null <code>fm_6_noInt</code> and the model under the alternative hypothesis <code>fm_6</code> to the <a href="https://goo.gl/RuqkSV">anova()</a> function:</p>
+<pre class="r"><code>anova(fm_6_noInt, fm_6)</code></pre>
 <pre><code>## Warning in nlme::anova.lme(object = fm_6_noInt, fm_6): fitted objects with
 ## different fixed effects. REML comparisons are not meaningful.</code></pre>
 <pre><code>##            Model df      AIC      BIC    logLik   Test  L.Ratio p-value
 ## fm_6_noInt     1 10 6723.171 6778.865 -3351.586                        
 ## fm_6           2 16 6732.785 6821.846 -3350.392 1 vs 2 2.386213   0.881</code></pre>
+<p>We obtain a result but also a <strong>warning</strong> message. In particular, as we have seen in Section 2.9, when we want to compare models that have different <span class="math">\(X\beta\)</span> with a likelihood ratio test, we need to fit the models using Maximum Likelihood (ML) and Restricted Maximum Likelihood (REML). REML is the default method to fit the model in <a href="https://goo.gl/0KBq4B">gls()</a>, to change it we need to use argument <code>method</code>. In particular,</p>
 <pre class="r"><code>fm_6ML &lt;- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
             correlation = corCompSymm(form = ~ year | id),
             weights = varExp(form = ~ year), method = &quot;ML&quot;)
@@ -280,6 +284,7 @@ anova(fm_6ML_noInt, fm_6ML)</code></pre>
 <pre><code>##              Model df      AIC      BIC    logLik   Test   L.Ratio p-value
 ## fm_6ML_noInt     1 10 6701.608 6757.339 -3340.804                         
 ## fm_6ML           2 16 6712.623 6801.791 -3340.312 1 vs 2 0.9853218  0.9862</code></pre>
+<p>Now the likelihood ratio test is performed without any warning messages, and we obtain virtually the same p-value as in the F-test.</p>
 </div>
 <div id="question-6" class="section level3">
 <h3>Question 6</h3>
@@ -349,7 +354,7 @@ anova(fm_6ML_noIntLin, fm_6ML_noInt)</code></pre>
 <li><p>Patients who receive the active treatment have on average a prothrombin time 0.13 sec less than the placebo patients of the same age and sex when compared on the same follow-up time.</p></li>
 <li><p>Each year increase in baseline age increases the average prothrombin time by 0.01 sec for patients of the same sex, who receive the same treatment and are compared on the same follow-up time.</p></li>
 </ul>
-<p>To investigate the covariance structuer we use function <a href="https://goo.gl/XqY8K7">getVarCov()</a> which returns the estimate covariance matrix. Due to the fact that patients have different number of repeated measuements, argument <code>individual</code> of <a href="https://goo.gl/XqY8K7">getVarCov()</a> can be used to specify for which subject we wisk to inspect the fitted covariance matrix. In the following example we choose Patient 271 who has eight measurements:</p>
+<p>To investigate the covariance structure we use function <a href="https://goo.gl/XqY8K7">getVarCov()</a> which returns the estimate covariance matrix. Due to the fact that patients have different number of repeated measurements, argument <code>individual</code> of <a href="https://goo.gl/XqY8K7">getVarCov()</a> can be used to specify for which subject we wish to inspect the fitted covariance matrix. In the following example we choose Patient 271 who has eight measurements:</p>
 <pre class="r"><code>getVarCov(fm_6ML_noIntLin, individual = 271)</code></pre>
 <pre><code>## Marginal variance covariance matrix
 ##         [,1]    [,2]    [,3]    [,4]    [,5]    [,6]    [,7]    [,8]

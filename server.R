@@ -1792,23 +1792,23 @@ shinyServer(function(input, output) {
     
     output$sPract_1 <- renderUI({
         if (input$chapter == "Practicals" && input$section == "Practical 1")
-            fluidRow(column(6, actionButton("solutions1", "Reveal answers", "danger")),
-                     column(6, downloadButton('downloadP1', 'Download Report')))
+            fluidRow(column(5, actionButton("solutions1", "Reveal answers", "danger")),
+                     column(5, downloadButton('downloadP1', 'Download Report')))
     })
     output$sPract_2 <- renderUI({
         if (input$chapter == "Practicals" && input$section == "Practical 2")
-            fluidRow(column(6, actionButton("solutions2", "Reveal answers", "danger")),
-                     column(6, downloadButton('downloadP2', 'Download Report')))
+            fluidRow(column(5, actionButton("solutions2", "Reveal answers", "danger")),
+                     column(5, downloadButton('downloadP2', 'Download Report')))
     })
     output$sPract_3 <- renderUI({
         if (input$chapter == "Practicals" && input$section == "Practical 3")
-            fluidRow(column(6, actionButton("solutions3", "Reveal answers", "danger")),
-                     column(6, downloadButton('downloadP3', 'Download Report')))
+            fluidRow(column(5, actionButton("solutions3", "Reveal answers", "danger")),
+                     column(5, downloadButton('downloadP3', 'Download Report')))
     })
     output$sPract_4 <- renderUI({
         if (input$chapter == "Practicals" && input$section == "Practical 4")
-            fluidRow(column(6, actionButton("solutions4", "Reveal answers", "danger")),
-                     column(6, downloadButton('downloadP4', 'Download Report')))
+            fluidRow(column(5, actionButton("solutions4", "Reveal answers", "danger")),
+                     column(5, downloadButton('downloadP4', 'Download Report')))
     })
     
     observeEvent(input$solutions1, {
@@ -1923,15 +1923,19 @@ shinyServer(function(input, output) {
     output$sPract_Routput <- renderPrint({
         if (input$chapter == "Practicals" && input$section == "Practical 1" 
             && !is.null(v$Pract1)) {
+            v$Pract2 <- v$Pract3 <- v$Pract4 <- NULL
             includeHTML("./practicals/sPract1_out.html")
         } else if (input$chapter == "Practicals" && input$section == "Practical 2"
                    && !is.null(v$Pract2)) {
+            v$Pract1 <- v$Pract3 <- v$Pract4 <- NULL
             includeHTML("./practicals/sPract1_out.html")
         } else if (input$chapter == "Practicals" && input$section == "Practical 3"
                    && !is.null(v$Pract3)) {
+            v$Pract2 <- v$Pract1 <- v$Pract4 <- NULL
             includeHTML("./practicals/sPract1_out.html")
         } else if (input$chapter == "Practicals" && input$section == "Practical 4"
                    && !is.null(v$Pract4)) {
+            v$Pract2 <- v$Pract3 <- v$Pract1 <- NULL
             includeHTML("./practicals/sPract1_out.html")
         }
     })
