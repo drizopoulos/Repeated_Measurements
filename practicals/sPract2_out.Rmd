@@ -1,0 +1,74 @@
+## Practical 2: Mixed Models for Continuous Data
+We start by loading the packages we will need for this practical and the data from 
+[GitHub](https://github.com/drizopoulos/Repeated_Measurements). This is achieved with the
+following commands:
+```{r}
+# packages
+library("lattice")
+library("nlme")
+library("splines")
+
+# data
+con <- url("https://raw.github.com/drizopoulos/Repeated_Measurements/master/Data.RData")
+load(con)
+close(con)
+```
+```{r, echo = FALSE}
+options(warn = (-1))
+```
+
+### Question 1
+We produce the plot of the subject-specific trajectories separately per treatment group with
+a superimposed loess curve. This achieved with the following call to function 
+[xyplot()](https://goo.gl/cGSjZk):
+```{r}
+length.no.NA <- function (x) sum(!is.na(x))
+ns <- with(pbc2, tapply(prothrombin, id, length.no.NA))
+ns <- names(ns)[ns >= 6]
+```
+
+```{r}
+set.seed(123)
+ids <- sample(ns, 16) 
+xyplot(prothrombin ~ year | id,
+       panel = function (x, y, ...) {
+           panel.xyplot(x, y, type = "p", col = 1, ...)
+           panel.loess(x, y, col = 2, lwd = 2, span = 0.8)
+       }, data = pbc2, subset = id %in% ids, layout = c(4, 4), as.table = TRUE, 
+       xlab = "Time (years)", ylab = "Prothrombin Time (sec)")
+```
+
+```{r}
+set.seed(321)
+ids <- sample(ns, 16) 
+xyplot(prothrombin ~ year | id,
+       panel = function (x, y, ...) {
+           panel.xyplot(x, y, type = "p", col = 1, ...)
+           panel.loess(x, y, col = 2, lwd = 2, span = 0.8)
+       }, data = pbc2, subset = id %in% ids, layout = c(4, 4), as.table = TRUE, 
+       xlab = "Time (years)", ylab = "Prothrombin Time (sec)")
+```
+
+Some observations
+
+* There is considerable variability in the profiles of prothrombin time.
+* There is an overall increasing trend indicating worsening of the condition of the 
+patients.
+* No apparent differences can be seen between the two treatment groups, and between sexes.
+
+
+### Question 2
+
+### Question 3
+
+### Question 4
+
+### Question 5
+
+### Question 6
+
+### Question 7
+
+
+
+
