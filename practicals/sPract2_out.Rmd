@@ -128,6 +128,64 @@ anova(fm_3ML_noInt_LinAge, fm_3ML_noInt)
 
 ### Question 7
 
+```{r}
+summary(fm_3ML_noInt_LinAge)
+```
+
+```{r}
+getVarCov(fm_3ML_noInt_LinAge, individuals = 271)
+```
+```{r}
+cov2cor(getVarCov(fm_3ML_noInt_LinAge, individuals = 271))
+```
+
+```{r}
+getVarCov(fm_3ML_noInt_LinAge, individuals = 271, type = "marginal")
+```
+```{r}
+cov2cor(getVarCov(fm_3ML_noInt_LinAge, individuals = 271, type = "marginal")[[1]])
+```
 
 
+### Question 8
 
+```{r}
+pbc2n <- pbc2[pbc2$prothrombin < 18, ]
+pbc2n$fitted_marg <- fitted(fm_3ML_noInt_LinAge, level = 0)
+pbc2n$fitted_subj <- fitted(fm_3ML_noInt_LinAge, level = 1)
+```
+
+```{r}
+ids <- c(133, 36, 180, 11, 168, 116, 70, 58, 82, 104, 
+         43, 21, 101, 210, 176, 157)
+xyplot(prothrombin + fitted_marg + fitted_subj ~ year | id, data = pbc2n,
+       panel = function (x, y, ...) {
+           x.mat <- matrix(x, ncol = 3)
+           y.mat <- matrix(y, ncol = 3)
+           panel.xyplot(x.mat[, 1], y.mat[, 1], type = "p", col = "black")
+           panel.xyplot(x.mat[, 2], y.mat[, 2], type = "l", lwd = 2, col = "red")
+           panel.xyplot(x.mat[, 3], y.mat[, 3], type = "l", lwd = 2, col = "blue")
+       }, subset = id %in% ids, layout = c(4, 4), as.table = TRUE, 
+       xlab = "Time (years)", ylab = "Prothrombin Time (sec)")
+```
+
+
+### Question 9
+
+
+### Question 10
+
+```{r}
+plot(fm_3ML_noInt_LinAge, resid(., type = "p") ~ fitted(.), 
+     type = c("p", "smooth"), lwd = 3)
+```
+
+```{r}
+plot(fm_3ML_noInt_LinAge, resid(., type = "p") ~ fitted(.) | sex, 
+     type = c("p", "smooth"), lwd = 3)
+```
+
+```{r}
+plot(fm_3ML_noInt_LinAge, resid(., type = "p") ~ fitted(.) | drug, 
+     type = c("p", "smooth"), lwd = 3)
+```

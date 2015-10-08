@@ -109,5 +109,55 @@ anova(fm_3ML_noInt_LinAge, fm_3ML_noInt)
 
 summary(fm_3ML_noInt_LinAge)
 
+# covariance and correlation matrix of the random effects
+getVarCov(fm_3ML_noInt_LinAge, individuals = 271)
+cov2cor(getVarCov(fm_3ML_noInt_LinAge, individuals = 271))
+
+# marginal covariance and correlation matrix
+getVarCov(fm_3ML_noInt_LinAge, individuals = 271, type = "marginal")
+cov2cor(getVarCov(fm_3ML_noInt_LinAge, individuals = 271, type = "marginal")[[1]])
+
+
+######
+# Q8 #
+######
+
+pbc2$fitted_marg <- fitted(fm_3ML_noInt_LinAge, level = 0)
+pbc2$fitted_subj <- fitted(fm_3ML_noInt_LinAge, level = 1)
+
+ids <- c(133, 36, 180, 11, 168, 116, 70, 58, 82, 104, 
+         43, 21, 101, 210, 176, 157)
+
+xyplot(prothrombin + fitted_marg + fitted_subj ~ year | id, data = pbc2,
+       panel = function (x, y, ...) {
+           x.mat <- matrix(x, ncol = 3)
+           y.mat <- matrix(y, ncol = 3)
+           panel.xyplot(x.mat[, 1], y.mat[, 1], type = "p", col = "black")
+           panel.xyplot(x.mat[, 2], y.mat[, 2], type = "l", lwd = 2, col = "red")
+           panel.xyplot(x.mat[, 3], y.mat[, 3], type = "l", lwd = 2, col = "blue")
+       }, subset = id %in% ids, layout = c(4, 4), as.table = TRUE, 
+       xlab = "Time (years)", ylab = "Prothrombin Time (sec)")
+
+
+######
+# Q9 #
+######
+
+
+
+#######
+# Q10 #
+#######
+
+plot(fm_3ML_noInt_LinAge, resid(., type = "p") ~ fitted(.), 
+     type = c("p", "smooth"), lwd = 3)
+
+plot(fm_3ML_noInt_LinAge, resid(., type = "p") ~ fitted(.) | sex, 
+     type = c("p", "smooth"), lwd = 3)
+
+plot(fm_3ML_noInt_LinAge, resid(., type = "p") ~ fitted(.) | drug, 
+     type = c("p", "smooth"), lwd = 3)
+
+
 ```
 
