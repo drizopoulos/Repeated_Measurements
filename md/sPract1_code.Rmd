@@ -31,12 +31,17 @@ xyplot(prothrombin ~ year | sex, group = id, data = pbc2,
        }, xlab = "Time (years)", ylab = "Prothrombin Time (sec)")
 
 
+# Exclude outlying measurements
+pbc2 <- pbc2[pbc2$prothrombin < 18, ]
+
+
 ######
 # Q2 #
 ######
 
 fm_1 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2)
 
+summary(fm_1)
 
 ######
 # Q3 #
@@ -85,7 +90,7 @@ anova(fm_6, fm_7, fm_8, fm_9)
 
 # we observe that models fm_2 and fm_6 have the lowest AIC/BIC values
 # these are neste and we can compare them using a LRT
-anova(fm_2, fm_6)
+anova(fm_3, fm_7)
 
 
 ######
@@ -93,48 +98,45 @@ anova(fm_2, fm_6)
 ######
 
 # F-test
-anova(fm_6, Terms = c('ns(year, 3):sex', 'ns(year, 3):drug'))
+anova(fm_3, Terms = c('ns(year, 3):sex', 'ns(year, 3):drug'))
 
 
 # LRT
-fm_6_noInt <- gls(prothrombin ~ ns(year, 3) + sex + drug + age, data = pbc2, 
-                  correlation = corCompSymm(form = ~ year | id),
-                  weights = varExp(form = ~ year))
+fm_3_noInt <- gls(prothrombin ~ ns(year, 3) + sex + drug + age, data = pbc2, 
+                  correlation = corCAR1(form = ~ year | id))
 
-anova(fm_6_noInt, fm_6)
+anova(fm_3_noInt, fm_3)
 
 
-fm_6ML <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
-            correlation = corCompSymm(form = ~ year | id),
-            weights = varExp(form = ~ year), method = "ML")
+fm_3ML <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
+            correlation = corCAR1(form = ~ year | id), method = "ML")
 
-fm_6ML_noInt <- gls(prothrombin ~ ns(year, 3) + sex + drug + age, data = pbc2, 
-                  correlation = corCompSymm(form = ~ year | id),
-                  weights = varExp(form = ~ year), method = "ML")
+fm_3ML_noInt <- gls(prothrombin ~ ns(year, 3) + sex + drug + age, data = pbc2, 
+                  correlation = corCAR1(form = ~ year | id), method = "ML")
 
-anova(fm_6ML_noInt, fm_6ML)
+anova(fm_3ML_noInt, fm_3ML)
 
 
 ######
 # Q6 #
 ######
 
-fm_6ML_noIntLin <- gls(prothrombin ~ year + sex + drug + age, data = pbc2, 
-                       correlation = corCompSymm(form = ~ year | id),
-                       weights = varExp(form = ~ year), method = "ML")
+fm_3ML_noIntLin <- gls(prothrombin ~ year + sex + drug + age, data = pbc2, 
+                       correlation = corCAR1(form = ~ year | id), 
+                       method = "ML")
 
-anova(fm_6ML_noIntLin, fm_6ML_noInt)
+anova(fm_3ML_noIntLin, fm_3ML_noInt)
 
 
 ######
 # Q7 #
 ######
 
-summary(fm_6ML_noIntLin)
+summary(fm_3ML_noIntLin)
 
-getVarCov(fm_6ML_noIntLin, individual = 271)
+getVarCov(fm_3ML_noIntLin, individual = 271)
 
-cov2cor(getVarCov(fm_6ML_noIntLin, individual = 271))
+cov2cor(getVarCov(fm_3ML_noIntLin, individual = 271))
 
 
 ######
@@ -166,8 +168,32 @@ newDF <- with(pbc2, expand.grid(year = seq(0, 12, length.out = 25),
 
 # the effects plot
 xyplot(pred + low + upp ~ year | sex*drug, 
-       data = effectPlotData(fm_6ML_noIntLin, newDF, pbc2), 
+       data = effectPlotData(fm_3ML_noIntLin, newDF, pbc2), 
        lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2, type = "l",
        xlab = "Follow-up time (years)", ylab = "Prothrombin Time (sec)")
+
+
+######
+# Q9 #
+######
+
+plot(fm_3ML_noIntLin, resid(., type = "p") ~ fitted(.), 
+     type = c("p", "smooth"), lwd = 3)
+
+plot(fm_3ML_noIntLin, resid(., type = "p") ~ fitted(.) | sex, 
+     type = c("p", "smooth"), lwd = 3)
+
+plot(fm_3ML_noIntLin, resid(., type = "p") ~ fitted(.) | drug, 
+     type = c("p", "smooth"), lwd = 3)
+
+plot(fm_3ML_noIntLin, resid(., type = "n") ~ fitted(.), 
+     type = c("p", "smooth"), lwd = 3)
+
+plot(fm_3ML_noIntLin, resid(., type = "n") ~ fitted(.) | sex, 
+     type = c("p", "smooth"), lwd = 3)
+
+plot(fm_3ML_noIntLin, resid(., type = "n") ~ fitted(.) | drug, 
+     type = c("p", "smooth"), lwd = 3)
+
 ```
 

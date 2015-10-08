@@ -1,4 +1,4 @@
-## Practical 2: Mixed Models for Continuous Data
+## Practical 2: Mixed Effects Models for Continuous Data
 We start by loading the packages we will need for this practical and the data from 
 [GitHub](https://github.com/drizopoulos/Repeated_Measurements). This is achieved with the
 following commands:
@@ -49,23 +49,82 @@ xyplot(prothrombin ~ year | id,
        xlab = "Time (years)", ylab = "Prothrombin Time (sec)")
 ```
 
-Some observations
-
-* There is considerable variability in the profiles of prothrombin time.
-* There is an overall increasing trend indicating worsening of the condition of the 
-patients.
-* No apparent differences can be seen between the two treatment groups, and between sexes.
 
 
 ### Question 2
 
 ### Question 3
 
+```{r}
+fm_1 <- lme(prothrombin ~ (year + I(year^2)) * (sex + drug) + ns(age, 3) + 
+                ns(age, 3) : (sex + drug), data = pbc2, 
+            random = ~ 1 | id, subset = prothrombin < 18)
+```
+
+
 ### Question 4
+
+```{r}
+fm_2 <- update(fm_1, random = ~ year | id)
+```
+
+```{r}
+anova(fm_1, fm_2)
+```
+
+```{r, cache = TRUE}
+fm_3 <- update(fm_1, random = ~ year + I(year^2) | id)
+```
+
+```{r}
+anova(fm_2, fm_3)
+```
+
+```{r, cache = TRUE}
+fm_4 <- update(fm_1, random = ~ year + I(year^2) + I(year^3) | id)
+```
+
+```{r}
+anova(fm_3, fm_4)
+```
 
 ### Question 5
 
+```{r, cache = TRUE}
+fm_3ML <- update(fm_3, method = "ML")
+fm_3ML_noInt <- update(fm_3ML, fixed = . ~ year + I(year^2) + sex + drug + ns(age, 3))
+```
+
+```{r}
+anova(fm_3ML_noInt, fm_3ML)
+```
+
+
 ### Question 6
+
+```{r, cache = TRUE}
+fm_3ML_noInt_AllLin <- update(fm_3ML, fixed = . ~ year + sex + drug + age)
+```
+
+```{r}
+anova(fm_3ML_noInt_AllLin, fm_3ML_noInt)
+```
+
+```{r, cache = TRUE}
+fm_3ML_noInt_LinTime <- update(fm_3ML, fixed = . ~ year + sex + drug + ns(age, 3))
+```
+
+```{r}
+anova(fm_3ML_noInt_LinTime, fm_3ML_noInt)
+```
+
+```{r, cache = TRUE}
+fm_3ML_noInt_LinAge <- update(fm_3ML, fixed = . ~ year + I(year^2) + sex + drug + age)
+```
+
+```{r}
+anova(fm_3ML_noInt_LinAge, fm_3ML_noInt)
+```
 
 ### Question 7
 

@@ -1,7 +1,7 @@
 ```{r}
-####################################################
-# Practical 1: Marginal Models for Continuous Data #
-####################################################
+#########################################################
+# Practical 2: Mixed Effects Models for Continuous Data #
+#########################################################
 
 # First we load the package we need
 library("lattice")
@@ -32,144 +32,82 @@ xyplot(prothrombin ~ year | id,
        xlab = "Time (years)", ylab = "Prothrombin Time (sec)")
 
 
-
 ######
 # Q2 #
 ######
-
-fm_1 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2)
-
 
 ######
 # Q3 #
 ######
 
-# correlation structures only
-fm_2 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
-            correlation = corCompSymm(form = ~ year | id))
-
-fm_3 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
-            correlation = corCAR1(form = ~ year | id))
-
-fm_4 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
-            correlation = corExp(form = ~ year | id))
-
-fm_5 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
-            correlation = corGaus(form = ~ year | id))
-
-# correlation structures + heteroscedastic errors
-fm_6 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
-            correlation = corCompSymm(form = ~ year | id),
-            weights = varExp(form = ~ year))
-
-fm_7 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
-            correlation = corCAR1(form = ~ year | id),
-            weights = varExp(form = ~ year))
-
-fm_8 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
-            correlation = corExp(form = ~ year | id),
-            weights = varExp(form = ~ year))
-
-fm_9 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
-            correlation = corGaus(form = ~ year | id),
-            weights = varExp(form = ~ year))
+# random intercepts
+fm_1 <- lme(prothrombin ~ (year + I(year^2)) * (sex + drug) + ns(age, 3) + 
+                ns(age, 3) : (sex + drug), data = pbc2, 
+            random = ~ 1 | id, subset = prothrombin < 18)
 
 
 ######
 # Q4 #
 ######
 
-# First we compare the models with homoscedastic errors
-anova(fm_2, fm_3, fm_4, fm_5)
+# random intercepts & random slopes
+fm_2 <- update(fm_1, random = ~ year | id)
 
-# and following the models with heteroscedastic errors
-anova(fm_6, fm_7, fm_8, fm_9)
+# LRT
+anova(fm_1, fm_2)
 
-# we observe that models fm_2 and fm_6 have the lowest AIC/BIC values
-# these are neste and we can compare them using a LRT
-anova(fm_2, fm_6)
+# random intercepts, linear & quadratic random slopes
+fm_3 <- update(fm_1, random = ~ year + I(year^2) | id)
+
+# LRT
+anova(fm_2, fm_3)
+
+# random intercepts, linear, quadratic & cubic random slopes
+fm_4 <- update(fm_1, random = ~ year + I(year^2) + I(year^3) | id)
+
+# LRT
+anova(fm_3, fm_4)
 
 
 ######
 # Q5 #
 ######
 
-# F-test
-anova(fm_6, Terms = c('ns(year, 3):sex', 'ns(year, 3):drug'))
+fm_3ML <- update(fm_3, method = "ML")
+fm_3ML_noInt <- update(fm_3ML, fixed = . ~ year + I(year^2) + sex + drug + ns(age, 3))
 
-
-# LRT
-fm_6_noInt <- gls(prothrombin ~ ns(year, 3) + sex + drug + age, data = pbc2, 
-                  correlation = corCompSymm(form = ~ year | id),
-                  weights = varExp(form = ~ year))
-
-anova(fm_6_noInt, fm_6)
-
-
-fm_6ML <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
-            correlation = corCompSymm(form = ~ year | id),
-            weights = varExp(form = ~ year), method = "ML")
-
-fm_6ML_noInt <- gls(prothrombin ~ ns(year, 3) + sex + drug + age, data = pbc2, 
-                  correlation = corCompSymm(form = ~ year | id),
-                  weights = varExp(form = ~ year), method = "ML")
-
-anova(fm_6ML_noInt, fm_6ML)
+anova(fm_3ML_noInt, fm_3ML)
 
 
 ######
 # Q6 #
 ######
 
-fm_6ML_noIntLin <- gls(prothrombin ~ year + sex + drug + age, data = pbc2, 
-                       correlation = corCompSymm(form = ~ year | id),
-                       weights = varExp(form = ~ year), method = "ML")
+# we first fit the model that assume that both time and age have a linear effect
+fm_3ML_noInt_AllLin <- update(fm_3ML, fixed = . ~ year + sex + drug + age)
 
-anova(fm_6ML_noIntLin, fm_6ML_noInt)
+# the corresponding LRT is
+anova(fm_3ML_noInt_AllLin, fm_3ML_noInt)
+
+# following we exclude the nonlinear effect of time but we keep the nonlinear
+# effect of age
+fm_3ML_noInt_LinTime <- update(fm_3ML, fixed = . ~ year + sex + drug + ns(age, 3))
+
+# the corresponding LRT is
+anova(fm_3ML_noInt_LinTime, fm_3ML_noInt)
+
+# then, we exclude the nonlinear effect of age, but we keep it for time
+fm_3ML_noInt_LinAge <- update(fm_3ML, fixed = . ~ year + I(year^2) + sex + drug + age)
+
+# the corresponding LRT is
+anova(fm_3ML_noInt_LinAge, fm_3ML_noInt)
 
 
 ######
 # Q7 #
 ######
 
-summary(fm_6ML_noIntLin)
+summary(fm_3ML_noInt_LinAge)
 
-getVarCov(fm_6ML_noIntLin, individual = 271)
-
-cov2cor(getVarCov(fm_6ML_noIntLin, individual = 271))
-
-
-######
-# Q8 #
-######
-
-effectPlotData <- function (object, newdata, orig_data) {
-    form <- formula(object)
-    namesVars <- all.vars(form)
-    respVar <- namesVars[1]
-    newdata[[respVar]] <- 0.01
-    betas <- if (!inherits(object, "lme")) coef(object) else fixef(object)
-    V <- if (inherits(object, "geeglm")) object$geese$vbeta else vcov(object)
-    orig_data <- orig_data[complete.cases(orig_data[namesVars]), ]
-    mfX <- model.frame(terms(form), data = orig_data)
-    X <- model.matrix(attr(mfX, "terms"), newdata)
-    pred <- c(X %*% betas)
-    ses <- sqrt(diag(X %*% V %*% t(X)))
-    newdata$pred <- pred
-    newdata$low <- pred - 1.96 * ses
-    newdata$upp <- pred + 1.96 * ses
-    newdata
-}
-
-# the data frame that contains the combination of values to
-# create the plot
-newDF <- with(pbc2, expand.grid(year = seq(0, 12, length.out = 25),
-                                sex = levels(sex), drug = levels(drug), age = 49))
-
-# the effects plot
-xyplot(pred + low + upp ~ year | sex*drug, 
-       data = effectPlotData(fm_6ML_noIntLin, newDF, pbc2), 
-       lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2, type = "l",
-       xlab = "Follow-up time (years)", ylab = "Prothrombin Time (sec)")
 ```
 

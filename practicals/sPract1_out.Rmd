@@ -63,6 +63,13 @@ Some observations
 patients.
 * No apparent differences can be seen between the two treatment groups, and between sexes.
 
+<span style="color:red">**Remove Outliers:**</span> The plots above show that some patients
+has extreme prothrombin times at some occasions; in order to be affected by these 
+outliers, for the remainder of this analysis we remove the `r sum(pbc2$prothrombin >= 18)` 
+prothrombin times which were larger than 18 sec, i.e., 
+```{r}
+pbc2 <- pbc2[pbc2$prothrombin < 18, ]
+```
 
 ### Question 2
 A basic all to function [gls()](https://goo.gl/0KBq4B) without specifying a correlation 
@@ -156,21 +163,23 @@ function:
 anova(fm_2, fm_3, fm_4, fm_5)
 ```
 
-We observe that the compound symmetry model `fm_2` has the lowest AIC and BIC values. 
+We observe that the continuous AR1 model `fm_3` has the lowest AIC and BIC values. 
 Next we compare the heteroscedastic models:
 ```{r}
 anova(fm_6, fm_7, fm_8, fm_9)
 ```
 
-Again the heteroscedastic compound symmetry model `fm_6` is the winner. Finally, we 
+Again the heteroscedastic continuous AR1 model `fm_7` is the winner. Finally, we 
 compare the homoscedastic versus the heteroscedastic compound symmetry models. These are 
 nested and therefore the [anova()](https://goo.gl/RuqkSV) function automatically performs
 the likelihood ratio test:
 ```{r}
-anova(fm_2, fm_6)
+anova(fm_3, fm_7)
 ```
 
-The result suggests that the heteroscedastic compound symmetry model fits the data better.
+The result suggests that the heteroscedastic continuous AR1 model does not provide a
+substantially better fit to the data. Hence, we continue the reminder of our analysis 
+using model `fm_3`
 
 ### Question 5
 We continue by testing whether we can drop all the interaction terms between the nonlinear
@@ -179,7 +188,7 @@ terms that we wish to test are `ns(year, 3):sex` and `ns(year, 3):drug`. Using t
 `Terms` argument of the [anova()](https://goo.gl/RuqkSV) function we perform the 
 corresponding F-test as we have seen in Section 2.9:
 ```{r}
-anova(fm_6, Terms = c('ns(year, 3):sex', 'ns(year, 3):drug'))
+anova(fm_3, Terms = c('ns(year, 3):sex', 'ns(year, 3):drug'))
 ```
 
 The results indicate that average longitudinal evolutions of prothrombin time do not 
@@ -188,16 +197,15 @@ same terms using a likelihood ratio test we need first to fit the model under th
 hypothesis, i.e., the model that excludes these terms. The call to 
 [gls()](https://goo.gl/0KBq4B) that fits this model is:
 ```{r}
-fm_6_noInt <- gls(prothrombin ~ ns(year, 3) + sex + drug + age, data = pbc2, 
-                  correlation = corCompSymm(form = ~ year | id),
-                  weights = varExp(form = ~ year))
+fm_3_noInt <- gls(prothrombin ~ ns(year, 3) + sex + drug + age, data = pbc2, 
+                  correlation = corCAR1(form = ~ year | id))
 ```
 
-To peform the likelihood ratio test we need to give the model under the null `fm_6_noInt`
-and the model under the alternative hypothesis `fm_6` to the 
+To perform the likelihood ratio test we need to give the model under the null `fm_3_noInt`
+and the model under the alternative hypothesis `fm_3` to the 
 [anova()](https://goo.gl/RuqkSV) function:
 ```{r}
-anova(fm_6_noInt, fm_6)
+anova(fm_3_noInt, fm_3)
 ```
 
 We obtain a result but also a **warning** message. In particular, as we have seen in 
@@ -208,61 +216,58 @@ Likelihood (REML). REML is the default method to fit the model in
 particular,
 
 ```{r}
-fm_6ML <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
-            correlation = corCompSymm(form = ~ year | id),
-            weights = varExp(form = ~ year), method = "ML")
+fm_3ML <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
+            correlation = corCAR1(form = ~ year | id), method = "ML")
 
-fm_6ML_noInt <- gls(prothrombin ~ ns(year, 3) + sex + drug + age, data = pbc2, 
-                  correlation = corCompSymm(form = ~ year | id),
-                  weights = varExp(form = ~ year), method = "ML")
+fm_3ML_noInt <- gls(prothrombin ~ ns(year, 3) + sex + drug + age, data = pbc2, 
+                  correlation = corCAR1(form = ~ year | id), method = "ML")
 
-anova(fm_6ML_noInt, fm_6ML)
+anova(fm_3ML_noInt, fm_3ML)
 ```
 
 Now the likelihood ratio test is performed without any warning messages, and we obtain 
-virtually the same p-value as in the F-test.
+a p-value of the same magnitude as in the F-test.
 
 ### Question 6
 To test whether the time effect is linear or nonlinear we can only employ a likelihood 
 ratio test. Following the same procedure as in *Question 5* above, we first fit the model
 under the null hypothesis, i.e., the model that assumes a linear time effect using as
-estimation metod the maximum likelihood. Then we use the 
+estimation method the maximum likelihood. Then we use the 
 [anova()](https://goo.gl/RuqkSV) function to calculate the p-value:
 ```{r}
-fm_6ML_noIntLin <- gls(prothrombin ~ year + sex + drug + age, data = pbc2, 
-                       correlation = corCompSymm(form = ~ year | id),
-                       weights = varExp(form = ~ year), method = "ML")
+fm_3ML_noIntLin <- gls(prothrombin ~ year + sex + drug + age, data = pbc2, 
+                       correlation = corCAR1(form = ~ year | id), method = "ML")
 
-anova(fm_6ML_noIntLin, fm_6ML_noInt)
+anova(fm_3ML_noIntLin, fm_3ML_noInt)
 ```
 
-The results suggest that we could continue by assuming that average prothrombin time has a
-linear time evolution.
+The results suggest that we could continue by assuming that the average prothrombin time 
+has a linear evolution in time.
 
 ### Question 7
 Using the [summary()](https://goo.gl/9ymFa6) function we obtain a detailed output of our 
-final model `fm_6ML_noIntLin`
+final model `fm_3ML_noIntLin`:
 ```{r}
-summary(fm_6ML_noIntLin)
+summary(fm_3ML_noIntLin)
 ```
 
 The interpretation of the regression coefficients is as follows:
 
 * For patients of the same sex and age at baseline who receive the same drug, each
-year the average prothrombin time increases by `r round(coef(fm_6ML_noIntLin)['year'], 2)`
+year the average prothrombin time increases by `r round(coef(fm_3ML_noIntLin)['year'], 2)`
 sec.
 
 * Female patients have on average a prothrombin time 
-`r abs(round(coef(fm_6ML_noIntLin)['sexfemale'], 2))` sec less than their male 
+`r abs(round(coef(fm_3ML_noIntLin)['sexfemale'], 2))` sec less than their male 
 counterparts of the same age who receive the same treatment and when compared on the same 
 follow-up time.
 
 * Patients who receive the active treatment have on average a prothrombin time 
-`r abs(round(coef(fm_6ML_noIntLin)['drugD-penicil'], 2))` sec less than the placebo 
+`r abs(round(coef(fm_3ML_noIntLin)['drugD-penicil'], 2))` sec less than the placebo 
 patients of the same age and sex when compared on the same follow-up time.
 
 * Each year increase in baseline age increases the average prothrombin time by
-`r abs(round(coef(fm_6ML_noIntLin)['age'], 2))` sec for patients of the same sex, who 
+`r abs(round(coef(fm_3ML_noIntLin)['age'], 2))` sec for patients of the same sex, who 
 receive the same treatment and are compared on the same follow-up time.
 
 To investigate the covariance structure we use function 
@@ -272,14 +277,13 @@ the fact that patients have different number of repeated measurements, argument
 subject we wish to inspect the fitted covariance matrix. In the following example we 
 choose Patient 271 who has eight measurements:
 ```{r}
-getVarCov(fm_6ML_noIntLin, individual = 271)
+getVarCov(fm_3ML_noIntLin, individual = 271)
 ```
 
-From the diagonal elements we observe that variance of the error terms increases quite 
-fast in time. To transform the covariance to correlation we use function 
+To transform the covariance to correlation we use function 
 [cov2cor()](https://goo.gl/ekib0c):
 ```{r}
-cov2cor(getVarCov(fm_6ML_noIntLin, individual = 271))
+cov2cor(getVarCov(fm_3ML_noIntLin, individual = 271))
 ```
 
 
@@ -322,7 +326,45 @@ Finally, we create the plot using the following call to [xyplot()](https://goo.g
 that utilizes in the `data` argument function `effectPlotData()`:
 ```{r}
 xyplot(pred + low + upp ~ year | sex*drug, 
-       data = effectPlotData(fm_6ML_noIntLin, newDF, pbc2), 
+       data = effectPlotData(fm_3ML_noIntLin, newDF, pbc2), 
        lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2, type = "l",
        xlab = "Follow-up time (years)", ylab = "Prothrombin Time (sec)")
 ```
+
+
+## Question 9
+To investigate whether the assumption for the residuals terms are satisfied we can inspect
+the scatterplots of the residuals versus the fitted values. As we have seen in Section 
+2.11, there are two types of residuals we can compute the *standardized residuals* and the
+*normalized residuals*. We shart with the standardized residuals and we produce the overall
+scatteplot of these residuals versus the fitted values, and then we split per sex and 
+treatment allocation:
+```{r}
+plot(fm_3ML_noIntLin, resid(., type = "p") ~ fitted(.), 
+     type = c("p", "smooth"), lwd = 3)
+```
+```{r}
+plot(fm_3ML_noIntLin, resid(., type = "p") ~ fitted(.) | sex, 
+     type = c("p", "smooth"), lwd = 3)
+```
+```{r}
+plot(fm_3ML_noIntLin, resid(., type = "p") ~ fitted(.) | drug, 
+     type = c("p", "smooth"), lwd = 3)
+```
+
+We continue by producing the same scatterplots but for the normalized residuals now:
+```{r}
+plot(fm_3ML_noIntLin, resid(., type = "n") ~ fitted(.), 
+     type = c("p", "smooth"), lwd = 3)
+```
+```{r}
+plot(fm_3ML_noIntLin, resid(., type = "n") ~ fitted(.) | sex, 
+     type = c("p", "smooth"), lwd = 3)
+```
+```{r}
+plot(fm_3ML_noIntLin, resid(., type = "n") ~ fitted(.) | drug, 
+     type = c("p", "smooth"), lwd = 3)
+```
+
+From all six plots we can observe that there still some outlying observations, but the
+general shapes do not suggest any serious misfit.
