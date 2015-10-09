@@ -115,7 +115,7 @@ close(con)</code></pre>
 </div>
 <div id="question-2" class="section level3">
 <h3>Question 2</h3>
-<p>A basic all to function <a href="https://goo.gl/0KBq4B">gls()</a> without specifying a correlation structure (i.e., argument <code>correlation</code>) or a variance function (i.e., argument <code>weights</code>) fits a simple linear regression model (i.e., it is equivalent to <a href="https://goo.gl/tewND3">lm()</a> and postulates that the repeated measurements of each patient are uncorrelated). To include the natural cubic splines of time with 3 degrees of freedom we need use function <a href="https://goo.gl/0g115B">ns()</a>. Hence, the call to <a href="https://goo.gl/0KBq4B">gls()</a> that includes the nonlinear time effect, the main effect of age, sex and drug, and the interaction terms between the nonlinear time and sex and drug is:</p>
+<p>A basic call to function <a href="https://goo.gl/0KBq4B">gls()</a> without specifying a correlation structure (i.e., argument <code>correlation</code>) or a variance function (i.e., argument <code>weights</code>) fits a simple linear regression model (i.e., it is equivalent to <a href="https://goo.gl/tewND3">lm()</a> and postulates that the repeated measurements of each patient are uncorrelated). To include the natural cubic splines of time with 3 degrees of freedom we need use function <a href="https://goo.gl/0g115B">ns()</a>. Hence, the call to <a href="https://goo.gl/0KBq4B">gls()</a> that includes the nonlinear time effect, the main effect of age, sex and drug, and the interaction terms between the nonlinear time and sex and drug is:</p>
 <pre class="r"><code>fm_1 &lt;- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2)
 
 summary(fm_1)</code></pre>

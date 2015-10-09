@@ -72,7 +72,7 @@ pbc2 <- pbc2[pbc2$prothrombin < 18, ]
 ```
 
 ### Question 2
-A basic all to function [gls()](https://goo.gl/0KBq4B) without specifying a correlation 
+A basic call to function [gls()](https://goo.gl/0KBq4B) without specifying a correlation 
 structure (i.e., argument `correlation`) or a variance function (i.e., argument `weights`)
 fits a simple linear regression model (i.e., it is equivalent to 
 [lm()](https://goo.gl/tewND3) and postulates that the repeated measurements of each 

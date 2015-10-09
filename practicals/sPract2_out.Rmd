@@ -18,18 +18,31 @@ options(warn = (-1))
 ```
 
 ### Question 1
-We produce the plot of the subject-specific trajectories separately per treatment group with
-a superimposed loess curve. This achieved with the following call to function 
-[xyplot()](https://goo.gl/cGSjZk):
+The following piece of code extracts the number of repeated measurements per patient:
 ```{r}
 length.no.NA <- function (x) sum(!is.na(x))
 ns <- with(pbc2, tapply(prothrombin, id, length.no.NA))
-ns <- names(ns)[ns >= 6]
 ```
 
+And we produce numerical summaries and a visualization using a boxplot:
+```{r}
+c(summary(ns), sd = sd(ns))
+boxplot(ns, col = "lightgrey", ylab = "Number Repeated Measurements per Patient")
+```
+
+The median number of repeated measurements per individual is five, and only 25% of the 
+patients have less than three measurements. Hence, we have sufficient information to model
+potential nonlinearities in the subject-specific trajectories.
+
+### Question 2
+We produce the plot of the subject-specific trajectories separately per treatment group 
+with a superimposed loess curve. This plot is produced for patients who have more than six
+measurements. The plot is then produced with the following call to 
+function[xyplot()](https://goo.gl/cGSjZk) (the same code is run twice with different seeds
+in order to get different samples of patients):
 ```{r}
 set.seed(123)
-ids <- sample(ns, 16) 
+ids <- sample(names(ns)[ns >= 6], 16) 
 xyplot(prothrombin ~ year | id,
        panel = function (x, y, ...) {
            panel.xyplot(x, y, type = "p", col = 1, ...)
@@ -40,7 +53,7 @@ xyplot(prothrombin ~ year | id,
 
 ```{r}
 set.seed(321)
-ids <- sample(ns, 16) 
+ids <- sample(names(ns)[ns >= 6], 16) 
 xyplot(prothrombin ~ year | id,
        panel = function (x, y, ...) {
            panel.xyplot(x, y, type = "p", col = 1, ...)
@@ -48,12 +61,25 @@ xyplot(prothrombin ~ year | id,
        }, data = pbc2, subset = id %in% ids, layout = c(4, 4), as.table = TRUE, 
        xlab = "Time (years)", ylab = "Prothrombin Time (sec)")
 ```
-
-
-
-### Question 2
+```{r, echo = FALSE}
+rm(list = ".Random.seed", envir = globalenv())
+```
 
 ### Question 3
+To fit the linear mixed effects model we use function [lme()](https://goo.gl/4fngXl). The
+basic call to this function requires to specify argument `fixed` which is a formula 
+providing the fixed-effects structure, argument `random` which is a formula providing 
+the random-effects structure, and `data` the data frame that contains the variables we 
+need. Hence, the call to [lme()](https://goo.gl/4fngXl) to fit the mixed for prothrombin 
+time with 
+
+* fixed effects: linear and quadratic time evolutions, the nonlinear effect of age 
+using natural cubic splines with 3 degrees of freedom, the main effects of sex and drug, 
+and the interactions of time with sex and drug, and age with sex and drug, and
+
+* random effects: random intercepts
+
+is:
 
 ```{r}
 fm_1 <- lme(prothrombin ~ (year + I(year^2)) * (sex + drug) + ns(age, 3) + 
@@ -61,77 +87,132 @@ fm_1 <- lme(prothrombin ~ (year + I(year^2)) * (sex + drug) + ns(age, 3) +
             random = ~ 1 | id, subset = prothrombin < 18)
 ```
 
+Note that we use the `subset` argument to exclude the prothrombin times which are larger 
+than 18 sec.
 
 ### Question 4
-
+We will start expanding the random-effects structure, while keeping the same fixed effects,
+in order to appropriately model the correlations in the repeated prothrombin time 
+measurements. We start by including the linear random slopes term; note that instead of
+calling [lme()](https://goo.gl/4fngXl) again and having to specify all arguments, we just
+use function `update()`:
 ```{r}
 fm_2 <- update(fm_1, random = ~ year | id)
 ```
 
+To test whether the random slopes terms improves the fit of the model we perform the 
+likelihood ratio test using the [anova()](https://goo.gl/88h4GZ) function:
 ```{r}
 anova(fm_1, fm_2)
 ```
 
+The results suggest that this term significantly improves the fit. We continue by 
+including the quadratic random slopes term, i.e.,
 ```{r, cache = TRUE}
 fm_3 <- update(fm_1, random = ~ year + I(year^2) | id)
 ```
 
+Again we test using the likelihood ratio test:
 ```{r}
 anova(fm_2, fm_3)
 ```
 
+The fit improves again significantly. We continue by adding the cubic random slopes term,
+i.e.,
 ```{r, cache = TRUE}
 fm_4 <- update(fm_1, random = ~ year + I(year^2) + I(year^3) | id)
 ```
 
+And we test again using likelihood ratio test:
 ```{r}
 anova(fm_3, fm_4)
 ```
 
-### Question 5
+From this last test we obtain virtually the same likelihood value, and a p-value almost 
+equal to 1. Hence, the cubic random slopes term does not seem to further improve the fit, 
+and therefore we will continue with model `fm_3`.
 
+### Question 5
+Having chosen the random-effects structure we turn now in the fixed effects. We will first
+test whether the interaction terms have an important contribution in the fit of the model.
+Due to the fact that we have also interaction of the time variable with baseline 
+covariates (i.e., sex and drug) we cannot compute the F-test because the denominator 
+degrees of freedom cannot be (reliably) defined. To this end, we will perform a 
+likelihood ratio test. Remember, as we have seen in **Practical 1**, to perform a 
+likelihood ratio test we need to fit the model under maximum likelihood (and not the 
+restricted maximum likelihood-the default in [lme()](https://goo.gl/4fngXl)). Thus,
+in the following piece of code we first re-fit model `fm_3` using maximum likelihood and
+then we fit the model that excludes the interaction terms (note that we efficiently use
+function `update()` again):
 ```{r, cache = TRUE}
 fm_3ML <- update(fm_3, method = "ML")
 fm_3ML_noInt <- update(fm_3ML, fixed = . ~ year + I(year^2) + sex + drug + ns(age, 3))
 ```
 
+Then we can compare the two models using the [anova()](https://goo.gl/88h4GZ) function:
 ```{r}
 anova(fm_3ML_noInt, fm_3ML)
 ```
 
+The results suggest that the effects of time and age on the prothrombin time do not 
+differ between males and females, and between treated and non-treated patients.
 
 ### Question 6
-
+We continue by testing the nonlinear terms. Similarly to what we did for the interaction
+terms, we first perform the omnibus test for all the nonlinear terms in the model. As a 
+initial step we need to fit the model that excludes all nonlinear terms, i.e.,
 ```{r, cache = TRUE}
 fm_3ML_noInt_AllLin <- update(fm_3ML, fixed = . ~ year + sex + drug + age)
 ```
 
+Then we test using [anova()](https://goo.gl/88h4GZ) function:
 ```{r}
 anova(fm_3ML_noInt_AllLin, fm_3ML_noInt)
 ```
 
+We have found a significant difference between the two models, meaning that some of the 
+nonlinear terms have an important contribution to the model. We will proceed to find which
+nonlinear terms we need. First, we are going to test the quadratic term for the time 
+effect. To do this, we fit the model under the corresponding null hypothesis (i.e., we
+drop the quadratic term for time but we keep the nonlinear terms for age):
 ```{r, cache = TRUE}
 fm_3ML_noInt_LinTime <- update(fm_3ML, fixed = . ~ year + sex + drug + ns(age, 3))
 ```
 
+The corresponding likelihood ratio test gives:
 ```{r}
 anova(fm_3ML_noInt_LinTime, fm_3ML_noInt)
 ```
 
+The result is significant implying the quadratic term is required. We continue by testing
+the nonlinear age effect, by fitting the model under the corresponding null hypothesis 
+(i.e., we now keep the quadratic term for time and we drop the nonlinear terms for age):
 ```{r, cache = TRUE}
 fm_3ML_noInt_LinAge <- update(fm_3ML, fixed = . ~ year + I(year^2) + sex + drug + age)
 ```
 
+The corresponding likelihood ratio test gives:
 ```{r}
 anova(fm_3ML_noInt_LinAge, fm_3ML_noInt)
 ```
 
-### Question 7
+We have not found a significant difference between the two models, which means that we 
+did not find any support from the data for a nonlinear age effect. Hence, we are going to
+continue using model `fm_3ML_noInt_LinAge`.
 
+### Question 7
+Using the [summary()](https://goo.gl/u69ACN) function we obtain a detailed output of our 
+final model `fm_3ML_noInt_LinAge`:
 ```{r}
 summary(fm_3ML_noInt_LinAge)
 ```
 
+The interpretation of the regression coefficients is as follows:
+
+* For patients of the same sex and age at baseline who receive the same drug, each
+year the average prothrombin time increases by **NA** sec.
+
+The estimated random effects covariance matrix and the induced correlation matrix are:
 ```{r}
 getVarCov(fm_3ML_noInt_LinAge, individuals = 271)
 ```
@@ -139,6 +220,7 @@ getVarCov(fm_3ML_noInt_LinAge, individuals = 271)
 cov2cor(getVarCov(fm_3ML_noInt_LinAge, individuals = 271))
 ```
 
+The estimated marginal covariance matrix and the induced correlation matrix are:
 ```{r}
 getVarCov(fm_3ML_noInt_LinAge, individuals = 271, type = "marginal")
 ```
@@ -146,15 +228,25 @@ getVarCov(fm_3ML_noInt_LinAge, individuals = 271, type = "marginal")
 cov2cor(getVarCov(fm_3ML_noInt_LinAge, individuals = 271, type = "marginal")[[1]])
 ```
 
+It is useful to compare these matrices and the results we obtained from the mixed model
+analysis to the results we have obtained from our final model in **Practical 1**. As you
+will see the values AIC and BIC of the mixed models are several orders of the magnitude 
+lower than the corresponding marginal model.
+
 
 ### Question 8
-
+To compare the marginal and subject-specific predictions from model `fm_3ML_noInt_LinAge`
+we will use function [fitted()](https://goo.gl/cCuO4T). Argument `level` of this function
+specifies the type of fitted values we obtain. The relevant calls are (first we define
+the version of the dataset the excludes the outliers):
 ```{r}
 pbc2n <- pbc2[pbc2$prothrombin < 18, ]
-pbc2n$fitted_marg <- fitted(fm_3ML_noInt_LinAge, level = 0)
-pbc2n$fitted_subj <- fitted(fm_3ML_noInt_LinAge, level = 1)
+pbc2n$fitted_marg <- fitted(fm_3ML_noInt_LinAge, level = 0) # marginal
+pbc2n$fitted_subj <- fitted(fm_3ML_noInt_LinAge, level = 1) # subject-specific
 ```
 
+Then we create the plot using a similar call to function [xyplot()](https://goo.gl/KhfGGL)
+as in Section 3.4:
 ```{r}
 ids <- c(133, 36, 180, 11, 168, 116, 70, 58, 82, 104, 
          43, 21, 101, 210, 176, 157)
@@ -169,23 +261,114 @@ xyplot(prothrombin + fitted_marg + fitted_subj ~ year | id, data = pbc2n,
        xlab = "Time (years)", ylab = "Prothrombin Time (sec)")
 ```
 
+As we have seen in Section 3.4, also here we observe that the subject-specific predictions
+are much closer to the actual data of each subject than the corresponding marginal 
+predictions.
+
 
 ### Question 9
+To create the effect plot we first need to define the function `effectPlotData()` which we
+have introduced in Section 3.2. This function takes a fitted mixed model, the data frame 
+`newdata` based on which the plot will be made, and the original data we used to fit the 
+model, and returns the predictions for each row of `newdata` with the corresponding lower 
+and upper limits of the 95% confidence intervals.
+```{r}
+effectPlotData <- function (object, newdata, orig_data) {
+    form <- formula(object)
+    namesVars <- all.vars(form)
+    respVar <- namesVars[1]
+    newdata[[respVar]] <- 0.01
+    betas <- if (!inherits(object, "lme")) coef(object) else fixef(object)
+    V <- if (inherits(object, "geeglm")) object$geese$vbeta else vcov(object)
+    orig_data <- orig_data[complete.cases(orig_data[namesVars]), ]
+    mfX <- model.frame(terms(form), data = orig_data)
+    X <- model.matrix(attr(mfX, "terms"), newdata)
+    pred <- c(X %*% betas)
+    ses <- sqrt(diag(X %*% V %*% t(X)))
+    newdata$pred <- pred
+    newdata$low <- pred - 1.96 * ses
+    newdata$upp <- pred + 1.96 * ses
+    newdata
+}
+```
 
+Next we define the data frame with the combination of values of the covariates for which
+we would like to create the plot. In our example, we set a regular sequence of 25 values 
+from 0 to 12 for the time variable, the levels of the sex variable, and the levels of the 
+drug variable:
+```{r}
+newDF <- with(pbc2n, expand.grid(year = seq(0, 12, length.out = 25),
+                                sex = levels(sex), drug = levels(drug)))
+```
+
+As requested in this Question, we need to set the age variable in the corresponding 
+median of the four groups (i.e., males in placebo, females in placebo, males in active 
+treatment & females in active treatment) from the original dataset. This is achieved with
+the following piece of code:
+```{r}
+pbc2n.id <- pbc2n[!duplicated(pbc2n$id), ]
+median_age <- with(pbc2n.id, tapply(age, list(sex, drug), median))
+ns <- with(newDF, tapply(year, list(sex, drug), length))
+newDF$age <- rep(c(median_age), c(ns))
+```
+
+The first line defines the version of the dataset that contains a single row per patient
+(if we would calculate the median age in each group in the original dataset we would not
+obtain a correct result because patients have different numbers of repeated measurements).
+The second line computes the median age in each of the four groups. The third line 
+computes the number of rows that correspond to each of the four groups in the data frame
+`newDF`. The final line puts the median ages in the corresponding rows. The effect plot is 
+created with the following call to [xyplot()](https://goo.gl/KhfGGL):
+```{r}
+xyplot(pred + low + upp ~ year | sex * drug,
+       data = effectPlotData(fm_3ML_noInt_LinAge, newDF, pbc2n), 
+       lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2, type = "l",
+       xlab = "Follow-up time (years)",
+       ylab = "Prothrombin Time (sec)")
+```
 
 ### Question 10
-
+To investigate whether the assumption for the residuals terms are satisfied we can inspect
+the scatterplots of the residuals versus the fitted values. As we have seen in Section 
+3.11, there are two types of residuals we can compute in mixed models, namely the 
+*marginal residuals* and the *conditional residuals*. We shart with the standardized 
+conditional residuals and we produce the overall scatteplot of these residuals versus the 
+fitted values, and then we split per sex and treatment allocation:
 ```{r}
 plot(fm_3ML_noInt_LinAge, resid(., type = "p") ~ fitted(.), 
      type = c("p", "smooth"), lwd = 3)
 ```
-
 ```{r}
 plot(fm_3ML_noInt_LinAge, resid(., type = "p") ~ fitted(.) | sex, 
      type = c("p", "smooth"), lwd = 3)
 ```
-
 ```{r}
 plot(fm_3ML_noInt_LinAge, resid(., type = "p") ~ fitted(.) | drug, 
      type = c("p", "smooth"), lwd = 3)
 ```
+
+We continue by producing the same scatterplots but for the marginal residuals now:
+```{r}
+plot(fm_3ML_noInt_LinAge, resid(., type = "p", level = 0) ~ fitted(., level = 0), 
+     type = c("p", "smooth"), lwd = 3)
+```
+```{r}
+plot(fm_3ML_noInt_LinAge, resid(., type = "p", level = 0) ~ fitted(., level = 0) | sex, 
+     type = c("p", "smooth"), lwd = 3)
+```
+```{r}
+plot(fm_3ML_noInt_LinAge, resid(., type = "p", level = 0) ~ fitted(., level = 0) | drug, 
+     type = c("p", "smooth"), lwd = 3)
+```
+
+Some obsrvations:
+
+* the conditional residuals show small faint signs of (remaining) heteroscedasticity, with
+more spread for larger fitted values. Though this behaviour may be influenced by the 
+couple outlying measurements that still remain in the dataset.
+
+* the marginal residuals show a clear systematic trend, with (almost) only negative 
+residuals for large fitted values. Even though this would seem as an alarming sign of 
+model misfit, we should take it with a grain of salt. As we will see in Chapter 6, 
+residual plots are susceptible to produce misleading conclusions due to incomplete data
+(i.e., dropout).
