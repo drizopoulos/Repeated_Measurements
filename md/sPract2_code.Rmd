@@ -17,24 +17,25 @@ close(con)
 # Q1 #
 ######
 
-# we find which patient have more than six measurements
 length.no.NA <- function (x) sum(!is.na(x))
 ns <- with(pbc2, tapply(prothrombin, id, length.no.NA))
-ns <- names(ns)[ns >= 6]
 
-# run the following piece multiple times to get an idea
-ids <- sample(ns, 16) 
-xyplot(prothrombin ~ year | id,
-       panel = function (x, y, ...) {
-           panel.xyplot(x, y, type = "p", col = 1, ...)
-           panel.loess(x, y, col = 2, lwd = 2, sspan = 0.8)
-       }, data = pbc2, subset = id %in% ids, layout = c(4, 4), as.table = TRUE, 
-       xlab = "Time (years)", ylab = "Prothrombin Time (sec)")
+c(summary(ns), sd = sd(ns))
+boxplot(ns, col = "lightgrey", ylab = "Number Repeated Measurements per Patient")
 
 
 ######
 # Q2 #
 ######
+
+ids <- sample(names(ns)[ns >= 6], 16) 
+xyplot(prothrombin ~ year | id,
+       panel = function (x, y, ...) {
+           panel.xyplot(x, y, type = "p", col = 1, ...)
+           panel.loess(x, y, col = 2, lwd = 2, span = 0.8)
+       }, data = pbc2, subset = id %in% ids, layout = c(4, 4), as.table = TRUE, 
+       xlab = "Time (years)", ylab = "Prothrombin Time (sec)")
+
 
 ######
 # Q3 #

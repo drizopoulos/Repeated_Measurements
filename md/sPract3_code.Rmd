@@ -1,6 +1,59 @@
 ```{r}
-# nonlinear time effects & interaction with treatment
+##################################################
+# Practical 3: Marginal Models for Discrete Data #
+##################################################
 
-# Test 3
+# First we load the package we need
+library("lattice")
+library("geepack")
+library("splines")
+
+# We load the data from GitHub
+con <- url("https://raw.github.com/drizopoulos/Repeated_Measurements/master/Data.RData")
+load(con)
+close(con)
+
+######
+# Q1 #
+######
+
+pbc2$Dich_prothro <- with()
+
+######
+# Q2 #
+######
+
+######
+# Q3 #
+######
+
+######
+# Q4 #
+######
+
+######
+# Q5 #
+######
+
+######
+# Q6 #
+######
+
+######
+# Q7 #
+######
+
+######
+# Q8 #
+######
+
+######
+# Q9 #
+######
+
+#######
+# Q10 #
+#######
+
 ```
 

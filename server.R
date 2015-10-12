@@ -1936,7 +1936,7 @@ shinyServer(function(input, output) {
         } else if (input$chapter == "Practicals" && input$section == "Practical 3"
                    && !is.null(v$Pract3)) {
             v$Pract2 <- v$Pract1 <- v$Pract4 <- NULL
-            includeHTML("./practicals/sPract1_out.html")
+            includeHTML("./practicals/sPract3_out.html")
         } else if (input$chapter == "Practicals" && input$section == "Practical 4"
                    && !is.null(v$Pract4)) {
             v$Pract2 <- v$Pract3 <- v$Pract1 <- NULL
