@@ -19,18 +19,198 @@ options(warn = (-1))
 
 ### Question 1
 
+```{r}
+pbc2$Dicht_prothro <- as.numeric(with(pbc2, prothrombin < 11 | prothrombin > 13))
+```
+
 ### Question 2
 
 ### Question 3
 
+```{r}
+fm_1 <- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age + age : sex, 
+               family = binomial(), data = pbc2, id = id, corstr = "exchangeable")
+
+summary(fm_1)
+```
+
 ### Question 4
+
+```{r}
+fm_2 <- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age + age : sex, 
+               family = binomial(), data = pbc2, id = id, corstr = "independence")
+
+fm_3 <- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age + age : sex, 
+               family = binomial(), data = pbc2, id = id, corstr = "ar1")
+```
+
+```{r}
+# parameters
+betas <- cbind("independence" = coef(fm_2), 
+            "exchangeable" = coef(fm_1),
+            "AR1" = coef(fm_3))
+
+# Sandwich standard errors
+extractSEs <- function (model) sqrt(diag(model$geese$vbeta))
+ses_sand <- cbind("independence" = extractSEs(fm_2), 
+            "exchangeable" = extractSEs(fm_1),
+            "AR1" = extractSEs(fm_3))
+
+# Naive standard errors
+extractSEs_naive <- function (model) sqrt(diag(model$geese$vbeta.naiv))
+ses_naiv <- cbind("independence" = extractSEs_naive(fm_2), 
+            "exchangeable" = extractSEs_naive(fm_1),
+            "AR1" = extractSEs_naive(fm_3))
+```
+
+```{r}
+dat <- data.frame(
+    est = c(betas), 
+    lower_sand = unname(c(betas) - 1.96 * c(ses_sand)),
+    lower_naiv = unname(c(betas) - 1.96 * c(ses_naiv)),
+    upper_sand = unname(c(betas) + 1.96 * c(ses_sand)),
+    upper_naiv = unname(c(betas) + 1.96 * c(ses_naiv)),
+    parm = gl(11, 1, 33, labels = rownames(betas)),
+    work_corr = gl(3, 11, labels = colnames(betas))
+)
+```
+
+```{r}
+prepanel.ci2 <- function (x, y, lx, ux, lx2, ux2, subscripts, ...) {
+    x <- as.numeric(x)
+    lx <- as.numeric(lx[subscripts])
+    ux <- as.numeric(ux[subscripts])
+    lx2 <- as.numeric(lx2[subscripts])
+    ux2 <- as.numeric(ux2[subscripts])
+    list(xlim = range(x, ux, lx, ux2, lx2, finite = TRUE))
+}
+panel.ci2 <- function (x, y, lx, ux, lx2, ux2, subscripts, pch = 16, ...) {
+    x <- as.numeric(x)
+    y <- as.numeric(y)
+    lx <- as.numeric(lx[subscripts])
+    ux <- as.numeric(ux[subscripts])
+    lx2 <- as.numeric(lx2[subscripts])
+    ux2 <- as.numeric(ux2[subscripts])
+    panel.abline(h = c(unique(y)), 
+                 col = "grey", lty = 2, lwd = 1.5)
+    panel.arrows(lx, y, ux, y,
+                 length = 0.1, unit = "native",
+                 angle = 90, code = 3, lwd = 2, col = "blue")
+    panel.arrows(lx2, y + 0.08, ux2, y + 0.08,
+                 length = 0.1, unit = "native",
+                 angle = 90, code = 3, lwd = 2, col = "magenta2")
+    panel.xyplot(x, y, pch = pch, col = 2, cex = 0.9, ...)
+    panel.xyplot(x, y + 0.08, pch = pch, col = 2, cex = 0.9, ...)
+}
+```
+
+```{r}
+dotplot(work_corr ~  est | parm, lx = dat$lower_sand, lx2 = dat$lower_naiv, 
+        ux = dat$upper_sand, ux2 = dat$upper_naiv,
+        data = dat, xlab = "", prepanel = prepanel.ci2, panel = panel.ci2, 
+        as.table = TRUE, scales = list(x = list(relation = "free")),
+        key = simpleKey(c("Robust Standard Errors", "Naive Standard Errors"), 
+                        points = FALSE, lines = TRUE, col = c("blue", "magenta2")))
+```
 
 ### Question 5
 
+```{r}
+fm_3_noInt <- geeglm(Dicht_prothro ~ ns(year, 2) + drug + sex + age, 
+               family = binomial(), data = pbc2, id = id, corstr = "ar1")
+
+anova(fm_3_noInt, fm_3)
+```
+
+```{r}
+fm_3_IntDrug <- geeglm(Dicht_prothro ~ ns(year, 2) * sex + drug + age + age : sex, 
+                       family = binomial(), data = pbc2, id = id, corstr = "ar1")
+
+anova(fm_3_IntDrug, fm_3)
+```
+
+```{r}
+fm_3_IntSex <- geeglm(Dicht_prothro ~ ns(year, 2) * drug + sex + age, 
+                       family = binomial(), data = pbc2, id = id, corstr = "ar1")
+
+anova(fm_3_IntSex, fm_3)
+```
+
+```{r}
+fm_3_IntSexTime <- geeglm(Dicht_prothro ~ ns(year, 2) * drug + sex + age : sex, 
+                       family = binomial(), data = pbc2, id = id, corstr = "ar1")
+
+anova(fm_3_IntSexTime, fm_3)
+```
+
+```{r}
+fm_3_IntSexAge <- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age, 
+                       family = binomial(), data = pbc2, id = id, corstr = "ar1")
+
+anova(fm_3_IntSexAge, fm_3)
+```
+
 ### Question 6
+
+```{r}
+fm_3_IntSexAge_Lin <- geeglm(Dicht_prothro ~ year * (drug + sex) + age, 
+                       family = binomial(), data = pbc2, id = id, corstr = "ar1")
+
+anova(fm_3_IntSexAge_Lin, fm_3_IntSexAge)
+```
 
 ### Question 7
 
 ### Question 8
 
+```{r}
+summary(fm_3_IntSexAge)
+```
 
+### Question 9
+
+```{r}
+effectPlotData <- function (object, newdata, orig_data) {
+    form <- formula(object)
+    namesVars <- all.vars(form)
+    respVar <- namesVars[1]
+    newdata[[respVar]] <- 0.01
+    betas <- if (!inherits(object, "lme")) coef(object) else fixef(object)
+    V <- if (inherits(object, "geeglm")) object$geese$vbeta else vcov(object)
+    orig_data <- orig_data[complete.cases(orig_data[namesVars]), ]
+    mfX <- model.frame(terms(form), data = orig_data)
+    X <- model.matrix(attr(mfX, "terms"), newdata)
+    pred <- c(X %*% betas)
+    ses <- sqrt(diag(X %*% V %*% t(X)))
+    newdata$pred <- pred
+    newdata$low <- pred - 1.96 * ses
+    newdata$upp <- pred + 1.96 * ses
+    newdata
+}
+```
+
+```{r}
+newDF <- with(pbc2, expand.grid(
+    year = seq(0, 12, length.out = 25),
+    age = 49,
+    drug = levels(drug),
+    sex = levels(sex)
+))
+```
+
+```{r}
+xyplot(pred + low + upp ~ year | sex * drug, 
+       data = effectPlotData(fm_3_IntSexAge, newDF, pbc2), 
+       lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2, type = "l",
+       xlab = "Follow-up time (years)",
+       ylab = "log Odds")
+```
+
+```{r}
+expit <- function (x) exp(x) / (1 + exp(x))
+xyplot(expit(pred) + expit(low) + expit(upp) ~ year | sex * drug, 
+       data = effectPlotData(fm_3_IntSexAge, newDF, pbc2), 
+       lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2, type = "l",
+       xlab = "Follow-up time (years)",
+       ylab = "Probabilities")
+```

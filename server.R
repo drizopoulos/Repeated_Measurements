@@ -1326,21 +1326,26 @@ shinyServer(function(input, output) {
     
     output$s45_choice <- renderUI({
         if (input$chapter == "Chapter 4" && input$section == "Section 4.5")
-            radioButtons("gee_Work_Corr", "Select:", 
-                         c("Coefficients", "Robust Standard Errors", 
-                           "Naive Standard Errors"))
+            fluidRow(column(7, radioButtons("gee_Work_Corr", "Select:", 
+                                            c("Coefficients", "Robust Standard Errors", 
+                                              "Naive Standard Errors"))),
+                     column(5, checkboxInput("s45_CoefPlot", "Coefficients' Plot")))
     })
     
-    
     output$s45_code_gee <- renderText({
-        if (input$chapter == "Chapter 4" && input$section == "Section 4.5") {
+        if (input$chapter == "Chapter 4" && input$section == "Section 4.5"
+            && naf(input$s45_CoefPlot) && !input$s45_CoefPlot) {
             includeMarkdown("./md/s45_code_gee.Rmd")
+        } else if (input$chapter == "Chapter 4" && input$section == "Section 4.5"
+                      && input$s45_CoefPlot) {
+            includeMarkdown("./md/s45_code_plot.Rmd")
         }
     })
     
     output$s45_Routput_gee <- renderPrint({
         if (input$chapter == "Chapter 4" && input$section == "Section 4.5"
-            && naf(input$gee_Work_Corr) && input$gee_Work_Corr == "Coefficients") {
+            && naf(input$gee_Work_Corr) && input$gee_Work_Corr == "Coefficients"
+            && naf(input$s45_CoefPlot) && !input$s45_CoefPlot) {
             extractSEs <- function (model) sqrt(diag(model$geese$vbeta))
             extractSEs_naive <- function (model) sqrt(diag(model$geese$vbeta.naiv))
             aids$lowCD4 <- aids$CD4 < sqrt(150)
@@ -1375,7 +1380,9 @@ shinyServer(function(input, output) {
                                    "AR1" = coef(fm_s45_ar1),
                                    "unstructured" = coef(fm_s45_uns)), 3))
         } else if (input$chapter == "Chapter 4" && input$section == "Section 4.5"
-                   && naf(input$gee_Work_Corr) && input$gee_Work_Corr == "Robust Standard Errors") {
+                   && naf(input$gee_Work_Corr) && 
+                   input$gee_Work_Corr == "Robust Standard Errors"
+                   && naf(input$s45_CoefPlot) && !input$s45_CoefPlot) {
             extractSEs <- function (model) sqrt(diag(model$geese$vbeta))
             extractSEs_naive <- function (model) sqrt(diag(model$geese$vbeta.naiv))
             aids$lowCD4 <- aids$CD4 < sqrt(150)
@@ -1410,7 +1417,9 @@ shinyServer(function(input, output) {
                                    "AR1" = extractSEs(fm_s45_ar1),
                                    "unstructured" = extractSEs(fm_s45_uns)), 3))
         } else if (input$chapter == "Chapter 4" && input$section == "Section 4.5"
-                   && naf(input$gee_Work_Corr) && input$gee_Work_Corr == "Naive Standard Errors") {
+                   && naf(input$gee_Work_Corr) 
+                   && input$gee_Work_Corr == "Naive Standard Errors"
+                   && naf(input$s45_CoefPlot) && !input$s45_CoefPlot) {
             extractSEs <- function (model) sqrt(diag(model$geese$vbeta))
             extractSEs_naive <- function (model) sqrt(diag(model$geese$vbeta.naiv))
             aids$lowCD4 <- aids$CD4 < sqrt(150)
@@ -1940,7 +1949,7 @@ shinyServer(function(input, output) {
         } else if (input$chapter == "Practicals" && input$section == "Practical 4"
                    && !is.null(v$Pract4)) {
             v$Pract2 <- v$Pract3 <- v$Pract1 <- NULL
-            includeHTML("./practicals/sPract1_out.html")
+            includeHTML("./practicals/sPract4_out.html")
         }
     })
     
@@ -2528,6 +2537,94 @@ shinyServer(function(input, output) {
                        xlab = "Follow-up time (years)",
                        ylab = "Probabilities", ylim = c(0.1, 1)))
             }
+        }
+        
+        if (input$chapter == "Chapter 4" && input$section == "Section 4.5"
+            && naf(input$s45_CoefPlot) && input$s45_CoefPlot) {
+            aids$lowCD4 <- aids$CD4 < sqrt(150)
+            aids$obstimef <- factor(aids$obstime)
+            if (!exists('fm_s45_ind')) {
+                withProgress({
+                    fm_s45_ind <<- geeglm(lowCD4 ~ obstimef, family = binomial, data = aids, 
+                                          id = patient, corstr = "independence")
+                }, message = "Fitting the model...")
+            }
+            if (!exists('fm_s45_exc')) {
+                withProgress({
+                    fm_s45_exc <<- geeglm(lowCD4 ~ obstimef, family = binomial, data = aids, 
+                                          id = patient, corstr = "exchangeable")
+                }, message = "Fitting the model...")
+            }
+            if (!exists('fm_s45_ar1')) {
+                withProgress({
+                    fm_s45_ar1 <<- geeglm(lowCD4 ~ obstimef, family = binomial, data = aids, 
+                                          id = patient, corstr = "ar1")
+                }, message = "Fitting the model...")
+            }
+            if (!exists('fm_s45_uns')) {
+                withProgress({
+                    fm_s45_uns <<- geeglm(lowCD4 ~ obstimef, family = binomial, data = aids, 
+                                          id = patient, corstr = "unstructured")
+                }, message = "Fitting the model...")
+            }
+            betas <- round(cbind("independence" = coef(fm_s45_ind), 
+                                 "exchangeable" = coef(fm_s45_exc),
+                                 "AR1" = coef(fm_s45_ar1),
+                                 "unstructured" = coef(fm_s45_uns)), 3)
+            # Sandwich standard errors
+            extractSEs <- function (model) sqrt(diag(model$geese$vbeta))
+            ses_sand <- cbind("independence" = extractSEs(fm_s45_ind), 
+                              "exchangeable" = extractSEs(fm_s45_exc),
+                              "AR1" = extractSEs(fm_s45_ar1),
+                              "unstructured" = extractSEs(fm_s45_uns))
+            # Naive standard errors
+            extractSEs_naive <- function (model) sqrt(diag(model$geese$vbeta.naiv))
+            ses_naiv <- cbind("independence" = extractSEs_naive(fm_s45_ind), 
+                              "exchangeable" = extractSEs_naive(fm_s45_exc),
+                              "AR1" = extractSEs_naive(fm_s45_ar1),
+                              "unstructured" = extractSEs_naive(fm_s45_uns))
+            dat <- data.frame(
+                est = c(betas), 
+                lower_sand = unname(c(betas) - 1.96 * c(ses_sand)),
+                lower_naiv = unname(c(betas) - 1.96 * c(ses_naiv)),
+                upper_sand = unname(c(betas) + 1.96 * c(ses_sand)),
+                upper_naiv = unname(c(betas) + 1.96 * c(ses_naiv)),
+                parm = gl(5, 1, 20, labels = rownames(betas)),
+                work_corr = gl(4, 5, labels = colnames(betas))
+            )
+            prepanel.ci2 <- function (x, y, lx, ux, lx2, ux2, subscripts, ...) {
+                x <- as.numeric(x)
+                lx <- as.numeric(lx[subscripts])
+                ux <- as.numeric(ux[subscripts])
+                lx2 <- as.numeric(lx2[subscripts])
+                ux2 <- as.numeric(ux2[subscripts])
+                list(xlim = range(x, ux, lx, ux2, lx2, finite = TRUE))
+            }
+            panel.ci2 <- function (x, y, lx, ux, lx2, ux2, subscripts, pch = 16, ...) {
+                x <- as.numeric(x)
+                y <- as.numeric(y)
+                lx <- as.numeric(lx[subscripts])
+                ux <- as.numeric(ux[subscripts])
+                lx2 <- as.numeric(lx2[subscripts])
+                ux2 <- as.numeric(ux2[subscripts])
+                panel.abline(h = c(unique(y)), 
+                             col = "grey", lty = 2, lwd = 1.5)
+                panel.arrows(lx, y, ux, y,
+                             length = 0.1, unit = "native",
+                             angle = 90, code = 3, lwd = 2, col = "blue")
+                panel.arrows(lx2, y + 0.06, ux2, y + 0.06,
+                             length = 0.1, unit = "native",
+                             angle = 90, code = 3, lwd = 2, col = "magenta2")
+                panel.xyplot(x, y, pch = pch, col = 2, cex = 1.5, ...)
+                panel.xyplot(x, y + 0.06, pch = pch, col = 2, cex = 1.5, ...)
+            }
+            print(dotplot(work_corr ~  est | parm, lx = dat$lower_sand, lx2 = dat$lower_naiv, 
+                    ux = dat$upper_sand, ux2 = dat$upper_naiv,
+                    data = dat, xlab = "", prepanel = prepanel.ci2, panel = panel.ci2, 
+                    as.table = TRUE, 
+                    key = simpleKey(c("Robust Standard Errors", "Naive Standard Errors"), 
+                                    points = FALSE, lines = TRUE, col = c("blue", "magenta2")),
+                    scales = list(x = list(relation = "free"))))
         }
         
         if (input$chapter == "Chapter 6" && input$section == "Section 6.3"

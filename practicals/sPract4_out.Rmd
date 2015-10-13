@@ -1,0 +1,36 @@
+## Practical 4: Mixed Effects Models for Discrete Data
+We start by loading the packages we will need for this practical and the data from 
+[GitHub](https://github.com/drizopoulos/Repeated_Measurements). This is achieved with the
+following commands:
+```{r}
+# packages
+library("lattice")
+library("geepack")
+library("splines")
+
+# data
+con <- url("https://raw.github.com/drizopoulos/Repeated_Measurements/master/Data.RData")
+load(con)
+close(con)
+```
+```{r, echo = FALSE}
+options(warn = (-1))
+```
+
+### Question 1
+
+### Question 2
+
+### Question 3
+
+### Question 4
+
+### Question 5
+
+### Question 6
+
+### Question 7
+
+### Question 8
+
+

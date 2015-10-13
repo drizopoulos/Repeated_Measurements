@@ -331,7 +331,7 @@ xyplot(pred + low + upp ~ year | sex * drug,
 To investigate whether the assumption for the residuals terms are satisfied we can inspect
 the scatterplots of the residuals versus the fitted values. As we have seen in Section 
 3.11, there are two types of residuals we can compute in mixed models, namely the 
-*marginal residuals* and the *conditional residuals*. We shart with the standardized 
+*marginal residuals* and the *conditional residuals*. We start with the standardized 
 conditional residuals and we produce the overall scatteplot of these residuals versus the 
 fitted values, and then we split per sex and treatment allocation:
 ```{r}
@@ -361,10 +361,10 @@ plot(fm_3ML_noInt_LinAge, resid(., type = "p", level = 0) ~ fitted(., level = 0)
      type = c("p", "smooth"), lwd = 3)
 ```
 
-Some obsrvations:
+Some observations:
 
 * the conditional residuals show small faint signs of (remaining) heteroscedasticity, with
-more spread for larger fitted values. Though this behaviour may be influenced by the 
+more spread for larger fitted values. Though this behavior may be influenced by the 
 couple outlying measurements that still remain in the dataset.
 
 * the marginal residuals show a clear systematic trend, with (almost) only negative 

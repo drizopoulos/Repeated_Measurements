@@ -1,6 +1,59 @@
 ```{r}
-# nonlinear time effects & interaction with treatment
+#######################################################
+# Practical 4: Mixed Effects Models for Discrete Data #
+#######################################################
 
-# Test 4
+# First we load the package we need
+library("lattice")
+library("geepack")
+library("splines")
+
+# We load the data from GitHub
+con <- url("https://raw.github.com/drizopoulos/Repeated_Measurements/master/Data.RData")
+load(con)
+close(con)
+
+######
+# Q1 #
+######
+
+pbc2$Dicht_prothro <- with(pbc2, prothombin)
+
+######
+# Q2 #
+######
+
+######
+# Q3 #
+######
+
+######
+# Q4 #
+######
+
+######
+# Q5 #
+######
+
+######
+# Q6 #
+######
+
+######
+# Q7 #
+######
+
+######
+# Q8 #
+######
+
+######
+# Q9 #
+######
+
+#######
+# Q10 #
+#######
+
 ```
 
