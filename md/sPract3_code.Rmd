@@ -23,6 +23,22 @@ pbc2$Dicht_prothro <- as.numeric(with(pbc2, prothrombin < 11 | prothrombin > 13)
 # Q2 #
 ######
 
+xyplot(Dicht_prothro ~ year | drug, data = pbc2,
+       type = c("p", "smooth"), lwd = 2,
+       xlab = "Time (years)", ylab = "Normal Prothrombin Time",
+       scales = list(y = list(at = 0:1, labels = c("No", "Yes"))))
+
+xyplot(Dicht_prothro ~ year | sex, data = pbc2,
+       type = c("p", "smooth"), lwd = 2,
+       xlab = "Time (years)", ylab = "Normal Prothrombin Time",
+       scales = list(y = list(at = 0:1, labels = c("No", "Yes"))))
+
+xyplot(Dicht_prothro ~ year | cut(age, c(25, 43, 50, 55, 80)), data = pbc2,
+       type = c("p", "smooth"), lwd = 2, as.table = TRUE,
+       xlab = "Time (years)", ylab = "Normal Prothrombin Time",
+       scales = list(y = list(at = 0:1, labels = c("No", "Yes"))))
+
+
 ######
 # Q3 #
 ######
@@ -31,6 +47,7 @@ fm_1 <- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age + age : sex,
                family = binomial(), data = pbc2, id = id, corstr = "exchangeable")
 
 summary(fm_1)
+
 
 ######
 # Q4 #
@@ -103,6 +120,7 @@ dotplot(work_corr ~  est | parm, lx = dat$lower_sand, lx2 = dat$lower_naiv,
         key = simpleKey(c("Robust Standard Errors", "Naive Standard Errors"), 
                         points = FALSE, lines = TRUE, col = c("blue", "magenta2")))
 
+
 ######
 # Q5 #
 ######
@@ -137,19 +155,60 @@ fm_3_IntSexAge <- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age,
 
 anova(fm_3_IntSexAge, fm_3)
 
+
 ######
 # Q6 #
 ######
 
 # nonlinear terms
-fm_3_IntSexAge_Lin <- geeglm(Dicht_prothro ~ year * (drug + sex) + age, 
-                       family = binomial(), data = pbc2, id = id, corstr = "ar1")
+fm_3_IntSexAge_Lin <- geeglm(Dicht_prothro ~ year * (drug + sex) + age, family = binomial(), 
+                             data = pbc2, id = id, corstr = "ar1")
 
 anova(fm_3_IntSexAge_Lin, fm_3_IntSexAge)
+
 
 ######
 # Q7 #
 ######
+
+rowDiff <- function (object, newdata, orig_data, adjust.p = FALSE, ...) {
+    form <- formula(object)
+    namesVars <- all.vars(form)
+    respVar <- namesVars[1]
+    newdata[[respVar]] <- 0.01
+    betas <- if (!inherits(object, "lme")) coef(object) else fixef(object)
+    V <- if (inherits(object, "geeglm")) object$geese$vbeta else vcov(object)
+    orig_data <- orig_data[complete.cases(orig_data[namesVars]), ]
+    mfX <- model.frame(terms(form), data = orig_data)
+    X <- model.matrix(attr(mfX, "terms"), newdata)
+    ind <- combn(nrow(X), 2)
+    k <- ncol(ind)
+    out <- matrix(0, k, 5)
+    for (i in seq_len(k)) {
+        XX <- X[ind[1, i], , drop = FALSE] - X[ind[2, i], , drop = FALSE]
+        est <- drop(XX %*% betas)
+        se <- sqrt(diag(XX %*% V %*% t(XX)))
+        out[i, 1] <- est
+        out[i, 2] <- se
+        out[i, 3] <- est - 1.96 * se
+        out[i, 4] <- est + 1.96 * se
+        out[i, 5] <- 2 * pnorm(abs(est / se), lower.tail = FALSE)
+    }
+    if (k > 2 && adjust.p) {
+        out[, 5] <- p.adjust(out[, 5], ...)
+    }
+    colnames(out) <- c("Diff", "Std.Err.", "95%low", "95%upp", "p-value")
+    rownames(out) <- paste(ind[1, ], "-", ind[2, ])
+    out
+}
+
+nDF <- with(pbc2, expand.grid(
+    year = 7, drug = rev(levels(drug)), age = 49,
+    sex = gl(1, 1, labels = levels(sex))
+))
+nDF
+
+rowDiff(fm_3_IntSexAge_Lin, nDF, pbc2)
 
 
 ######
