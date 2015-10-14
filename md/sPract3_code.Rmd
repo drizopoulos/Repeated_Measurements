@@ -171,68 +171,11 @@ anova(fm_3_IntSexAge_Lin, fm_3_IntSexAge)
 # Q7 #
 ######
 
-rowDiff <- function (object, newdata, orig_data, adjust.p = FALSE, ...) {
-    form <- formula(object)
-    namesVars <- all.vars(form)
-    betas <- if (!inherits(object, "lme")) coef(object) else fixef(object)
-    V <- if (inherits(object, "geeglm")) object$geese$vbeta else vcov(object)
-    orig_data <- orig_data[complete.cases(orig_data[namesVars]), ]
-    Terms <- delete.response(terms(form))
-    mfX <- model.frame(Terms, data = orig_data)
-    Terms_new <- attr(mfX, "terms")
-    mfX_new <- model.frame(Terms_new, newdata, xlev = .getXlevels(Terms, mfX))
-    X <- model.matrix(Terms_new, mfX_new)
-    ind <- combn(nrow(X), 2)
-    k <- ncol(ind)
-    out <- matrix(0, k, 5)
-    for (i in seq_len(k)) {
-        XX <- X[ind[1, i], , drop = FALSE] - X[ind[2, i], , drop = FALSE]
-        est <- drop(XX %*% betas)
-        se <- sqrt(diag(XX %*% V %*% t(XX)))
-        out[i, 1] <- est
-        out[i, 2] <- se
-        out[i, 3] <- est - 1.96 * se
-        out[i, 4] <- est + 1.96 * se
-        out[i, 5] <- 2 * pnorm(abs(est / se), lower.tail = FALSE)
-    }
-    if (k > 2 && adjust.p) {
-        out[, 5] <- p.adjust(out[, 5], ...)
-    }
-    colnames(out) <- c("Diff", "Std.Err.", "95%low", "95%upp", "p-value")
-    rownames(out) <- paste(ind[1, ], "-", ind[2, ])
-    out
-}
-
-nDF_male <- with(pbc2, expand.grid(
-    year = c(2, 6, 8, 10), age = 55,
-    drug = levels(drug)[2],
-    sex = levels(sex)[1]
-))
-nDF_male
-
-rowDiff(fm_3_IntSexAge, nDF_male, pbc2)
-rowDiff(fm_3_IntSexAge, nDF_male, pbc2, adjust.p = TRUE)
-
-
-nDF_female <- with(pbc2, expand.grid(
-    year = c(2, 6, 8, 10), age = 55,
-    drug = levels(drug)[2],
-    sex = levels(sex)[2]
-))
-nDF_female
-
-rowDiff(fm_3_IntSexAge, nDF_female, pbc2)
-rowDiff(fm_3_IntSexAge, nDF_female, pbc2, adjust.p = TRUE)
+summary(fm_3_IntSexAge)
 
 
 ######
 # Q8 #
-######
-
-summary(fm_3_IntSexAge)
-
-######
-# Q9 #
 ######
 
 effectPlotData <- function (object, newdata, orig_data) {
@@ -272,5 +215,63 @@ xyplot(expit(pred) + expit(low) + expit(upp) ~ year | sex * drug,
        lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2, type = "l",
        xlab = "Follow-up time (years)",
        ylab = "Probabilities")
+
+
+######
+# Q9 #
+######
+
+rowDiff <- function (object, newdata, orig_data, adjust.p = FALSE, ...) {
+    form <- formula(object)
+    namesVars <- all.vars(form)
+    betas <- if (!inherits(object, "lme")) coef(object) else fixef(object)
+    V <- if (inherits(object, "geeglm")) object$geese$vbeta else vcov(object)
+    orig_data <- orig_data[complete.cases(orig_data[namesVars]), ]
+    Terms <- delete.response(terms(form))
+    mfX <- model.frame(Terms, data = orig_data)
+    Terms_new <- attr(mfX, "terms")
+    mfX_new <- model.frame(Terms_new, newdata, xlev = .getXlevels(Terms, mfX))
+    X <- model.matrix(Terms_new, mfX_new)
+    ind <- combn(nrow(X), 2)
+    k <- ncol(ind)
+    out <- matrix(0, k, 5)
+    for (i in seq_len(k)) {
+        XX <- X[ind[1, i], , drop = FALSE] - X[ind[2, i], , drop = FALSE]
+        est <- drop(XX %*% betas)
+        se <- sqrt(diag(XX %*% V %*% t(XX)))
+        out[i, 1] <- est
+        out[i, 2] <- se
+        out[i, 3] <- est - 1.96 * se
+        out[i, 4] <- est + 1.96 * se
+        out[i, 5] <- 2 * pnorm(abs(est / se), lower.tail = FALSE)
+    }
+    if (k > 2 && adjust.p) {
+        out[, 5] <- p.adjust(out[, 5], ...)
+    }
+    colnames(out) <- c("Diff", "Std.Err.", "95%low", "95%upp", "p-value")
+    rownames(out) <- paste(ind[1, ], "-", ind[2, ])
+    out
+}
+
+nDF_male <- with(pbc2, expand.grid(
+    year = c(2, 6, 8, 10), age = 49,
+    drug = levels(drug)[2],
+    sex = levels(sex)[1]
+))
+nDF_male
+
+rowDiff(fm_3_IntSexAge, nDF_male, pbc2)
+rowDiff(fm_3_IntSexAge, nDF_male, pbc2, adjust.p = TRUE)
+
+
+nDF_female <- with(pbc2, expand.grid(
+    year = c(2, 6, 8, 10), age = 49,
+    drug = levels(drug)[2],
+    sex = levels(sex)[2]
+))
+nDF_female
+
+rowDiff(fm_3_IntSexAge, nDF_female, pbc2)
+rowDiff(fm_3_IntSexAge, nDF_female, pbc2, adjust.p = TRUE)
 ```
 
