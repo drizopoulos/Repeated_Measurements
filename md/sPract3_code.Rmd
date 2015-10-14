@@ -174,13 +174,14 @@ anova(fm_3_IntSexAge_Lin, fm_3_IntSexAge)
 rowDiff <- function (object, newdata, orig_data, adjust.p = FALSE, ...) {
     form <- formula(object)
     namesVars <- all.vars(form)
-    respVar <- namesVars[1]
-    newdata[[respVar]] <- 0.01
     betas <- if (!inherits(object, "lme")) coef(object) else fixef(object)
     V <- if (inherits(object, "geeglm")) object$geese$vbeta else vcov(object)
     orig_data <- orig_data[complete.cases(orig_data[namesVars]), ]
-    mfX <- model.frame(terms(form), data = orig_data)
-    X <- model.matrix(attr(mfX, "terms"), newdata)
+    Terms <- delete.response(terms(form))
+    mfX <- model.frame(Terms, data = orig_data)
+    Terms_new <- attr(mfX, "terms")
+    mfX_new <- model.frame(Terms_new, newdata, xlev = .getXlevels(Terms, mfX))
+    X <- model.matrix(Terms_new, mfX_new)
     ind <- combn(nrow(X), 2)
     k <- ncol(ind)
     out <- matrix(0, k, 5)
@@ -202,13 +203,26 @@ rowDiff <- function (object, newdata, orig_data, adjust.p = FALSE, ...) {
     out
 }
 
-nDF <- with(pbc2, expand.grid(
-    year = 7, drug = rev(levels(drug)), age = 49,
-    sex = gl(1, 1, labels = levels(sex))
+nDF_male <- with(pbc2, expand.grid(
+    year = c(2, 6, 8, 10), age = 55,
+    drug = levels(drug)[2],
+    sex = levels(sex)[1]
 ))
-nDF
+nDF_male
 
-rowDiff(fm_3_IntSexAge_Lin, nDF, pbc2)
+rowDiff(fm_3_IntSexAge, nDF_male, pbc2)
+rowDiff(fm_3_IntSexAge, nDF_male, pbc2, adjust.p = TRUE)
+
+
+nDF_female <- with(pbc2, expand.grid(
+    year = c(2, 6, 8, 10), age = 55,
+    drug = levels(drug)[2],
+    sex = levels(sex)[2]
+))
+nDF_female
+
+rowDiff(fm_3_IntSexAge, nDF_female, pbc2)
+rowDiff(fm_3_IntSexAge, nDF_female, pbc2, adjust.p = TRUE)
 
 
 ######

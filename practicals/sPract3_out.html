@@ -274,13 +274,14 @@ anova(fm_3_IntSexAge_Lin, fm_3_IntSexAge)</code></pre>
 <pre class="r"><code>rowDiff &lt;- function (object, newdata, orig_data, adjust.p = FALSE, ...) {
     form &lt;- formula(object)
     namesVars &lt;- all.vars(form)
-    respVar &lt;- namesVars[1]
-    newdata[[respVar]] &lt;- 0.01
     betas &lt;- if (!inherits(object, &quot;lme&quot;)) coef(object) else fixef(object)
     V &lt;- if (inherits(object, &quot;geeglm&quot;)) object$geese$vbeta else vcov(object)
     orig_data &lt;- orig_data[complete.cases(orig_data[namesVars]), ]
-    mfX &lt;- model.frame(terms(form), data = orig_data)
-    X &lt;- model.matrix(attr(mfX, &quot;terms&quot;), newdata)
+    Terms &lt;- delete.response(terms(form))
+    mfX &lt;- model.frame(Terms, data = orig_data)
+    Terms_new &lt;- attr(mfX, &quot;terms&quot;)
+    mfX_new &lt;- model.frame(Terms_new, newdata, xlev = .getXlevels(Terms, mfX))
+    X &lt;- model.matrix(Terms_new, mfX_new)
     ind &lt;- combn(nrow(X), 2)
     k &lt;- ncol(ind)
     out &lt;- matrix(0, k, 5)
@@ -301,17 +302,60 @@ anova(fm_3_IntSexAge_Lin, fm_3_IntSexAge)</code></pre>
     rownames(out) &lt;- paste(ind[1, ], &quot;-&quot;, ind[2, ])
     out
 }</code></pre>
-<pre class="r"><code>nDF &lt;- with(pbc2, expand.grid(
-    year = 7, drug = rev(levels(drug)), age = 49,
-    sex = gl(1, 1, labels = levels(sex))
+<pre class="r"><code>nDF_male &lt;- with(pbc2, expand.grid(
+    year = c(2, 6, 8, 10), age = 55,
+    drug = levels(drug)[2],
+    sex = levels(sex)[1]
 ))
-nDF</code></pre>
-<pre><code>##   year      drug age  sex
-## 1    7 D-penicil  49 male
-## 2    7   placebo  49 male</code></pre>
-<pre class="r"><code>rowDiff(fm_3_IntSexAge_Lin, nDF, pbc2)</code></pre>
-<pre><code>##          Diff Std.Err.  95%low 95%upp p-value
-## 1 - 2 0.02503   0.1881 -0.3436 0.3936  0.8941</code></pre>
+nDF_male</code></pre>
+<pre><code>##   year age      drug  sex
+## 1    2  55 D-penicil male
+## 2    6  55 D-penicil male
+## 3    8  55 D-penicil male
+## 4   10  55 D-penicil male</code></pre>
+<pre class="r"><code>rowDiff(fm_3_IntSexAge, nDF_male, pbc2)</code></pre>
+<pre><code>##         Diff Std.Err.   95%low 95%upp p-value
+## 1 - 2 0.2119   0.2284 -0.23567 0.6595 0.35340
+## 1 - 3 0.5376   0.3148 -0.07942 1.1546 0.08769
+## 1 - 4 0.9652   0.5236 -0.06107 1.9914 0.06528
+## 2 - 3 0.3257   0.1923 -0.05127 0.7026 0.09038
+## 2 - 4 0.7533   0.4708 -0.16951 1.6760 0.10961
+## 3 - 4 0.4276   0.2805 -0.12222 0.9774 0.12743</code></pre>
+<pre class="r"><code>rowDiff(fm_3_IntSexAge, nDF_male, pbc2, adjust.p = TRUE)</code></pre>
+<pre><code>##         Diff Std.Err.   95%low 95%upp p-value
+## 1 - 2 0.2119   0.2284 -0.23567 0.6595  0.4385
+## 1 - 3 0.5376   0.3148 -0.07942 1.1546  0.4385
+## 1 - 4 0.9652   0.5236 -0.06107 1.9914  0.3917
+## 2 - 3 0.3257   0.1923 -0.05127 0.7026  0.4385
+## 2 - 4 0.7533   0.4708 -0.16951 1.6760  0.4385
+## 3 - 4 0.4276   0.2805 -0.12222 0.9774  0.4385</code></pre>
+<pre class="r"><code>nDF_female &lt;- with(pbc2, expand.grid(
+    year = c(2, 6, 8, 10), age = 55,
+    drug = levels(drug)[2],
+    sex = levels(sex)[2]
+))
+nDF_female</code></pre>
+<pre><code>##   year age      drug    sex
+## 1    2  55 D-penicil female
+## 2    6  55 D-penicil female
+## 3    8  55 D-penicil female
+## 4   10  55 D-penicil female</code></pre>
+<pre class="r"><code>rowDiff(fm_3_IntSexAge, nDF_female, pbc2)</code></pre>
+<pre><code>##         Diff Std.Err. 95%low 95%upp   p-value
+## 1 - 2 0.7095   0.1359 0.4431 0.9759 1.781e-07
+## 1 - 3 1.4788   0.2054 1.0762 1.8813 5.990e-13
+## 1 - 4 2.4403   0.3368 1.7802 3.1005 4.297e-13
+## 2 - 3 0.7693   0.1175 0.5390 0.9995 5.830e-11
+## 2 - 4 1.7308   0.2813 1.1795 2.2822 7.592e-10
+## 3 - 4 0.9616   0.1650 0.6383 1.2849 5.564e-09</code></pre>
+<pre class="r"><code>rowDiff(fm_3_IntSexAge, nDF_female, pbc2, adjust.p = TRUE)</code></pre>
+<pre><code>##         Diff Std.Err. 95%low 95%upp   p-value
+## 1 - 2 0.7095   0.1359 0.4431 0.9759 1.781e-07
+## 1 - 3 1.4788   0.2054 1.0762 1.8813 2.995e-12
+## 1 - 4 2.4403   0.3368 1.7802 3.1005 2.578e-12
+## 2 - 3 0.7693   0.1175 0.5390 0.9995 2.332e-10
+## 2 - 4 1.7308   0.2813 1.1795 2.2822 2.278e-09
+## 3 - 4 0.9616   0.1650 0.6383 1.2849 1.113e-08</code></pre>
 </div>
 <div id="question-8" class="section level3">
 <h3>Question 8</h3>
