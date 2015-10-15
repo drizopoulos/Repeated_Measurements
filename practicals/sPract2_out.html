@@ -88,7 +88,7 @@ ns &lt;- with(pbc2, tapply(prothrombin, id, length.no.NA))</code></pre>
 </div>
 <div id="question-2" class="section level3">
 <h3>Question 2</h3>
-<p>We produce the plot of the subject-specific trajectories separately per treatment group with a superimposed loess curve. This plot is produced for patients who have more than six measurements. The plot is then produced with the following call to function<a href="https://goo.gl/cGSjZk">xyplot()</a> (the same code is run twice with different seeds in order to get different samples of patients):</p>
+<p>We produce the plot of the subject-specific trajectories separately per treatment group with a superimposed loess curve. This plot is produced for patients who have more than six measurements. The plot is then produced with the following call to function <a href="https://goo.gl/cGSjZk">xyplot()</a> (the same code is run twice with different seeds in order to get different samples of patients):</p>
 <pre class="r"><code>set.seed(123)
 ids &lt;- sample(names(ns)[ns &gt;= 6], 16) 
 xyplot(prothrombin ~ year | id,

@@ -18,30 +18,63 @@ options(warn = (-1))
 ```
 
 ### Question 1
-
+The following piece of code creates the dummy variable for abnormal prothrombin time:
 ```{r}
 pbc2$Dicht_prothro <- as.numeric(with(pbc2, prothrombin < 11 | prothrombin > 13))
 ```
 
 ### Question 2
+To examine graphically the shape of the probability of abnormal prothrombin time we can
+smooth the scatterplot of the `Dicht_prothro`. Using function 
+[xyplot()](https://goo.gl/cGSjZk) as in previous practicals, we first create the 
+scatterplot of `Dicht_prothro` versus follow-up time, separately for placebo and 
+D-penicillamine patients, and we include the loess curve:
+```{r}
+xyplot(Dicht_prothro ~ year | drug, data = pbc2,
+       type = c("p", "smooth"), lwd = 2,
+       xlab = "Time (years)", ylab = "Abnormal Prothrombin Time",
+       scales = list(y = list(at = 0:1, labels = c("No", "Yes"))))
+```
 
+Note that due to the binary nature of `Dicht_prothro`, the actual data points do not 
+provide any useful information. However, the loess smoother can still be used and recover
+the shape of the probability of abnormal prothrombin time (**note:** the probability of
+abnormal prothrombin time is actually the sample mean of the `Dicht_prothro` variable). 
+For both treatment groups we observe a decrease in the probability of abnormal prothrombin
+time during follow-up. We continue by producing the same plot but now splitting the panels
+for males and females:
 ```{r}
 xyplot(Dicht_prothro ~ year | sex, data = pbc2,
        type = c("p", "smooth"), lwd = 2,
-       xlab = "Time (years)", ylab = "Normal Prothrombin Time",
+       xlab = "Time (years)", ylab = "Abnormal Prothrombin Time",
        scales = list(y = list(at = 0:1, labels = c("No", "Yes"))))
 ```
 
+This figure suggests that males have more stable evolutions, and that actually the females
+are the ones who improve over time. Note that at this stage this is just an observation 
+from just looking at the data. To make a formal conclusion we will need to test this 
+conjecture. We finally produce the same scatterplot and we split at different age 
+categories, namely, [25, 43], [43, 50], [50, 55], and [55, 80]. To achieve this we use 
+function [cut()](https://goo.gl/t8xP1d), i.e.,
 ```{r}
 xyplot(Dicht_prothro ~ year | cut(age, c(25, 43, 50, 55, 80)), data = pbc2,
        type = c("p", "smooth"), lwd = 2, as.table = TRUE,
-       xlab = "Time (years)", ylab = "Normal Prothrombin Time",
+       xlab = "Time (years)", ylab = "Abnormal Prothrombin Time",
        scales = list(y = list(at = 0:1, labels = c("No", "Yes"))))
 ```
 
+We observe some subtle difference in the evolutions of the different age categories.
 
 ### Question 3
-
+Based on the description of Question 3, we need to fit a GEE model with an exchangeable
+working correlation matrix, and include in the mean structure the nonlinear effect
+of time using natural cubic splines with 2 degrees of freedom (i.e., using function 
+[ns()](https://goo.gl/zeAjzF)), the interaction of this nonlinear effect with drug and 
+sex (while also including the main effects of these variables), the main effect of age, 
+and its interaction with sex. This model is fitted with following call to function
+[geeglm()](https://goo.gl/1S1uix) (**note:** we also need to set the `family` argument to
+`binomial()`, and supply the `id` argument to identify the clusters, i.e., in this case 
+the patients):
 ```{r}
 fm_1 <- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age + age : sex, 
                family = binomial(), data = pbc2, id = id, corstr = "exchangeable")
@@ -49,8 +82,13 @@ fm_1 <- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age + age : sex,
 summary(fm_1)
 ```
 
-### Question 4
+The `summary()` function produces a detailed output of the fitted model, with the 
+parameter estimates, stadard errors and corresponding p-values.
 
+### Question 4
+We continue the analysis by re-fitting the model of Question 3 with the independence and 
+autoregressive of order 1 working correlation matrices. This is done with the following 
+calls to [geeglm()](https://goo.gl/1S1uix) by suitably changing the `corstr` argument:
 ```{r}
 fm_2 <- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age + age : sex, 
                family = binomial(), data = pbc2, id = id, corstr = "independence")
@@ -59,6 +97,8 @@ fm_3 <- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age + age : sex,
                family = binomial(), data = pbc2, id = id, corstr = "ar1")
 ```
 
+We collect the estimated coefficients the two types of standard errors (i.e., sandwich and
+naive) using similar code as in Section 4.5
 ```{r}
 # parameters
 betas <- cbind("independence" = coef(fm_2), 
@@ -78,6 +118,8 @@ ses_naiv <- cbind("independence" = extractSEs_naive(fm_2),
             "AR1" = extractSEs_naive(fm_3))
 ```
 
+To make the coefficients' plot, we put the estimates and the calculated confidence 
+intervals (both naive and robust) in a data frame:
 ```{r}
 dat <- data.frame(
     est = c(betas), 
@@ -90,6 +132,7 @@ dat <- data.frame(
 )
 ```
 
+To produce the plot, we first define the `prepanel.ci2()` and `panel.ci2()` functions:
 ```{r}
 prepanel.ci2 <- function (x, y, lx, ux, lx2, ux2, subscripts, ...) {
     x <- as.numeric(x)
@@ -119,6 +162,7 @@ panel.ci2 <- function (x, y, lx, ux, lx2, ux2, subscripts, pch = 16, ...) {
 }
 ```
 
+And following we call [dotplot()](https://goo.gl/7w7nrR):
 ```{r}
 dotplot(work_corr ~  est | parm, lx = dat$lower_sand, lx2 = dat$lower_naiv, 
         ux = dat$upper_sand, ux2 = dat$upper_naiv,
@@ -127,6 +171,13 @@ dotplot(work_corr ~  est | parm, lx = dat$lower_sand, lx2 = dat$lower_naiv,
         key = simpleKey(c("Robust Standard Errors", "Naive Standard Errors"), 
                         points = FALSE, lines = TRUE, col = c("blue", "magenta2")))
 ```
+
+A couple of observations:
+
+* There are small differences in the estimates of the corresponding parameters across the 
+different models.
+
+* ...
 
 ### Question 5
 

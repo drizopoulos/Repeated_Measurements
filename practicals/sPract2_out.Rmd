@@ -38,7 +38,7 @@ potential nonlinearities in the subject-specific trajectories.
 We produce the plot of the subject-specific trajectories separately per treatment group 
 with a superimposed loess curve. This plot is produced for patients who have more than six
 measurements. The plot is then produced with the following call to 
-function[xyplot()](https://goo.gl/cGSjZk) (the same code is run twice with different seeds
+function [xyplot()](https://goo.gl/cGSjZk) (the same code is run twice with different seeds
 in order to get different samples of patients):
 ```{r}
 set.seed(123)

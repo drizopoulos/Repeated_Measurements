@@ -25,17 +25,17 @@ pbc2$Dicht_prothro <- as.numeric(with(pbc2, prothrombin < 11 | prothrombin > 13)
 
 xyplot(Dicht_prothro ~ year | drug, data = pbc2,
        type = c("p", "smooth"), lwd = 2,
-       xlab = "Time (years)", ylab = "Normal Prothrombin Time",
+       xlab = "Time (years)", ylab = "Abnormal Prothrombin Time",
        scales = list(y = list(at = 0:1, labels = c("No", "Yes"))))
 
 xyplot(Dicht_prothro ~ year | sex, data = pbc2,
        type = c("p", "smooth"), lwd = 2,
-       xlab = "Time (years)", ylab = "Normal Prothrombin Time",
+       xlab = "Time (years)", ylab = "Abnormal Prothrombin Time",
        scales = list(y = list(at = 0:1, labels = c("No", "Yes"))))
 
 xyplot(Dicht_prothro ~ year | cut(age, c(25, 43, 50, 55, 80)), data = pbc2,
        type = c("p", "smooth"), lwd = 2, as.table = TRUE,
-       xlab = "Time (years)", ylab = "Normal Prothrombin Time",
+       xlab = "Time (years)", ylab = "Abnormal Prothrombin Time",
        scales = list(y = list(at = 0:1, labels = c("No", "Yes"))))
 
 
