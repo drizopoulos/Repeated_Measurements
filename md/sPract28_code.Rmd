@@ -1,0 +1,27 @@
+```{r}
+#########################################################
+# Practical 2: Mixed Effects Models for Continuous Data #
+#########################################################
+
+######
+# Q8 #
+######
+
+pbc2n <- pbc2[pbc2$prothrombin < 18, ]
+pbc2n$fitted_marg <- fitted(fm_3ML_noInt_LinAge, level = 0)
+pbc2n$fitted_subj <- fitted(fm_3ML_noInt_LinAge, level = 1)
+
+ids <- c(133, 36, 180, 11, 168, 116, 70, 58, 82, 104, 
+         43, 21, 101, 210, 176, 157)
+
+xyplot(prothrombin + fitted_marg + fitted_subj ~ year | id, data = pbc2n,
+       panel = function (x, y, ...) {
+           x.mat <- matrix(x, ncol = 3)
+           y.mat <- matrix(y, ncol = 3)
+           panel.xyplot(x.mat[, 1], y.mat[, 1], type = "p", col = "black")
+           panel.xyplot(x.mat[, 2], y.mat[, 2], type = "l", lwd = 2, col = "red")
+           panel.xyplot(x.mat[, 3], y.mat[, 3], type = "l", lwd = 2, col = "blue")
+       }, subset = id %in% ids, layout = c(4, 4), as.table = TRUE, 
+       xlab = "Time (years)", ylab = "Prothrombin Time (sec)")
+```
+

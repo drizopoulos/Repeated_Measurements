@@ -1,0 +1,22 @@
+```{r}
+##################################################
+# Practical 3: Marginal Models for Discrete Data #
+##################################################
+
+# First we load the package we need
+library("lattice")
+library("geepack")
+library("splines")
+
+# We load the data from GitHub
+con <- url("https://raw.github.com/drizopoulos/Repeated_Measurements/master/Data.RData")
+load(con)
+close(con)
+
+######
+# Q1 #
+######
+
+pbc2$Dicht_prothro <- as.numeric(with(pbc2, prothrombin < 11 | prothrombin > 13))
+```
+

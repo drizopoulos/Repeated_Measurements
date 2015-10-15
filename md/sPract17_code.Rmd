@@ -1,0 +1,16 @@
+```{r}
+####################################################
+# Practical 1: Marginal Models for Continuous Data #
+####################################################
+
+######
+# Q7 #
+######
+
+summary(fm_3ML_noIntLin)
+
+getVarCov(fm_3ML_noIntLin, individual = 271)
+
+cov2cor(getVarCov(fm_3ML_noIntLin, individual = 271))
+```
+

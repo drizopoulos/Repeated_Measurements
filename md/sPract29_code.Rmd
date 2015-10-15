@@ -1,0 +1,44 @@
+```{r}
+#########################################################
+# Practical 2: Mixed Effects Models for Continuous Data #
+#########################################################
+
+######
+# Q9 #
+######
+
+effectPlotData <- function (object, newdata, orig_data) {
+    form <- formula(object)
+    namesVars <- all.vars(form)
+    betas <- if (!inherits(object, "lme")) coef(object) else fixef(object)
+    V <- if (inherits(object, "geeglm")) object$geese$vbeta else vcov(object)
+    orig_data <- orig_data[complete.cases(orig_data[namesVars]), ]
+    Terms <- delete.response(terms(form))
+    mfX <- model.frame(Terms, data = orig_data)
+    Terms_new <- attr(mfX, "terms")
+    mfX_new <- model.frame(Terms_new, newdata, xlev = .getXlevels(Terms, mfX))
+    X <- model.matrix(Terms_new, mfX_new)
+    pred <- c(X %*% betas)
+    ses <- sqrt(diag(X %*% V %*% t(X)))
+    newdata$pred <- pred
+    newdata$low <- pred - 1.96 * ses
+    newdata$upp <- pred + 1.96 * ses
+    newdata
+}
+
+newDF <- with(pbc2n, expand.grid(year = seq(0, 12, length.out = 25),
+                                sex = levels(sex), drug = levels(drug)))
+
+pbc2n.id <- pbc2n[!duplicated(pbc2n$id), ]
+median_age <- with(pbc2n.id, tapply(age, list(sex, drug), median))
+ns <- with(newDF, tapply(year, list(sex, drug), length))
+newDF$age <- rep(c(median_age), c(ns))
+
+# the effects plot
+xyplot(pred + low + upp ~ year | sex * drug,
+       data = effectPlotData(fm_3ML_noInt_LinAge, newDF, pbc2n), 
+       lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2, type = "l",
+       xlab = "Follow-up time (years)",
+       ylab = "Prothrombin Time (sec)")
+```
+

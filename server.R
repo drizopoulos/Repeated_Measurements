@@ -1825,16 +1825,16 @@ shinyServer(function(input, output) {
     })
     
     observeEvent(input$solutions1, {
-        v$Pract1 <- includeMarkdown("./md/sPract1_code.Rmd")
+        v$Pract1 <- TRUE
     })
     observeEvent(input$solutions2, {
-        v$Pract2 <- includeMarkdown("./md/sPract2_code.Rmd")
+        v$Pract2 <- TRUE
     })
     observeEvent(input$solutions3, {
-        v$Pract3 <- includeMarkdown("./md/sPract3_code.Rmd")
+        v$Pract3 <- TRUE
     })
     observeEvent(input$solutions4, {
-        v$Pract4 <- includeMarkdown("./md/sPract4_code.Rmd")
+        v$Pract4 <- TRUE
     })
     
     output$sPract_motivate <- renderText({
@@ -1869,19 +1869,84 @@ shinyServer(function(input, output) {
         }
     })
     
+    output$sPract_questions <- renderUI({
+        if (input$chapter == "Practicals" && input$section == "Practical 1"
+            && !is.null(v$Pract1)) {
+            chs <- c(paste("Question", 1:9), "All")
+            wellPanel(selectInput("pract_Q", "Select Question:", chs, chs[1]))
+        } else if (input$chapter == "Practicals" && input$section == "Practical 2"
+                   && !is.null(v$Pract2)) {
+            chs <- c(paste("Question", 1:10), "All")
+            wellPanel(selectInput("pract_Q", "Select Question:", chs, chs[1]))
+        } else if (input$chapter == "Practicals" && input$section == "Practical 3"
+                   && !is.null(v$Pract3)) {
+            chs <- c(paste("Question", 1:9), "All")
+            wellPanel(selectInput("pract_Q", "Select Question:", chs, chs[1]))
+        } else if (input$chapter == "Practicals" && input$section == "Practical 4"
+                   && !is.null(v$Pract4)) {
+            chs <- c(paste("Question", 1:9), "All")
+            wellPanel(selectInput("pract_Q", "Select Question:", chs, chs[1]))
+        }
+    })
+    
     output$sPract_code <- renderText({
-        if (input$chapter == "Practicals" && input$section == "Practical 1") {
+        if (input$chapter == "Practicals" && input$section == "Practical 1"
+            && !is.null(v$Pract1) && naf(input$pract_Q)) {
             v$Pract2 <- v$Pract3 <- v$Pract4 <- NULL
-            v$Pract1
-        } else if (input$chapter == "Practicals" && input$section == "Practical 2") {
+            switch(input$pract_Q,
+                   "Question 1" = includeMarkdown("./md/sPract11_code.Rmd"),
+                   "Question 2" = includeMarkdown("./md/sPract12_code.Rmd"),
+                   "Question 3" = includeMarkdown("./md/sPract13_code.Rmd"),
+                   "Question 4" = includeMarkdown("./md/sPract14_code.Rmd"),
+                   "Question 5" = includeMarkdown("./md/sPract15_code.Rmd"),
+                   "Question 6" = includeMarkdown("./md/sPract16_code.Rmd"),
+                   "Question 7" = includeMarkdown("./md/sPract17_code.Rmd"),
+                   "Question 8" = includeMarkdown("./md/sPract18_code.Rmd"),
+                   "Question 9" = includeMarkdown("./md/sPract19_code.Rmd"),
+                   "All" = includeMarkdown("./md/sPract1_code.Rmd"))
+        } else if (input$chapter == "Practicals" && input$section == "Practical 2"
+                   && !is.null(v$Pract2) && naf(input$pract_Q)) {
             v$Pract1 <- v$Pract3 <- v$Pract4 <- NULL
-            v$Pract2
-        } else if (input$chapter == "Practicals" && input$section == "Practical 3") {
+            switch(input$pract_Q,
+                   "Question 1" = includeMarkdown("./md/sPract21_code.Rmd"),
+                   "Question 2" = includeMarkdown("./md/sPract22_code.Rmd"),
+                   "Question 3" = includeMarkdown("./md/sPract23_code.Rmd"),
+                   "Question 4" = includeMarkdown("./md/sPract24_code.Rmd"),
+                   "Question 5" = includeMarkdown("./md/sPract25_code.Rmd"),
+                   "Question 6" = includeMarkdown("./md/sPract26_code.Rmd"),
+                   "Question 7" = includeMarkdown("./md/sPract27_code.Rmd"),
+                   "Question 8" = includeMarkdown("./md/sPract28_code.Rmd"),
+                   "Question 9" = includeMarkdown("./md/sPract29_code.Rmd"),
+                   "Question 10" = includeMarkdown("./md/sPract110_code.Rmd"),
+                   "All" = includeMarkdown("./md/sPract2_code.Rmd"))
+        } else if (input$chapter == "Practicals" && input$section == "Practical 3"
+                   && !is.null(v$Pract3) && naf(input$pract_Q)) {
             v$Pract2 <- v$Pract1 <- v$Pract4 <- NULL
-            v$Pract3
-        } else if (input$chapter == "Practicals" && input$section == "Practical 4") {
+            switch(input$pract_Q,
+                   "Question 1" = includeMarkdown("./md/sPract31_code.Rmd"),
+                   "Question 2" = includeMarkdown("./md/sPract32_code.Rmd"),
+                   "Question 3" = includeMarkdown("./md/sPract33_code.Rmd"),
+                   "Question 4" = includeMarkdown("./md/sPract34_code.Rmd"),
+                   "Question 5" = includeMarkdown("./md/sPract35_code.Rmd"),
+                   "Question 6" = includeMarkdown("./md/sPract36_code.Rmd"),
+                   "Question 7" = includeMarkdown("./md/sPract37_code.Rmd"),
+                   "Question 8" = includeMarkdown("./md/sPract38_code.Rmd"),
+                   "Question 9" = includeMarkdown("./md/sPract39_code.Rmd"),
+                   "All" = includeMarkdown("./md/sPract3_code.Rmd"))
+        } else if (input$chapter == "Practicals" && input$section == "Practical 4"
+                   && !is.null(v$Pract4) && naf(input$pract_Q)) {
             v$Pract2 <- v$Pract3 <- v$Pract1 <- NULL
-            v$Pract4
+            switch(input$pract_Q,
+                   "Question 1" = includeMarkdown("./md/sPract41_code.Rmd"),
+                   "Question 2" = includeMarkdown("./md/sPract42_code.Rmd"),
+                   "Question 3" = includeMarkdown("./md/sPract43_code.Rmd"),
+                   "Question 4" = includeMarkdown("./md/sPract44_code.Rmd"),
+                   "Question 5" = includeMarkdown("./md/sPract45_code.Rmd"),
+                   "Question 6" = includeMarkdown("./md/sPract46_code.Rmd"),
+                   "Question 7" = includeMarkdown("./md/sPract47_code.Rmd"),
+                   "Question 8" = includeMarkdown("./md/sPract48_code.Rmd"),
+                   "Question 9" = includeMarkdown("./md/sPract49_code.Rmd"),
+                   "All" = includeMarkdown("./md/sPract4_code.Rmd"))
         }
     })
     

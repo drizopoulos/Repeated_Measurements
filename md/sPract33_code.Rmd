@@ -1,0 +1,15 @@
+```{r}
+##################################################
+# Practical 3: Marginal Models for Discrete Data #
+##################################################
+
+######
+# Q3 #
+######
+
+fm_1 <- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age + age : sex, 
+               family = binomial(), data = pbc2, id = id, corstr = "exchangeable")
+
+summary(fm_1)
+```
+

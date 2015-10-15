@@ -1,0 +1,15 @@
+```{r}
+#########################################################
+# Practical 2: Mixed Effects Models for Continuous Data #
+#########################################################
+
+######
+# Q5 #
+######
+
+fm_3ML <- update(fm_3, method = "ML")
+fm_3ML_noInt <- update(fm_3ML, fixed = . ~ year + I(year^2) + sex + drug + ns(age, 3))
+
+anova(fm_3ML_noInt, fm_3ML)
+```
+

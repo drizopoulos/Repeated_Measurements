@@ -1,0 +1,16 @@
+```{r}
+####################################################
+# Practical 1: Marginal Models for Continuous Data #
+####################################################
+
+######
+# Q6 #
+######
+
+fm_3ML_noIntLin <- gls(prothrombin ~ year + sex + drug + age, data = pbc2, 
+                       correlation = corCAR1(form = ~ year | id), 
+                       method = "ML")
+
+anova(fm_3ML_noIntLin, fm_3ML_noInt)
+```
+

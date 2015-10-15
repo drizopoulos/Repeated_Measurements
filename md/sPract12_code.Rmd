@@ -1,0 +1,14 @@
+```{r}
+####################################################
+# Practical 1: Marginal Models for Continuous Data #
+####################################################
+
+######
+# Q2 #
+######
+
+fm_1 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2)
+
+summary(fm_1)
+```
+

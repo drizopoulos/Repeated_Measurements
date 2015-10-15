@@ -1,0 +1,15 @@
+```{r}
+#########################################################
+# Practical 2: Mixed Effects Models for Continuous Data #
+#########################################################
+
+######
+# Q3 #
+######
+
+# random intercepts
+fm_1 <- lme(prothrombin ~ (year + I(year^2)) * (sex + drug) + ns(age, 3) + 
+                ns(age, 3) : (sex + drug), data = pbc2, 
+            random = ~ 1 | id, subset = prothrombin < 18)
+```
+

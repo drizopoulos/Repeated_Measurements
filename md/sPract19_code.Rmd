@@ -1,0 +1,28 @@
+```{r}
+####################################################
+# Practical 1: Marginal Models for Continuous Data #
+####################################################
+
+######
+# Q9 #
+######
+
+plot(fm_3ML_noIntLin, resid(., type = "p") ~ fitted(.), 
+     type = c("p", "smooth"), lwd = 3)
+
+plot(fm_3ML_noIntLin, resid(., type = "p") ~ fitted(.) | sex, 
+     type = c("p", "smooth"), lwd = 3)
+
+plot(fm_3ML_noIntLin, resid(., type = "p") ~ fitted(.) | drug, 
+     type = c("p", "smooth"), lwd = 3)
+
+plot(fm_3ML_noIntLin, resid(., type = "n") ~ fitted(.), 
+     type = c("p", "smooth"), lwd = 3)
+
+plot(fm_3ML_noIntLin, resid(., type = "n") ~ fitted(.) | sex, 
+     type = c("p", "smooth"), lwd = 3)
+
+plot(fm_3ML_noIntLin, resid(., type = "n") ~ fitted(.) | drug, 
+     type = c("p", "smooth"), lwd = 3)
+```
+

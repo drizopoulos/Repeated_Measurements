@@ -1,0 +1,26 @@
+```{r}
+#########################################################
+# Practical 2: Mixed Effects Models for Continuous Data #
+#########################################################
+
+# First we load the package we need
+library("lattice")
+library("nlme")
+library("splines")
+
+# We load the data from GitHub
+con <- url("https://raw.github.com/drizopoulos/Repeated_Measurements/master/Data.RData")
+load(con)
+close(con)
+
+######
+# Q1 #
+######
+
+length.no.NA <- function (x) sum(!is.na(x))
+ns <- with(pbc2, tapply(prothrombin, id, length.no.NA))
+
+c(summary(ns), sd = sd(ns))
+boxplot(ns, col = "lightgrey", ylab = "Number Repeated Measurements per Patient")
+```
+

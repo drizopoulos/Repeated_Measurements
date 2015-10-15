@@ -1,0 +1,28 @@
+```{r}
+#########################################################
+# Practical 2: Mixed Effects Models for Continuous Data #
+#########################################################
+
+#######
+# Q10 #
+#######
+
+plot(fm_3ML_noInt_LinAge, resid(., type = "p") ~ fitted(.), 
+     type = c("p", "smooth"), lwd = 3)
+
+plot(fm_3ML_noInt_LinAge, resid(., type = "p") ~ fitted(.) | sex, 
+     type = c("p", "smooth"), lwd = 3)
+
+plot(fm_3ML_noInt_LinAge, resid(., type = "p") ~ fitted(.) | drug, 
+     type = c("p", "smooth"), lwd = 3)
+
+plot(fm_3ML_noInt_LinAge, resid(., type = "p", level = 0) ~ fitted(., level = 0), 
+     type = c("p", "smooth"), lwd = 3)
+
+plot(fm_3ML_noInt_LinAge, resid(., type = "p", level = 0) ~ fitted(., level = 0) | sex, 
+     type = c("p", "smooth"), lwd = 3)
+
+plot(fm_3ML_noInt_LinAge, resid(., type = "p", level = 0) ~ fitted(., level = 0) | drug, 
+     type = c("p", "smooth"), lwd = 3)
+```
+

@@ -1,0 +1,28 @@
+```{r}
+#########################################################
+# Practical 2: Mixed Effects Models for Continuous Data #
+#########################################################
+
+######
+# Q4 #
+######
+
+# random intercepts & random slopes
+fm_2 <- update(fm_1, random = ~ year | id)
+
+# LRT
+anova(fm_1, fm_2)
+
+# random intercepts, linear & quadratic random slopes
+fm_3 <- update(fm_1, random = ~ year + I(year^2) | id)
+
+# LRT
+anova(fm_2, fm_3)
+
+# random intercepts, linear, quadratic & cubic random slopes
+fm_4 <- update(fm_1, random = ~ year + I(year^2) + I(year^3) | id)
+
+# LRT
+anova(fm_3, fm_4)
+```
+

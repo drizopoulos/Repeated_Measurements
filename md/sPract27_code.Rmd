@@ -1,0 +1,20 @@
+```{r}
+#########################################################
+# Practical 2: Mixed Effects Models for Continuous Data #
+#########################################################
+
+######
+# Q7 #
+######
+
+summary(fm_3ML_noInt_LinAge)
+
+# covariance and correlation matrix of the random effects
+getVarCov(fm_3ML_noInt_LinAge, individuals = 271)
+cov2cor(getVarCov(fm_3ML_noInt_LinAge, individuals = 271))
+
+# marginal covariance and correlation matrix
+getVarCov(fm_3ML_noInt_LinAge, individuals = 271, type = "marginal")
+cov2cor(getVarCov(fm_3ML_noInt_LinAge, individuals = 271, type = "marginal")[[1]])
+```
+

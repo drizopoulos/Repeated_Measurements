@@ -221,7 +221,7 @@ panel.ci2 &lt;- function (x, y, lx, ux, lx2, ux2, subscripts, pch = 16, ...) {
 </div>
 <div id="question-5" class="section level3">
 <h3>Question 5</h3>
-<p>Based on the requests of the researchers from this study, we first attempt to simplify the model by excluding interaction terms. We start with the omnibus test for all the interaction terms in the model. In the framework of GEE models we do not pefrom likelihood ratio tests (because actually there is not likelihood function) but rather Wald tests. Even though the test is different, the implementation in R with the <strong>geepack</strong> package is the same, i.e., we first need to fit the model under the corresponding null hypothesis, and the compare the model under the null (here the one the excludes all interaction terms) with the model under the alternative (here the model that includes all interaction terms) using the <code>anova()</code> function. The corresponding code is:</p>
+<p>Based on the requests of the researchers from this study, we first attempt to simplify the model by excluding interaction terms. We start with the omnibus test for all the interaction terms in the model. In the framework of GEE models we do not perform likelihood ratio tests (because actually there is not likelihood function) but rather Wald tests. Even though the test is different, the implementation in R with the <strong>geepack</strong> package is the same, i.e., we first need to fit the model under the corresponding null hypothesis, and the compare the model under the null (here the one the excludes all interaction terms) with the model under the alternative (here the model that includes all interaction terms) using the <code>anova()</code> function. The corresponding code is:</p>
 <pre class="r"><code>fm_3_noInt &lt;- geeglm(Dicht_prothro ~ ns(year, 2) + drug + sex + age, 
                family = binomial(), data = pbc2, id = id, corstr = &quot;ar1&quot;)
 
@@ -234,7 +234,7 @@ anova(fm_3_noInt, fm_3)</code></pre>
 ## 1  5 11.2     0.047 *
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
-<p>We observe that the result is on the bordeline. Nonetheless, we will continue to investigate the interaction terms further. We will first test the two interaction terms for the time effect, i.e.,</p>
+<p>We observe that the result is on the borderline. Nonetheless, we will continue to investigate the interaction terms further. We will first test the two interaction terms for the time effect, i.e.,</p>
 <pre class="r"><code>fm_3_IntTime &lt;- geeglm(Dicht_prothro ~ ns(year, 2) + sex + drug + age + age : sex, 
                        family = binomial(), data = pbc2, id = id, corstr = &quot;ar1&quot;)
 
@@ -389,6 +389,7 @@ xyplot(expit(pred) + expit(low) + expit(upp) ~ year | sex * drug,
 </div>
 <div id="question-9" class="section level3">
 <h3>Question 9</h3>
+<p>To test for differences for males and females patients at different time points we will use function <code>rowDiff()</code> and the theory behind it, which we have introduced in Section 4.6:</p>
 <pre class="r"><code>rowDiff &lt;- function (object, newdata, orig_data, adjust.p = FALSE, ...) {
     form &lt;- formula(object)
     namesVars &lt;- all.vars(form)
@@ -420,17 +421,19 @@ xyplot(expit(pred) + expit(low) + expit(upp) ~ year | sex * drug,
     rownames(out) &lt;- paste(ind[1, ], &quot;-&quot;, ind[2, ])
     out
 }</code></pre>
+<p>To use this function we first need to define the data frame with rows the corresponding combinations of the covariates we would like to test. Hence, for the time variable we choose the follow-up years 2, 6, 8, and 10, for age 49 years old, from drug D-penicillamine, and for sex males:</p>
 <pre class="r"><code>nDF_male &lt;- with(pbc2, expand.grid(
-    year = c(2, 6, 8, 10), age = 55,
+    year = c(2, 6, 8, 10), age = 49,
     drug = levels(drug)[2],
     sex = levels(sex)[1]
 ))
 nDF_male</code></pre>
 <pre><code>##   year age      drug  sex
-## 1    2  55 D-penicil male
-## 2    6  55 D-penicil male
-## 3    8  55 D-penicil male
-## 4   10  55 D-penicil male</code></pre>
+## 1    2  49 D-penicil male
+## 2    6  49 D-penicil male
+## 3    8  49 D-penicil male
+## 4   10  49 D-penicil male</code></pre>
+<p>The we the following call to <code>rowDiff()</code> we perform the pairwise comparisons:</p>
 <pre class="r"><code>rowDiff(fm_3_IntSexAge, nDF_male, pbc2)</code></pre>
 <pre><code>##        Diff Std.Err.  95%low 95%upp p-value
 ## 1 - 2 0.212    0.228 -0.2357  0.660  0.3534
@@ -439,6 +442,7 @@ nDF_male</code></pre>
 ## 2 - 3 0.326    0.192 -0.0513  0.703  0.0904
 ## 2 - 4 0.753    0.471 -0.1695  1.676  0.1096
 ## 3 - 4 0.428    0.281 -0.1222  0.977  0.1274</code></pre>
+<p>Before going to interpret the results we should note that we have performed multiple tests and therefore we should accordingly adjust the p-values. To do that we set argument <code>adjust.p</code> of <code>rowDiff()</code> to <code>TRUE</code>, i.e.,</p>
 <pre class="r"><code>rowDiff(fm_3_IntSexAge, nDF_male, pbc2, adjust.p = TRUE)</code></pre>
 <pre><code>##        Diff Std.Err.  95%low 95%upp p-value
 ## 1 - 2 0.212    0.228 -0.2357  0.660   0.438
@@ -447,25 +451,19 @@ nDF_male</code></pre>
 ## 2 - 3 0.326    0.192 -0.0513  0.703   0.438
 ## 2 - 4 0.753    0.471 -0.1695  1.676   0.438
 ## 3 - 4 0.428    0.281 -0.1222  0.977   0.438</code></pre>
+<p>Each row in the output of <code>rowDiff()</code> corresponds to a comparison of the corresponding rows of the data frame <code>nDF_male</code>, i.e., the first row is the comparison between year 2 and year 6, the second row between year 2 and year 8, and so on. After adjusting for multiple comparisons we do not find any significant results. We continue to perform the same pairwise comparisons for the females. First, we construct the data frame <code>nDF_female</code> accordingly:</p>
 <pre class="r"><code>nDF_female &lt;- with(pbc2, expand.grid(
-    year = c(2, 6, 8, 10), age = 55,
+    year = c(2, 6, 8, 10), age = 49,
     drug = levels(drug)[2],
     sex = levels(sex)[2]
 ))
 nDF_female</code></pre>
 <pre><code>##   year age      drug    sex
-## 1    2  55 D-penicil female
-## 2    6  55 D-penicil female
-## 3    8  55 D-penicil female
-## 4   10  55 D-penicil female</code></pre>
-<pre class="r"><code>rowDiff(fm_3_IntSexAge, nDF_female, pbc2)</code></pre>
-<pre><code>##        Diff Std.Err. 95%low 95%upp  p-value
-## 1 - 2 0.710    0.136  0.443  0.976 1.78e-07
-## 1 - 3 1.479    0.205  1.076  1.881 5.99e-13
-## 1 - 4 2.440    0.337  1.780  3.100 4.30e-13
-## 2 - 3 0.769    0.117  0.539  1.000 5.83e-11
-## 2 - 4 1.731    0.281  1.180  2.282 7.59e-10
-## 3 - 4 0.962    0.165  0.638  1.285 5.56e-09</code></pre>
+## 1    2  49 D-penicil female
+## 2    6  49 D-penicil female
+## 3    8  49 D-penicil female
+## 4   10  49 D-penicil female</code></pre>
+<p>And we use it in the call to <code>rowDiff()</code>:</p>
 <pre class="r"><code>rowDiff(fm_3_IntSexAge, nDF_female, pbc2, adjust.p = TRUE)</code></pre>
 <pre><code>##        Diff Std.Err. 95%low 95%upp  p-value
 ## 1 - 2 0.710    0.136  0.443  0.976 1.78e-07
@@ -474,6 +472,7 @@ nDF_female</code></pre>
 ## 2 - 3 0.769    0.117  0.539  1.000 2.33e-10
 ## 2 - 4 1.731    0.281  1.180  2.282 2.28e-09
 ## 3 - 4 0.962    0.165  0.638  1.285 1.11e-08</code></pre>
+<p>For females, and after adjusting for multiple comparisons we observe that all differences are significant.</p>
 </div>
 </div>
 

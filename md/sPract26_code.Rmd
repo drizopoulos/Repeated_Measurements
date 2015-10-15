@@ -1,0 +1,29 @@
+```{r}
+#########################################################
+# Practical 2: Mixed Effects Models for Continuous Data #
+#########################################################
+
+######
+# Q6 #
+######
+
+# we first fit the model that assume that both time and age have a linear effect
+fm_3ML_noInt_AllLin <- update(fm_3ML, fixed = . ~ year + sex + drug + age)
+
+# the corresponding LRT is
+anova(fm_3ML_noInt_AllLin, fm_3ML_noInt)
+
+# following we exclude the nonlinear effect of time but we keep the nonlinear
+# effect of age
+fm_3ML_noInt_LinTime <- update(fm_3ML, fixed = . ~ year + sex + drug + ns(age, 3))
+
+# the corresponding LRT is
+anova(fm_3ML_noInt_LinTime, fm_3ML_noInt)
+
+# then, we exclude the nonlinear effect of age, but we keep it for time
+fm_3ML_noInt_LinAge <- update(fm_3ML, fixed = . ~ year + I(year^2) + sex + drug + age)
+
+# the corresponding LRT is
+anova(fm_3ML_noInt_LinAge, fm_3ML_noInt)
+```
+

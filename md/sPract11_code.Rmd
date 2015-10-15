@@ -1,0 +1,37 @@
+```{r}
+####################################################
+# Practical 1: Marginal Models for Continuous Data #
+####################################################
+
+# First we load the package we need
+library("lattice")
+library("nlme")
+library("splines")
+
+# We load the data from GitHub
+con <- url("https://raw.github.com/drizopoulos/Repeated_Measurements/master/Data.RData")
+load(con)
+close(con)
+
+######
+# Q1 #
+######
+
+xyplot(prothrombin ~ year | drug, group = id, data = pbc2, 
+       panel = function (x, y, ...) {
+           panel.xyplot(x, y, type = "l", col = 1, ...)
+           panel.loess(x, y, col = 2, lwd = 2)
+       }, xlab = "Time (years)", ylab = "Prothrombin Time (sec)")
+
+
+xyplot(prothrombin ~ year | sex, group = id, data = pbc2, 
+       panel = function (x, y, ...) {
+           panel.xyplot(x, y, type = "l", col = 1, ...)
+           panel.loess(x, y, col = 2, lwd = 2)
+       }, xlab = "Time (years)", ylab = "Prothrombin Time (sec)")
+
+
+# Exclude outlying measurements
+pbc2 <- pbc2[pbc2$prothrombin < 18, ]
+```
+

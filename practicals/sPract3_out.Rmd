@@ -196,7 +196,7 @@ continue with this matrix for the rest of this practical.
 ### Question 5
 Based on the requests of the researchers from this study, we first attempt to simplify the
 model by excluding interaction terms. We start with the omnibus test for all the 
-interaction terms in the model. In the framework of GEE models we do not pefrom likelihood
+interaction terms in the model. In the framework of GEE models we do not perform likelihood
 ratio tests (because actually there is not likelihood function) but rather Wald tests. 
 Even though the test is different, the implementation in R with the **geepack** package is
 the same, i.e., we first need to fit the model under the corresponding null hypothesis, 
@@ -210,7 +210,7 @@ fm_3_noInt <- geeglm(Dicht_prothro ~ ns(year, 2) + drug + sex + age,
 anova(fm_3_noInt, fm_3)
 ```
 
-We observe that the result is on the bordeline. Nonetheless, we will continue to 
+We observe that the result is on the borderline. Nonetheless, we will continue to 
 investigate the interaction terms further. We will first test the two interaction terms 
 for the time effect, i.e.,
 ```{r}
@@ -331,7 +331,9 @@ xyplot(expit(pred) + expit(low) + expit(upp) ~ year | sex * drug,
 ```
 
 ### Question 9
-
+To test for differences for males and females patients at different time points we will
+use function `rowDiff()` and the theory behind it, which we have introduced in Section 
+4.6:
 ```{r}
 rowDiff <- function (object, newdata, orig_data, adjust.p = FALSE, ...) {
     form <- formula(object)
@@ -366,36 +368,50 @@ rowDiff <- function (object, newdata, orig_data, adjust.p = FALSE, ...) {
 }
 ```
 
+To use this function we first need to define the data frame with rows the corresponding 
+combinations of the covariates we would like to test. Hence, for the time variable we 
+choose the follow-up years 2, 6, 8, and 10, for age 49 years old, from drug 
+D-penicillamine, and for sex males:
 ```{r}
 nDF_male <- with(pbc2, expand.grid(
-    year = c(2, 6, 8, 10), age = 55,
+    year = c(2, 6, 8, 10), age = 49,
     drug = levels(drug)[2],
     sex = levels(sex)[1]
 ))
 nDF_male
 ```
 
+The we the following call to `rowDiff()` we perform the pairwise comparisons:
 ```{r}
 rowDiff(fm_3_IntSexAge, nDF_male, pbc2)
 ```
 
+Before going to interpret the results we should note that we have performed multiple tests
+and therefore we should accordingly adjust the p-values. To do that we set argument
+`adjust.p` of `rowDiff()` to `TRUE`, i.e.,
 ```{r}
 rowDiff(fm_3_IntSexAge, nDF_male, pbc2, adjust.p = TRUE)
 ```
 
+Each row in the output of `rowDiff()` corresponds to a comparison of the corresponding rows 
+of the data frame `nDF_male`, i.e., the first row is the comparison between year 2 and 
+year 6, the second row between year 2 and year 8, and so on. After adjusting for multiple 
+comparisons we do not find any significant results. We continue to perform the same
+pairwise comparisons for the females. First, we construct the data frame `nDF_female`
+accordingly:
 ```{r}
 nDF_female <- with(pbc2, expand.grid(
-    year = c(2, 6, 8, 10), age = 55,
+    year = c(2, 6, 8, 10), age = 49,
     drug = levels(drug)[2],
     sex = levels(sex)[2]
 ))
 nDF_female
 ```
 
-```{r}
-rowDiff(fm_3_IntSexAge, nDF_female, pbc2)
-```
-
+And we use it in the call to `rowDiff()`:
 ```{r}
 rowDiff(fm_3_IntSexAge, nDF_female, pbc2, adjust.p = TRUE)
 ```
+
+For females, and after adjusting for multiple comparisons we observe that all differences
+are significant.

@@ -1,0 +1,19 @@
+```{r}
+#########################################################
+# Practical 2: Mixed Effects Models for Continuous Data #
+#########################################################
+
+######
+# Q2 #
+######
+
+ids <- sample(names(ns)[ns >= 6], 16) 
+xyplot(prothrombin ~ year | id,
+       panel = function (x, y, ...) {
+           panel.xyplot(x, y, type = "p", col = 1, ...)
+           panel.loess(x, y, col = 2, lwd = 2, span = 0.8)
+       }, data = pbc2, subset = id %in% ids, layout = c(4, 4), as.table = TRUE, 
+       xlab = "Time (years)", ylab = "Prothrombin Time (sec)")
+
+```
+

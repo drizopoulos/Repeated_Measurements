@@ -44,7 +44,8 @@ shinyUI(fluidPage(
             uiOutput("sPract_1"),
             uiOutput("sPract_2"),
             uiOutput("sPract_3"),
-            uiOutput("sPract_4")
+            uiOutput("sPract_4"),
+            uiOutput("sPract_questions")
         ), width = 3),
     
     mainPanel(

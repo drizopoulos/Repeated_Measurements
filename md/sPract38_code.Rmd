@@ -1,0 +1,49 @@
+```{r}
+##################################################
+# Practical 3: Marginal Models for Discrete Data #
+##################################################
+
+######
+# Q8 #
+######
+
+effectPlotData <- function (object, newdata, orig_data) {
+    form <- formula(object)
+    namesVars <- all.vars(form)
+    betas <- if (!inherits(object, "lme")) coef(object) else fixef(object)
+    V <- if (inherits(object, "geeglm")) object$geese$vbeta else vcov(object)
+    orig_data <- orig_data[complete.cases(orig_data[namesVars]), ]
+    Terms <- delete.response(terms(form))
+    mfX <- model.frame(Terms, data = orig_data)
+    Terms_new <- attr(mfX, "terms")
+    mfX_new <- model.frame(Terms_new, newdata, xlev = .getXlevels(Terms, mfX))
+    X <- model.matrix(Terms_new, mfX_new)
+    pred <- c(X %*% betas)
+    ses <- sqrt(diag(X %*% V %*% t(X)))
+    newdata$pred <- pred
+    newdata$low <- pred - 1.96 * ses
+    newdata$upp <- pred + 1.96 * ses
+    newdata
+}
+
+newDF <- with(pbc2, expand.grid(
+    year = seq(0, 12, length.out = 25),
+    age = 49,
+    drug = levels(drug),
+    sex = levels(sex)
+))
+
+xyplot(pred + low + upp ~ year | sex * drug, 
+       data = effectPlotData(fm_3_IntSexAge, newDF, pbc2), 
+       lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2, type = "l",
+       xlab = "Follow-up time (years)",
+       ylab = "log Odds")
+
+expit <- function (x) exp(x) / (1 + exp(x))
+xyplot(expit(pred) + expit(low) + expit(upp) ~ year | sex * drug, 
+       data = effectPlotData(fm_3_IntSexAge, newDF, pbc2), 
+       lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2, type = "l",
+       xlab = "Follow-up time (years)",
+       ylab = "Probabilities")
+```
+

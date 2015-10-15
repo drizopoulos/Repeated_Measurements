@@ -1,0 +1,40 @@
+```{r}
+####################################################
+# Practical 1: Marginal Models for Continuous Data #
+####################################################
+
+######
+# Q3 #
+######
+
+# correlation structures only
+fm_2 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
+            correlation = corCompSymm(form = ~ year | id))
+
+fm_3 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
+            correlation = corCAR1(form = ~ year | id))
+
+fm_4 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
+            correlation = corExp(form = ~ year | id))
+
+fm_5 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
+            correlation = corGaus(form = ~ year | id))
+
+# correlation structures + heteroscedastic errors
+fm_6 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
+            correlation = corCompSymm(form = ~ year | id),
+            weights = varExp(form = ~ year))
+
+fm_7 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
+            correlation = corCAR1(form = ~ year | id),
+            weights = varExp(form = ~ year))
+
+fm_8 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
+            correlation = corExp(form = ~ year | id),
+            weights = varExp(form = ~ year))
+
+fm_9 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
+            correlation = corGaus(form = ~ year | id),
+            weights = varExp(form = ~ year))
+```
+
