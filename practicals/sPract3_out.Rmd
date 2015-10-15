@@ -83,11 +83,11 @@ summary(fm_1)
 ```
 
 The `summary()` function produces a detailed output of the fitted model, with the 
-parameter estimates, stadard errors and corresponding p-values.
+parameter estimates, standard errors and corresponding p-values.
 
 ### Question 4
 We continue the analysis by re-fitting the model of Question 3 with the independence and 
-autoregressive of order 1 working correlation matrices. This is done with the following 
+auto-regressive of order 1 working correlation matrices. This is done with the following 
 calls to [geeglm()](https://goo.gl/1S1uix) by suitably changing the `corstr` argument:
 ```{r}
 fm_2 <- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age + age : sex, 
@@ -174,13 +174,35 @@ dotplot(work_corr ~  est | parm, lx = dat$lower_sand, lx2 = dat$lower_naiv,
 
 A couple of observations:
 
-* There are small differences in the estimates of the corresponding parameters across the 
-different models.
+* There are small differences in the point estimates of the corresponding parameters 
+across the different models.
 
-* ...
+* For some parameters (e.g., `ns(year, 2)2:drugD-penicil` and `ns(year, 2)1:sexfemale`) 
+we obtain a different conclusion regarding to their significance depending on the choice 
+of the working correlation matrix.
+
+* For some parameters, there are also noticeable differences between the naive and robust
+standard errors.
+
+<span style="color:red"><strong>Choice of the working correlation matrix:</strong></span>
+As we have explained in the course, there is no (easy) formal way to test which working 
+correlation matrix provides a better fit. Hence, the choice should be based on features of
+the data we are studying. Given that PBC is a longitudinal study, it is reasonable to 
+assume that abnormal prothrombin times that are closer in follow-up time will be more 
+strongly correlated than abnormal prothrombin times that are further apart. With this in
+mind, the AR1 working correlation matrix seems more appropriate and therefore we will 
+continue with this matrix for the rest of this practical.
 
 ### Question 5
-
+Based on the requests of the researchers from this study, we first attempt to simplify the
+model by excluding interaction terms. We start with the omnibus test for all the 
+interaction terms in the model. In the framework of GEE models we do not pefrom likelihood
+ratio tests (because actually there is not likelihood function) but rather Wald tests. 
+Even though the test is different, the implementation in R with the **geepack** package is
+the same, i.e., we first need to fit the model under the corresponding null hypothesis, 
+and the compare the model under the null (here the one the excludes all interaction terms)
+with the model under the alternative (here the model that includes all interaction terms)
+using the `anova()` function. The corresponding code is:
 ```{r}
 fm_3_noInt <- geeglm(Dicht_prothro ~ ns(year, 2) + drug + sex + age, 
                family = binomial(), data = pbc2, id = id, corstr = "ar1")
@@ -188,13 +210,28 @@ fm_3_noInt <- geeglm(Dicht_prothro ~ ns(year, 2) + drug + sex + age,
 anova(fm_3_noInt, fm_3)
 ```
 
+We observe that the result is on the bordeline. Nonetheless, we will continue to 
+investigate the interaction terms further. We will first test the two interaction terms 
+for the time effect, i.e.,
 ```{r}
-fm_3_IntDrug <- geeglm(Dicht_prothro ~ ns(year, 2) * sex + drug + age + age : sex, 
+fm_3_IntTime <- geeglm(Dicht_prothro ~ ns(year, 2) + sex + drug + age + age : sex, 
+                       family = binomial(), data = pbc2, id = id, corstr = "ar1")
+
+anova(fm_3_IntTime, fm_3)
+```
+
+We find a significant difference between the two models suggesting that at least one of 
+the interaction terms is required. To find out which, we first test the interaction term 
+for drug, i.e.,
+```{r}
+fm_3_IntDrug <- geeglm(Dicht_prothro ~ ns(year, 2) * sex + sex + age, 
                        family = binomial(), data = pbc2, id = id, corstr = "ar1")
 
 anova(fm_3_IntDrug, fm_3)
 ```
 
+The results point out that this interaction terms does not seem to improve the fit. We 
+continue with the interaction term for sex
 ```{r}
 fm_3_IntSex <- geeglm(Dicht_prothro ~ ns(year, 2) * drug + sex + age, 
                        family = binomial(), data = pbc2, id = id, corstr = "ar1")
@@ -232,18 +269,23 @@ summary(fm_3_IntSexAge)
 ```
 
 ### Question 8
-
+To create the effect plot we first need to define the function `effectPlotData()` which we
+have introduced in Section 4.3. This function takes a fitted GEE model, the data frame 
+`newdata` based on which the plot will be made, and the original data we used to fit the 
+model, and returns the predictions for each row of `newdata` with the corresponding lower 
+and upper limits of the 95% confidence intervals.
 ```{r}
 effectPlotData <- function (object, newdata, orig_data) {
     form <- formula(object)
     namesVars <- all.vars(form)
-    respVar <- namesVars[1]
-    newdata[[respVar]] <- 0.01
     betas <- if (!inherits(object, "lme")) coef(object) else fixef(object)
     V <- if (inherits(object, "geeglm")) object$geese$vbeta else vcov(object)
     orig_data <- orig_data[complete.cases(orig_data[namesVars]), ]
-    mfX <- model.frame(terms(form), data = orig_data)
-    X <- model.matrix(attr(mfX, "terms"), newdata)
+    Terms <- delete.response(terms(form))
+    mfX <- model.frame(Terms, data = orig_data)
+    Terms_new <- attr(mfX, "terms")
+    mfX_new <- model.frame(Terms_new, newdata, xlev = .getXlevels(Terms, mfX))
+    X <- model.matrix(Terms_new, mfX_new)
     pred <- c(X %*% betas)
     ses <- sqrt(diag(X %*% V %*% t(X)))
     newdata$pred <- pred
@@ -253,6 +295,10 @@ effectPlotData <- function (object, newdata, orig_data) {
 }
 ```
 
+Next we define the data frame with the combination of values of the covariates for which
+we would like to create the plot. In our example, we set a regular sequence of 25 values 
+from 0 to 12 for the time variable, the levels of the sex variable, and the levels of the 
+drug variable, and age at 49 years old:
 ```{r}
 newDF <- with(pbc2, expand.grid(
     year = seq(0, 12, length.out = 25),
@@ -262,6 +308,8 @@ newDF <- with(pbc2, expand.grid(
 ))
 ```
 
+The effect plot is created with the following call to [xyplot()](https://goo.gl/KhfGGL) -
+first we produce the plot for the log odds of abnormal prothrombin time:
 ```{r}
 xyplot(pred + low + upp ~ year | sex * drug, 
        data = effectPlotData(fm_3_IntSexAge, newDF, pbc2), 
@@ -270,6 +318,9 @@ xyplot(pred + low + upp ~ year | sex * drug,
        ylab = "log Odds")
 ```
 
+And following the plot for the probability of abnormal prothrombin time (the first line 
+of code defines the helper function `expit()` which transform the log odds to 
+probabilities):
 ```{r}
 expit <- function (x) exp(x) / (1 + exp(x))
 xyplot(expit(pred) + expit(low) + expit(upp) ~ year | sex * drug, 

@@ -148,13 +148,14 @@ xyplot(prothrombin + fitted_marg + fitted_subj ~ year | id, data = pbc2n,
 effectPlotData <- function (object, newdata, orig_data) {
     form <- formula(object)
     namesVars <- all.vars(form)
-    respVar <- namesVars[1]
-    newdata[[respVar]] <- 0.01
     betas <- if (!inherits(object, "lme")) coef(object) else fixef(object)
     V <- if (inherits(object, "geeglm")) object$geese$vbeta else vcov(object)
     orig_data <- orig_data[complete.cases(orig_data[namesVars]), ]
-    mfX <- model.frame(terms(form), data = orig_data)
-    X <- model.matrix(attr(mfX, "terms"), newdata)
+    Terms <- delete.response(terms(form))
+    mfX <- model.frame(Terms, data = orig_data)
+    Terms_new <- attr(mfX, "terms")
+    mfX_new <- model.frame(Terms_new, newdata, xlev = .getXlevels(Terms, mfX))
+    X <- model.matrix(Terms_new, mfX_new)
     pred <- c(X %*% betas)
     ses <- sqrt(diag(X %*% V %*% t(X)))
     newdata$pred <- pred
