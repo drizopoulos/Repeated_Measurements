@@ -1840,15 +1840,19 @@ shinyServer(function(input, output) {
     output$sPract_motivate <- renderText({
         if (input$chapter == "Practicals" && input$section == "Practical 1" 
             && is.null(v$Pract1)) {
+            v$Pract2 <- v$Pract3 <- v$Pract4 <- NULL
             includeHTML("./html/Practical1_motivate.Rhtml")
         } else if (input$chapter == "Practicals" && input$section == "Practical 2"
                    && is.null(v$Pract2)) {
+            v$Pract1 <- v$Pract3 <- v$Pract4 <- NULL
             includeHTML("./html/Practical2_motivate.Rhtml")
         } else if (input$chapter == "Practicals" && input$section == "Practical 3"
                    && is.null(v$Pract3)) {
+            v$Pract1 <- v$Pract2 <- v$Pract4 <- NULL
             includeHTML("./html/Practical3_motivate.Rhtml")
         } else if (input$chapter == "Practicals" && input$section == "Practical 4"
                    && is.null(v$Pract4)) {
+            v$Pract1 <- v$Pract3 <- v$Pract2 <- NULL
             includeHTML("./html/Practical4_motivate.Rhtml")
         }
     })
@@ -1856,15 +1860,19 @@ shinyServer(function(input, output) {
     output$sPract_motivate2 <- renderText({
         if (input$chapter == "Practicals" && input$section == "Practical 1" 
             && is.null(v$Pract1)) {
+            v$Pract2 <- v$Pract3 <- v$Pract4 <- NULL
             includeHTML("./html/Practical1_motivate.Rhtml")
         } else if (input$chapter == "Practicals" && input$section == "Practical 2"
                    && is.null(v$Pract2)) {
+            v$Pract1 <- v$Pract3 <- v$Pract4 <- NULL
             includeHTML("./html/Practical2_motivate.Rhtml")
         } else if (input$chapter == "Practicals" && input$section == "Practical 3"
                    && is.null(v$Pract3)) {
+            v$Pract1 <- v$Pract2 <- v$Pract4 <- NULL
             includeHTML("./html/Practical3_motivate.Rhtml")
         } else if (input$chapter == "Practicals" && input$section == "Practical 4"
                    && is.null(v$Pract4)) {
+            v$Pract1 <- v$Pract3 <- v$Pract2 <- NULL
             includeHTML("./html/Practical4_motivate.Rhtml")
         }
     })
@@ -1892,7 +1900,6 @@ shinyServer(function(input, output) {
     output$sPract_code <- renderText({
         if (input$chapter == "Practicals" && input$section == "Practical 1"
             && !is.null(v$Pract1) && naf(input$pract_Q)) {
-            v$Pract2 <- v$Pract3 <- v$Pract4 <- NULL
             switch(input$pract_Q,
                    "Question 1" = includeMarkdown("./md/sPract11_code.Rmd"),
                    "Question 2" = includeMarkdown("./md/sPract12_code.Rmd"),
@@ -1906,7 +1913,6 @@ shinyServer(function(input, output) {
                    "All" = includeMarkdown("./md/sPract1_code.Rmd"))
         } else if (input$chapter == "Practicals" && input$section == "Practical 2"
                    && !is.null(v$Pract2) && naf(input$pract_Q)) {
-            v$Pract1 <- v$Pract3 <- v$Pract4 <- NULL
             switch(input$pract_Q,
                    "Question 1" = includeMarkdown("./md/sPract21_code.Rmd"),
                    "Question 2" = includeMarkdown("./md/sPract22_code.Rmd"),
@@ -1917,11 +1923,10 @@ shinyServer(function(input, output) {
                    "Question 7" = includeMarkdown("./md/sPract27_code.Rmd"),
                    "Question 8" = includeMarkdown("./md/sPract28_code.Rmd"),
                    "Question 9" = includeMarkdown("./md/sPract29_code.Rmd"),
-                   "Question 10" = includeMarkdown("./md/sPract110_code.Rmd"),
+                   "Question 10" = includeMarkdown("./md/sPract210_code.Rmd"),
                    "All" = includeMarkdown("./md/sPract2_code.Rmd"))
         } else if (input$chapter == "Practicals" && input$section == "Practical 3"
                    && !is.null(v$Pract3) && naf(input$pract_Q)) {
-            v$Pract2 <- v$Pract1 <- v$Pract4 <- NULL
             switch(input$pract_Q,
                    "Question 1" = includeMarkdown("./md/sPract31_code.Rmd"),
                    "Question 2" = includeMarkdown("./md/sPract32_code.Rmd"),
@@ -1935,7 +1940,6 @@ shinyServer(function(input, output) {
                    "All" = includeMarkdown("./md/sPract3_code.Rmd"))
         } else if (input$chapter == "Practicals" && input$section == "Practical 4"
                    && !is.null(v$Pract4) && naf(input$pract_Q)) {
-            v$Pract2 <- v$Pract3 <- v$Pract1 <- NULL
             switch(input$pract_Q,
                    "Question 1" = includeMarkdown("./md/sPract41_code.Rmd"),
                    "Question 2" = includeMarkdown("./md/sPract42_code.Rmd"),
