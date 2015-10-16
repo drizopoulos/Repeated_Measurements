@@ -7,6 +7,6 @@
 # Q7 #
 ######
 
-summary(fm_3_IntSexAge)
+summary(fm_3_IntFinal)
 ```
 

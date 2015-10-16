@@ -46,8 +46,8 @@ nDF_male <- with(pbc2, expand.grid(
 ))
 nDF_male
 
-rowDiff(fm_3_IntSexAge, nDF_male, pbc2)
-rowDiff(fm_3_IntSexAge, nDF_male, pbc2, adjust.p = TRUE)
+rowDiff(fm_3_IntFinal, nDF_male, pbc2)
+rowDiff(fm_3_IntFinal, nDF_male, pbc2, adjust.p = TRUE)
 
 
 nDF_female <- with(pbc2, expand.grid(
@@ -57,6 +57,6 @@ nDF_female <- with(pbc2, expand.grid(
 ))
 nDF_female
 
-rowDiff(fm_3_IntSexAge, nDF_female, pbc2, adjust.p = TRUE)
+rowDiff(fm_3_IntFinal, nDF_female, pbc2, adjust.p = TRUE)
 ```
 

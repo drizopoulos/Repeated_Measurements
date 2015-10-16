@@ -34,14 +34,14 @@ newDF <- with(pbc2, expand.grid(
 ))
 
 xyplot(pred + low + upp ~ year | sex * drug, 
-       data = effectPlotData(fm_3_IntSexAge, newDF, pbc2), 
+       data = effectPlotData(fm_3_IntFinal, newDF, pbc2), 
        lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2, type = "l",
        xlab = "Follow-up time (years)",
        ylab = "log Odds")
 
 expit <- function (x) exp(x) / (1 + exp(x))
 xyplot(expit(pred) + expit(low) + expit(upp) ~ year | sex * drug, 
-       data = effectPlotData(fm_3_IntSexAge, newDF, pbc2), 
+       data = effectPlotData(fm_3_IntFinal, newDF, pbc2), 
        lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2, type = "l",
        xlab = "Follow-up time (years)",
        ylab = "Probabilities")

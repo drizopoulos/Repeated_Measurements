@@ -8,33 +8,37 @@
 ######
 
 # overall test of interactions
-fm_3_noInt <- geeglm(Dicht_prothro ~ ns(year, 2) + drug + sex + age, 
-               family = binomial(), data = pbc2, id = id, corstr = "ar1")
+fm_3_IntAll <- geeglm(Dicht_prothro ~ ns(year, 2) + drug + sex + age,
+                      family = binomial(), data = pbc2, id = id, corstr = "ar1")
 
-anova(fm_3_noInt, fm_3)
+anova(fm_3_IntAll, fm_3)
+
+# test for all time interactions
+fm_3_IntTimeAll <- geeglm(Dicht_prothro ~ ns(year, 2) + sex + drug + age + age : sex, 
+                          family = binomial(), data = pbc2, id = id, corstr = "ar1")
+
+anova(fm_3_IntTimeAll, fm_3)
 
 # test for time - drug interaction
-fm_3_IntDrug <- geeglm(Dicht_prothro ~ ns(year, 2) * sex + drug + age + age : sex, 
-                       family = binomial(), data = pbc2, id = id, corstr = "ar1")
+fm_3_IntTimeDrug <- geeglm(Dicht_prothro ~ ns(year, 2) * sex + drug + age + age : sex, 
+                           family = binomial(), data = pbc2, id = id, corstr = "ar1")
 
-anova(fm_3_IntDrug, fm_3)
+anova(fm_3_IntTimeDrug, fm_3)
 
-# test for time - sex & age - sex interactions
-fm_3_IntSex <- geeglm(Dicht_prothro ~ ns(year, 2) * drug + sex + age, 
-                       family = binomial(), data = pbc2, id = id, corstr = "ar1")
+# test for time - sex interaction
+fm_3_IntTimeSex <- geeglm(Dicht_prothro ~ ns(year, 2) * drug + sex + age + age : sex, 
+                          family = binomial(), data = pbc2, id = id, corstr = "ar1")
 
-anova(fm_3_IntSex, fm_3)
+anova(fm_3_IntTimeSex, fm_3)
 
-# test for time - sex
-fm_3_IntSexTime <- geeglm(Dicht_prothro ~ ns(year, 2) * drug + sex + age : sex, 
-                       family = binomial(), data = pbc2, id = id, corstr = "ar1")
-
-anova(fm_3_IntSexTime, fm_3)
-
-# test for time - age
+# test for sex - age
 fm_3_IntSexAge <- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age, 
-                       family = binomial(), data = pbc2, id = id, corstr = "ar1")
+                         family = binomial(), data = pbc2, id = id, corstr = "ar1")
 
 anova(fm_3_IntSexAge, fm_3)
+
+# final model interactions
+fm_3_IntFinal <- geeglm(Dicht_prothro ~ ns(year, 2) * sex + drug + age, 
+                        family = binomial(), data = pbc2, id = id, corstr = "ar1")
 ```
 

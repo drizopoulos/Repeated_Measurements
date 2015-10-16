@@ -209,8 +209,23 @@ summary(fm_3ML_noInt_LinAge)
 
 The interpretation of the regression coefficients is as follows:
 
-* For patients of the same sex and age at baseline who receive the same drug, each
-year the average prothrombin time increases by **NA** sec.
+* The coefficients that involve the polynomial terms of time do not have a straightforward
+interpretation - in this cases an Effect Plot is more effective in communicating the 
+results of the model (see Question 9).
+
+* The coefficients of drug, sex and age can be interpreted in a easier manner, namely
+    + `r round(fixef(fm_3ML_noInt_LinAge)['drugD-penicil'], 2)` is the expected difference
+    in prothrombin time between treated and placebo patients of the same age and sex, and 
+    who are compared at the same follow-up time.
+
+    + `r round(fixef(fm_3ML_noInt_LinAge)['sexfemale'], 2)` is the expected difference
+    in prothrombin time females and males, who receive the same treatment are of the same 
+    age, and who are compared at the same follow-up time.
+    
+    + `r round(fixef(fm_3ML_noInt_LinAge)['age'], 2)` is the expected difference
+    in prothrombin time for a unit increase in the baseline age for patients who have the 
+    same sex, received the same treatment,and who are compared at the same follow-up time.
+
 
 The estimated random effects covariance matrix and the induced correlation matrix are:
 ```{r}

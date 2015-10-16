@@ -204,69 +204,97 @@ and the compare the model under the null (here the one the excludes all interact
 with the model under the alternative (here the model that includes all interaction terms)
 using the `anova()` function. The corresponding code is:
 ```{r}
-fm_3_noInt <- geeglm(Dicht_prothro ~ ns(year, 2) + drug + sex + age, 
-               family = binomial(), data = pbc2, id = id, corstr = "ar1")
+fm_3_IntAll <- geeglm(Dicht_prothro ~ ns(year, 2) + drug + sex + age,
+                      family = binomial(), data = pbc2, id = id, corstr = "ar1")
 
-anova(fm_3_noInt, fm_3)
+anova(fm_3_IntAll, fm_3)
 ```
 
 We observe that the result is on the borderline. Nonetheless, we will continue to 
 investigate the interaction terms further. We will first test the two interaction terms 
 for the time effect, i.e.,
 ```{r}
-fm_3_IntTime <- geeglm(Dicht_prothro ~ ns(year, 2) + sex + drug + age + age : sex, 
-                       family = binomial(), data = pbc2, id = id, corstr = "ar1")
+fm_3_IntTimeAll <- geeglm(Dicht_prothro ~ ns(year, 2) + sex + drug + age + age : sex, 
+                          family = binomial(), data = pbc2, id = id, corstr = "ar1")
 
-anova(fm_3_IntTime, fm_3)
+anova(fm_3_IntTimeAll, fm_3)
 ```
 
 We find a significant difference between the two models suggesting that at least one of 
 the interaction terms is required. To find out which, we first test the interaction term 
 for drug, i.e.,
 ```{r}
-fm_3_IntDrug <- geeglm(Dicht_prothro ~ ns(year, 2) * sex + sex + age, 
-                       family = binomial(), data = pbc2, id = id, corstr = "ar1")
+fm_3_IntTimeDrug <- geeglm(Dicht_prothro ~ ns(year, 2) * sex + drug + age + age : sex, 
+                           family = binomial(), data = pbc2, id = id, corstr = "ar1")
 
-anova(fm_3_IntDrug, fm_3)
+anova(fm_3_IntTimeDrug, fm_3)
 ```
 
 The results point out that this interaction terms does not seem to improve the fit. We 
 continue with the interaction term for sex
 ```{r}
-fm_3_IntSex <- geeglm(Dicht_prothro ~ ns(year, 2) * drug + sex + age, 
-                       family = binomial(), data = pbc2, id = id, corstr = "ar1")
+fm_3_IntTimeSex <- geeglm(Dicht_prothro ~ ns(year, 2) * drug + sex + age + age : sex, 
+                          family = binomial(), data = pbc2, id = id, corstr = "ar1")
 
-anova(fm_3_IntSex, fm_3)
+anova(fm_3_IntTimeSex, fm_3)
 ```
 
-```{r}
-fm_3_IntSexTime <- geeglm(Dicht_prothro ~ ns(year, 2) * drug + sex + age : sex, 
-                       family = binomial(), data = pbc2, id = id, corstr = "ar1")
-
-anova(fm_3_IntSexTime, fm_3)
-```
-
+The interaction between the time effect and sex seems to improve the fit of the model. We
+finally test the interaction term between age and sex
 ```{r}
 fm_3_IntSexAge <- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age, 
-                       family = binomial(), data = pbc2, id = id, corstr = "ar1")
+                         family = binomial(), data = pbc2, id = id, corstr = "ar1")
 
 anova(fm_3_IntSexAge, fm_3)
 ```
 
-### Question 6
-
+Hence, we keep as final model the one that only includes the interaction term between
+sex and time, i.e.,
 ```{r}
-fm_3_IntSexAge_Lin <- geeglm(Dicht_prothro ~ year * (drug + sex) + age, 
-                       family = binomial(), data = pbc2, id = id, corstr = "ar1")
-
-anova(fm_3_IntSexAge_Lin, fm_3_IntSexAge)
+fm_3_IntFinal <- geeglm(Dicht_prothro ~ ns(year, 2) * sex + drug + age, 
+                        family = binomial(), data = pbc2, id = id, corstr = "ar1")
 ```
+
+
+### Question 6
+Next we would like to test the requirement to include the nonlinear terms. Using an
+analogous procedure as in Question 5, we first fit the model under the null hypothesis, 
+that is the model that assumes a linear effect for time, and we compare it with model
+`fm_3_IntFinal` that assumes a nonlinear effect:
+```{r}
+fm_3_IntFinal_Lin <- geeglm(Dicht_prothro ~ year * sex + drug + age, 
+                            family = binomial(), data = pbc2, id = id, corstr = "ar1")
+
+anova(fm_3_IntFinal_Lin, fm_3_IntFinal)
+```
+
+The result suggests that we should retain the nonlinear effect.
 
 ### Question 7
 
 ```{r}
-summary(fm_3_IntSexAge)
+summary(fm_3_IntFinal)
 ```
+
+Interpretation of the regression coefficients:
+
+* The coefficients that involve the nonlinear terms of time do not have a straightforward
+interpretation - in this cases an Effect Plot is more effective in communicating the 
+results of the model (see next Question).
+
+* The coefficients of drug and age can be interpreted in a easier manner, namely
+    + `r round(coef(fm_3_IntFinal)['drugD-penicil'], 2)` is the log odds ratio between
+    treated and placebo patients of the same age and sex, and who are compared at the same
+    follow-up time. The corresponding odds ratio is 
+    `r round(exp(coef(fm_3_IntFinal)['drugD-penicil']), 2)`, i.e., 
+    $e^{`r round(coef(fm_3_IntFinal)['drugD-penicil'], 2)`}$.
+    
+    + `r round(coef(fm_3_IntFinal)['age'], 2)` is the log odds ratio for a unit increase
+    in the baseline age for patients who have the same sex, received the same treatment,and
+    who are compared at the same follow-up time. The corresponding odds ratio is 
+    `r round(exp(coef(fm_3_IntFinal)['age']), 2)`, i.e., 
+    $e^{`r round(coef(fm_3_IntFinal)['age'], 2)`}$.
+
 
 ### Question 8
 To create the effect plot we first need to define the function `effectPlotData()` which we
@@ -312,7 +340,7 @@ The effect plot is created with the following call to [xyplot()](https://goo.gl/
 first we produce the plot for the log odds of abnormal prothrombin time:
 ```{r}
 xyplot(pred + low + upp ~ year | sex * drug, 
-       data = effectPlotData(fm_3_IntSexAge, newDF, pbc2), 
+       data = effectPlotData(fm_3_IntFinal, newDF, pbc2), 
        lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2, type = "l",
        xlab = "Follow-up time (years)",
        ylab = "log Odds")
@@ -324,7 +352,7 @@ probabilities):
 ```{r}
 expit <- function (x) exp(x) / (1 + exp(x))
 xyplot(expit(pred) + expit(low) + expit(upp) ~ year | sex * drug, 
-       data = effectPlotData(fm_3_IntSexAge, newDF, pbc2), 
+       data = effectPlotData(fm_3_IntFinal, newDF, pbc2), 
        lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2, type = "l",
        xlab = "Follow-up time (years)",
        ylab = "Probabilities")
@@ -383,14 +411,14 @@ nDF_male
 
 The we the following call to `rowDiff()` we perform the pairwise comparisons:
 ```{r}
-rowDiff(fm_3_IntSexAge, nDF_male, pbc2)
+rowDiff(fm_3_IntFinal, nDF_male, pbc2)
 ```
 
 Before going to interpret the results we should note that we have performed multiple tests
 and therefore we should accordingly adjust the p-values. To do that we set argument
 `adjust.p` of `rowDiff()` to `TRUE`, i.e.,
 ```{r}
-rowDiff(fm_3_IntSexAge, nDF_male, pbc2, adjust.p = TRUE)
+rowDiff(fm_3_IntFinal, nDF_male, pbc2, adjust.p = TRUE)
 ```
 
 Each row in the output of `rowDiff()` corresponds to a comparison of the corresponding rows 

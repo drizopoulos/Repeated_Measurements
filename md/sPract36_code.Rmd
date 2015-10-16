@@ -8,9 +8,9 @@
 ######
 
 # nonlinear terms
-fm_3_IntSexAge_Lin <- geeglm(Dicht_prothro ~ year * (drug + sex) + age, family = binomial(), 
-                             data = pbc2, id = id, corstr = "ar1")
+fm_3_IntFinal_Lin <- geeglm(Dicht_prothro ~ year * sex + drug + age, 
+                            family = binomial(), data = pbc2, id = id, corstr = "ar1")
 
-anova(fm_3_IntSexAge_Lin, fm_3_IntSexAge)
+anova(fm_3_IntFinal_Lin, fm_3_IntFinal)
 ```
 

@@ -235,7 +235,13 @@ fm_3ML_noInt &lt;- update(fm_3ML, fixed = . ~ year + I(year^2) + sex + drug + ns
 ## Number of Groups: 312</code></pre>
 <p>The interpretation of the regression coefficients is as follows:</p>
 <ul>
-<li>For patients of the same sex and age at baseline who receive the same drug, each year the average prothrombin time increases by <strong>NA</strong> sec.</li>
+<li><p>The coefficients that involve the polynomial terms of time do not have a straightforward interpretation - in this cases an Effect Plot is more effective in communicating the results of the model (see Question 9).</p></li>
+<li>The coefficients of drug, sex and age can be interpreted in a easier manner, namely
+<ul>
+<li><p>-0.17 is the expected difference in prothrombin time between treated and placebo patients of the same age and sex, and who are compared at the same follow-up time.</p></li>
+<li><p>-0.29 is the expected difference in prothrombin time females and males, who receive the same treatment are of the same age, and who are compared at the same follow-up time.</p></li>
+<li><p>0.01 is the expected difference in prothrombin time for a unit increase in the baseline age for patients who have the same sex, received the same treatment,and who are compared at the same follow-up time.</p></li>
+</ul></li>
 </ul>
 <p>The estimated random effects covariance matrix and the induced correlation matrix are:</p>
 <pre class="r"><code>getVarCov(fm_3ML_noInt_LinAge, individuals = 271)</code></pre>
