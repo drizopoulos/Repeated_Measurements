@@ -841,14 +841,15 @@ shinyServer(function(input, output) {
     output$s33_Routput_ws <- renderPrint({
         if(input$chapter == "Chapter 3" && input$section == "Section 3.3" 
            && naf(input$reStr) 
-           && input$reStr %in% c("intercepts", "intercepts & slopes")) {
+           && input$reStr %in% c("intercepts")) {
             includeHTML("./html/white_space.Rhtml")
         }
     })
     
     output$s33_Routput_ws2 <- renderPrint({
         if(input$chapter == "Chapter 3" && input$section == "Section 3.3" 
-           && naf(input$reStr) && input$reStr == "intercepts, slopes & slopes^2") {
+           && naf(input$reStr) && input$reStr %in% c("intercepts & slopes", 
+                                                     "intercepts, slopes & slopes^2")) {
             includeHTML("./html/white_space_long.Rhtml")
         }
     })
