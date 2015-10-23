@@ -15,21 +15,50 @@ th, td {
 <br/>
 <h4 align="left">
     <strong>
-        <span style="color:red">geepack package</span>
+        <span style="color:red">lme4 package</span>
     </strong>
 </h4>
 <ul style="list-style-type:circle">
-  <li> Function <a href="https://goo.gl/1S1uix" target="_blank">geeglm()</a> fits generalized
-  estimating equations for clustered data; main arguments:
+  <li> Function <a href="https://goo.gl/U7tf8T" target="_blank">glmer()</a> fits 
+  generalized linear mixed effects models for clustered data; main arguments:
   <ul style="list-style-type:square">
     <li>
-        <font face="Courier New">formula</font>: a two-sided R  
-        <a href="https://goo.gl/8kHEh5" target="_blank">formula</a> specifying the response
-        variable and the terms to include in the model.
+        <font face="Courier New">formula</font>: describing both the 
+        fixed-effects and random-effects part of the model, with the response on the left 
+        of a <font face="Courier New">"~"</font> operator and the terms, separated by 
+        <font face="Courier New">"+"</font> operators, on the 
+        right. Random-effects terms are distinguished by vertical bars 
+        (<font face="Courier New">"|"</font>) separating expressions for design matrices 
+        from grouping factors. Two vertical bars (<font face="Courier New">"||"</font>) 
+        can be used to specify multiple uncorrelated random effects for the same grouping 
+        variable. Some examples:
+        <table style="width:100%" aling="center">
+            <tr>
+                <td><strong>Description</strong></td>
+                <td><strong>lmer() syntax</strong></td>
+            </tr>
+            <tr>
+                <td>random intercepts</td>
+                <td><font face="Courier New">glmer(y ~ time + (1 | id))</font></td>
+            </tr>
+            <tr>
+                <td>random intercepts & slopes diagonal covariance matrix</td>
+                <td><font face="Courier New">glmer(y ~ time + (time || id))</font></td>
+            </tr>
+            <tr>
+                <td>nested random intercepts</td>
+                <td><font face="Courier New">glmer(y ~ time + (1 | id / eye))</font></td>
+            </tr>
+            <tr>
+                <td>crossed random intercepts</td>
+                <td><font face="Courier New">glmer(y ~ time + (1 | id) + (1 | visit))</font></td>
+            </tr>
+        </table>
+        <br/>
     </li>
     <li>
         <font face="Courier New">family</font>: a 
-        <a href="https://goo.gl/4EicoR" target="_blank">family</a> object providign a 
+        <a href="https://goo.gl/4EicoR" target="_blank">family</a> object providing a 
         description of the error distribution and link function to be used in the model.
     </li>
     <li>
@@ -37,30 +66,19 @@ th, td {
         <a href="https://goo.gl/PVVYyn" target="_blank">data frame</a> that contains the 
         aforementioned variables.
     </li>
-    <li>
-        <font face="Courier New">id</font>: a vector which identifies the clusters. The 
-        length of <font face="Courier New">id</font> should be the same as the number of 
-        observations. Data are assumed to be sorted so that observations on a cluster are 
-        contiguous rows for all entities in the formula.
+        <li>
+        <font face="Courier New">nAGQ</font>: integer scalar - the number of points per 
+        axis for evaluating the adaptive Gauss-Hermite approximation to the 
+        log-likelihood. Defaults to 1, corresponding to the Laplace approximation.
     </li>
-    
-    <li>
-        <font face="Courier New">corstr</font>: character string indicating the assumed 
-        working correlation matrix; options are <font face="Courier New">"independence"</font>,
-        <font face="Courier New">"exchangeable"</font>, <font face="Courier New">"ar1"</font>,
-        <font face="Courier New">"unstructured"</font>, and <font face="Courier New">"userdefined"</font>.
-    </li>
+
   </ul>
   </li>
   
   <br/>
   
-  <li>Function <a href="https://goo.gl/1S1uix" target="_blank">anova.geeglm()</a> can be used 
-  to Wald test in GEE models. When a single marginal model is provided to this function it 
-  computes sequential Wald tests. When two or more models fitted by 
-  <a href="https://goo.gl/1S1uix" target="_blank">geeglm()</a> 
-    are provided to this function it computes the corresponding Wald tests between the
-    two models.
+  <li>Function <a href="https://goo.gl/U7tf8T" target="_blank">anova()</a> can be
+  used to peform likelihood ratio tests between nested generalized mixed effects models.
   </li>
   <br/>
 </ul>
@@ -71,9 +89,9 @@ th, td {
 </h3>
 <ul style="list-style-type:circle">
 <li>
-  <a href="https://goo.gl/u69ACN" target="_blank">summary.geeglm()</a> summarizes the fitted 
-  GEE model, including the estimated coefficients with corresponding standard errors and 
-  p-values, and the estimated parameters for the assumed working correlation structure.
+  <a href="https://goo.gl/u69ACN" target="_blank">summary()</a> summarizes the 
+  fitted model, including the estimated coefficients with corresponding standard errors and 
+  p-values, and the estimated parameters for the assumed random-effects structure.
  </li>
  <li>
   <a href="http://goo.gl/KUeG1Q" target="_blank">formulas in R</a>.
