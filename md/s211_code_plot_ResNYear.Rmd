@@ -1,8 +1,0 @@
-```{r}
-fm_s211_pbc <- gls(log(serBilir) ~ year + year:drug + year * sex + age, data = pbc2,
-                   correlation = corCAR1(form = ~ year | id))
-
-plot(fm_s211_pbc, resid(., type = "n") ~ year, 
-     type = c("p", "smooth"), lwd = 3)
-```
-

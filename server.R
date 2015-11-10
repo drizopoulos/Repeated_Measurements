@@ -4,7 +4,7 @@ shinyServer(function(input, output) {
         if (!is.null(input$chapter)) {
             chs <- switch(input$chapter,
                 "Chapter 1" = paste("Section", c("1.1")),
-                "Chapter 2" = paste("Section", c("2.2", "2.4", "2.7", "2.9", "2.11")),
+                "Chapter 2" = paste("Section", c("2.2", "2.4", "2.7", "2.9", "2.12")),
                 "Chapter 3" = paste("Section", c("3.2", "3.3", "3.4", "3.6*", "3.7", "3.8*", "3.10", "3.11")),
                 "Chapter 4" = paste("Section", c("4.1", "4.3", "4.5", "4.6")),
                 "Chapter 6" = paste("Section", c("6.3")),
@@ -294,7 +294,7 @@ shinyServer(function(input, output) {
                                      weights = varIdent(form = ~ 1 | obstime))
                 }, message = "Fitting the model...")
                 fm_s29_aids2 <<- fm
-                fm_s211_aids <<- fm
+                fm_s212_aids <<- fm
             }
             htmlPrint(anova(fm_s29_aids1, fm_s29_aids2))
         }
@@ -371,242 +371,242 @@ shinyServer(function(input, output) {
     ######################################################################################
     
     #################
-    # Section 2.11 #
+    # Section 2.12 #
     #################
     
-    output$s211_plot_datachoice <- renderUI({
-        if (input$chapter == "Chapter 2" && input$section == "Section 2.11") {
-            radioButtons("s211_datachoice", "Select dataset:", c("AIDS", "PBC"))
+    output$s212_plot_datachoice <- renderUI({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.12") {
+            radioButtons("s212_datachoice", "Select dataset:", c("AIDS", "PBC"))
         }
     })
     
-    output$s211_plot_choice <- renderUI({
-        if (input$chapter == "Chapter 2" && input$section == "Section 2.11") {
-            chs <- if (naf(input$s211_datachoice) && input$s211_datachoice == "AIDS") "fitted" 
+    output$s212_plot_choice <- renderUI({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.12") {
+            chs <- if (naf(input$s212_datachoice) && input$s212_datachoice == "AIDS") "fitted" 
             else c("fitted", "year", "age")
-            cond_var <- if (naf(input$s211_datachoice) && input$s211_datachoice == "AIDS") "Condition on drug"
+            cond_var <- if (naf(input$s212_datachoice) && input$s212_datachoice == "AIDS") "Condition on drug"
             else "Condition on sex"
-            fluidRow(column(4, radioButtons("s211_typePlot", "Type of plot:", c("Scatterplot", "QQnorm"))),
-                     column(4, radioButtons("s211_type_res", "Residuals type:", c("Pearson", "normalized"))),
-                     column(4, selectInput("s211_var_res", "Select variable:", chs, chs[1]),
-                            checkboxInput("s211_sex", cond_var)))
+            fluidRow(column(4, radioButtons("s212_typePlot", "Type of plot:", c("Scatterplot", "QQnorm"))),
+                     column(4, radioButtons("s212_type_res", "Residuals type:", c("Pearson", "normalized"))),
+                     column(4, selectInput("s212_var_res", "Select variable:", chs, chs[1]),
+                            checkboxInput("s212_sex", cond_var)))
         }
     })
     
-    output$s211_code_plot1 <- renderText({
-        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
-            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
-            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
-            && naf(input$s211_type_res) && input$s211_type_res == "Pearson"
-            && naf(input$s211_var_res) && input$s211_var_res == "fitted" && !input$s211_sex)
-            includeMarkdown("./md/s211_code_plot_ResPFitt.Rmd")
+    output$s212_code_plot1 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.12"
+            && naf(input$s212_datachoice) && input$s212_datachoice == "PBC"
+            && naf(input$s212_typePlot) && input$s212_typePlot == "Scatterplot"
+            && naf(input$s212_type_res) && input$s212_type_res == "Pearson"
+            && naf(input$s212_var_res) && input$s212_var_res == "fitted" && !input$s212_sex)
+            includeMarkdown("./md/s212_code_plot_ResPFitt.Rmd")
     })
 
-    output$s211_code_plot2 <- renderText({
-        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
-            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
-            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
-            && naf(input$s211_type_res) && input$s211_type_res == "normalized"
-            && naf(input$s211_var_res) && input$s211_var_res == "fitted" && !input$s211_sex)
-            includeMarkdown("./md/s211_code_plot_ResNFitt.Rmd")
+    output$s212_code_plot2 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.12"
+            && naf(input$s212_datachoice) && input$s212_datachoice == "PBC"
+            && naf(input$s212_typePlot) && input$s212_typePlot == "Scatterplot"
+            && naf(input$s212_type_res) && input$s212_type_res == "normalized"
+            && naf(input$s212_var_res) && input$s212_var_res == "fitted" && !input$s212_sex)
+            includeMarkdown("./md/s212_code_plot_ResNFitt.Rmd")
     })
 
-    output$s211_code_plot3 <- renderText({
-        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
-            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
-            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
-            && naf(input$s211_type_res) && input$s211_type_res == "Pearson"
-            && naf(input$s211_var_res) && input$s211_var_res == "fitted" && input$s211_sex)
-            includeMarkdown("./md/s211_code_plot_ResPFitt-sex.Rmd")
+    output$s212_code_plot3 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.12"
+            && naf(input$s212_datachoice) && input$s212_datachoice == "PBC"
+            && naf(input$s212_typePlot) && input$s212_typePlot == "Scatterplot"
+            && naf(input$s212_type_res) && input$s212_type_res == "Pearson"
+            && naf(input$s212_var_res) && input$s212_var_res == "fitted" && input$s212_sex)
+            includeMarkdown("./md/s212_code_plot_ResPFitt-sex.Rmd")
     })
 
-    output$s211_code_plot4 <- renderText({
-        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
-            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
-            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
-            && naf(input$s211_type_res) && input$s211_type_res == "normalized"
-            && naf(input$s211_var_res) && input$s211_var_res == "fitted" && input$s211_sex)
-            includeMarkdown("./md/s211_code_plot_ResNFitt-sex.Rmd")
+    output$s212_code_plot4 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.12"
+            && naf(input$s212_datachoice) && input$s212_datachoice == "PBC"
+            && naf(input$s212_typePlot) && input$s212_typePlot == "Scatterplot"
+            && naf(input$s212_type_res) && input$s212_type_res == "normalized"
+            && naf(input$s212_var_res) && input$s212_var_res == "fitted" && input$s212_sex)
+            includeMarkdown("./md/s212_code_plot_ResNFitt-sex.Rmd")
     })
     
-    output$s211_code_plot5 <- renderText({
-        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
-            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
-            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
-            && naf(input$s211_type_res) && input$s211_type_res == "Pearson"
-            && naf(input$s211_var_res) && input$s211_var_res == "year" && !input$s211_sex)
-            includeMarkdown("./md/s211_code_plot_ResPYear.Rmd")
+    output$s212_code_plot5 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.12"
+            && naf(input$s212_datachoice) && input$s212_datachoice == "PBC"
+            && naf(input$s212_typePlot) && input$s212_typePlot == "Scatterplot"
+            && naf(input$s212_type_res) && input$s212_type_res == "Pearson"
+            && naf(input$s212_var_res) && input$s212_var_res == "year" && !input$s212_sex)
+            includeMarkdown("./md/s212_code_plot_ResPYear.Rmd")
     })
     
-    output$s211_code_plot6 <- renderText({
-        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
-            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
-            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
-            && naf(input$s211_type_res) && input$s211_type_res == "normalized"
-            && naf(input$s211_var_res) && input$s211_var_res == "year" && !input$s211_sex)
-            includeMarkdown("./md/s211_code_plot_ResNYear.Rmd")
+    output$s212_code_plot6 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.12"
+            && naf(input$s212_datachoice) && input$s212_datachoice == "PBC"
+            && naf(input$s212_typePlot) && input$s212_typePlot == "Scatterplot"
+            && naf(input$s212_type_res) && input$s212_type_res == "normalized"
+            && naf(input$s212_var_res) && input$s212_var_res == "year" && !input$s212_sex)
+            includeMarkdown("./md/s212_code_plot_ResNYear.Rmd")
     })
     
-    output$s211_code_plot7 <- renderText({
-        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
-            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
-            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
-            && naf(input$s211_type_res) && input$s211_type_res == "Pearson"
-            && naf(input$s211_var_res) && input$s211_var_res == "year" && input$s211_sex)
-            includeMarkdown("./md/s211_code_plot_ResPYear-sex.Rmd")
+    output$s212_code_plot7 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.12"
+            && naf(input$s212_datachoice) && input$s212_datachoice == "PBC"
+            && naf(input$s212_typePlot) && input$s212_typePlot == "Scatterplot"
+            && naf(input$s212_type_res) && input$s212_type_res == "Pearson"
+            && naf(input$s212_var_res) && input$s212_var_res == "year" && input$s212_sex)
+            includeMarkdown("./md/s212_code_plot_ResPYear-sex.Rmd")
     })
     
-    output$s211_code_plot8 <- renderText({
-        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
-            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
-            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
-            && naf(input$s211_type_res) && input$s211_type_res == "normalized"
-            && naf(input$s211_var_res) && input$s211_var_res == "year" && input$s211_sex)
-            includeMarkdown("./md/s211_code_plot_ResNYear-sex.Rmd")
+    output$s212_code_plot8 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.12"
+            && naf(input$s212_datachoice) && input$s212_datachoice == "PBC"
+            && naf(input$s212_typePlot) && input$s212_typePlot == "Scatterplot"
+            && naf(input$s212_type_res) && input$s212_type_res == "normalized"
+            && naf(input$s212_var_res) && input$s212_var_res == "year" && input$s212_sex)
+            includeMarkdown("./md/s212_code_plot_ResNYear-sex.Rmd")
     })
     
-    output$s211_code_plot9 <- renderText({
-        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
-            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
-            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
-            && naf(input$s211_type_res) && input$s211_type_res == "Pearson"
-            && naf(input$s211_var_res) && input$s211_var_res == "age" && !input$s211_sex)
-            includeMarkdown("./md/s211_code_plot_ResPAge.Rmd")
+    output$s212_code_plot9 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.12"
+            && naf(input$s212_datachoice) && input$s212_datachoice == "PBC"
+            && naf(input$s212_typePlot) && input$s212_typePlot == "Scatterplot"
+            && naf(input$s212_type_res) && input$s212_type_res == "Pearson"
+            && naf(input$s212_var_res) && input$s212_var_res == "age" && !input$s212_sex)
+            includeMarkdown("./md/s212_code_plot_ResPAge.Rmd")
     })
     
-    output$s211_code_plot10 <- renderText({
-        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
-            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
-            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
-            && naf(input$s211_type_res) && input$s211_type_res == "normalized"
-            && naf(input$s211_var_res) && input$s211_var_res == "age" && !input$s211_sex)
-            includeMarkdown("./md/s211_code_plot_ResNAge.Rmd")
+    output$s212_code_plot10 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.12"
+            && naf(input$s212_datachoice) && input$s212_datachoice == "PBC"
+            && naf(input$s212_typePlot) && input$s212_typePlot == "Scatterplot"
+            && naf(input$s212_type_res) && input$s212_type_res == "normalized"
+            && naf(input$s212_var_res) && input$s212_var_res == "age" && !input$s212_sex)
+            includeMarkdown("./md/s212_code_plot_ResNAge.Rmd")
     })
     
-    output$s211_code_plot11 <- renderText({
-        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
-            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
-            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
-            && naf(input$s211_type_res) && input$s211_type_res == "Pearson"
-            && naf(input$s211_var_res) && input$s211_var_res == "age" && input$s211_sex)
-            includeMarkdown("./md/s211_code_plot_ResPAge-sex.Rmd")
+    output$s212_code_plot11 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.12"
+            && naf(input$s212_datachoice) && input$s212_datachoice == "PBC"
+            && naf(input$s212_typePlot) && input$s212_typePlot == "Scatterplot"
+            && naf(input$s212_type_res) && input$s212_type_res == "Pearson"
+            && naf(input$s212_var_res) && input$s212_var_res == "age" && input$s212_sex)
+            includeMarkdown("./md/s212_code_plot_ResPAge-sex.Rmd")
     })
     
-    output$s211_code_plot12 <- renderText({
-        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
-            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
-            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
-            && naf(input$s211_type_res) && input$s211_type_res == "normalized"
-            && naf(input$s211_var_res) && input$s211_var_res == "age" && input$s211_sex)
-            includeMarkdown("./md/s211_code_plot_ResNAge-sex.Rmd")
+    output$s212_code_plot12 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.12"
+            && naf(input$s212_datachoice) && input$s212_datachoice == "PBC"
+            && naf(input$s212_typePlot) && input$s212_typePlot == "Scatterplot"
+            && naf(input$s212_type_res) && input$s212_type_res == "normalized"
+            && naf(input$s212_var_res) && input$s212_var_res == "age" && input$s212_sex)
+            includeMarkdown("./md/s212_code_plot_ResNAge-sex.Rmd")
     })
     
-    output$s211_code_plot13 <- renderText({
-        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
-            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
-            && naf(input$s211_typePlot) && input$s211_typePlot == "QQnorm"
-            && naf(input$s211_type_res) && input$s211_type_res == "normalized"
-            && naf(input$s211_var_res) && input$s211_sex)
-            includeMarkdown("./md/s211_code_QQplot_ResN-sex.Rmd")
+    output$s212_code_plot13 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.12"
+            && naf(input$s212_datachoice) && input$s212_datachoice == "PBC"
+            && naf(input$s212_typePlot) && input$s212_typePlot == "QQnorm"
+            && naf(input$s212_type_res) && input$s212_type_res == "normalized"
+            && naf(input$s212_var_res) && input$s212_sex)
+            includeMarkdown("./md/s212_code_QQplot_ResN-sex.Rmd")
     })
     
-    output$s211_code_plot14 <- renderText({
-        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
-            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
-            && naf(input$s211_typePlot) && input$s211_typePlot == "QQnorm"
-            && naf(input$s211_type_res) && input$s211_type_res == "normalized"
-            && naf(input$s211_var_res) && !input$s211_sex)
-            includeMarkdown("./md/s211_code_QQplot_ResN.Rmd")
+    output$s212_code_plot14 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.12"
+            && naf(input$s212_datachoice) && input$s212_datachoice == "PBC"
+            && naf(input$s212_typePlot) && input$s212_typePlot == "QQnorm"
+            && naf(input$s212_type_res) && input$s212_type_res == "normalized"
+            && naf(input$s212_var_res) && !input$s212_sex)
+            includeMarkdown("./md/s212_code_QQplot_ResN.Rmd")
     })
     
-    output$s211_code_plot15 <- renderText({
-        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
-            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
-            && naf(input$s211_typePlot) && input$s211_typePlot == "QQnorm"
-            && naf(input$s211_type_res) && input$s211_type_res == "Pearson"
-            && naf(input$s211_var_res) && input$s211_sex)
-            includeMarkdown("./md/s211_code_QQplot_ResP-sex.Rmd")
+    output$s212_code_plot15 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.12"
+            && naf(input$s212_datachoice) && input$s212_datachoice == "PBC"
+            && naf(input$s212_typePlot) && input$s212_typePlot == "QQnorm"
+            && naf(input$s212_type_res) && input$s212_type_res == "Pearson"
+            && naf(input$s212_var_res) && input$s212_sex)
+            includeMarkdown("./md/s212_code_QQplot_ResP-sex.Rmd")
     })
     
-    output$s211_code_plot16 <- renderText({
-        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
-            && naf(input$s211_datachoice) && input$s211_datachoice == "PBC"
-            && naf(input$s211_typePlot) && input$s211_typePlot == "QQnorm"
-            && naf(input$s211_type_res) && input$s211_type_res == "Pearson"
-            && naf(input$s211_var_res) && !input$s211_sex)
-            includeMarkdown("./md/s211_code_QQplot_ResP.Rmd")
+    output$s212_code_plot16 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.12"
+            && naf(input$s212_datachoice) && input$s212_datachoice == "PBC"
+            && naf(input$s212_typePlot) && input$s212_typePlot == "QQnorm"
+            && naf(input$s212_type_res) && input$s212_type_res == "Pearson"
+            && naf(input$s212_var_res) && !input$s212_sex)
+            includeMarkdown("./md/s212_code_QQplot_ResP.Rmd")
     })
     
-    output$s211_code_plot17 <- renderText({
-        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
-            && naf(input$s211_datachoice) && input$s211_datachoice == "AIDS"
-            && naf(input$s211_typePlot) && input$s211_typePlot == "QQnorm"
-            && naf(input$s211_type_res) && input$s211_type_res == "normalized"
-            && naf(input$s211_var_res) && input$s211_sex)
-            includeMarkdown("./md/s211_code_QQplotAIDS_ResN-sex.Rmd")
+    output$s212_code_plot17 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.12"
+            && naf(input$s212_datachoice) && input$s212_datachoice == "AIDS"
+            && naf(input$s212_typePlot) && input$s212_typePlot == "QQnorm"
+            && naf(input$s212_type_res) && input$s212_type_res == "normalized"
+            && naf(input$s212_var_res) && input$s212_sex)
+            includeMarkdown("./md/s212_code_QQplotAIDS_ResN-sex.Rmd")
     })
     
-    output$s211_code_plot18 <- renderText({
-        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
-            && naf(input$s211_datachoice) && input$s211_datachoice == "AIDS"
-            && naf(input$s211_typePlot) && input$s211_typePlot == "QQnorm"
-            && naf(input$s211_type_res) && input$s211_type_res == "normalized"
-            && naf(input$s211_var_res) && !input$s211_sex)
-            includeMarkdown("./md/s211_code_QQplotAIDS_ResN.Rmd")
+    output$s212_code_plot18 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.12"
+            && naf(input$s212_datachoice) && input$s212_datachoice == "AIDS"
+            && naf(input$s212_typePlot) && input$s212_typePlot == "QQnorm"
+            && naf(input$s212_type_res) && input$s212_type_res == "normalized"
+            && naf(input$s212_var_res) && !input$s212_sex)
+            includeMarkdown("./md/s212_code_QQplotAIDS_ResN.Rmd")
     })
     
-    output$s211_code_plot19 <- renderText({
-        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
-            && naf(input$s211_datachoice) && input$s211_datachoice == "AIDS"
-            && naf(input$s211_typePlot) && input$s211_typePlot == "QQnorm"
-            && naf(input$s211_type_res) && input$s211_type_res == "Pearson"
-            && naf(input$s211_var_res) && input$s211_sex)
-            includeMarkdown("./md/s211_code_QQplotAIDS_ResP-sex.Rmd")
+    output$s212_code_plot19 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.12"
+            && naf(input$s212_datachoice) && input$s212_datachoice == "AIDS"
+            && naf(input$s212_typePlot) && input$s212_typePlot == "QQnorm"
+            && naf(input$s212_type_res) && input$s212_type_res == "Pearson"
+            && naf(input$s212_var_res) && input$s212_sex)
+            includeMarkdown("./md/s212_code_QQplotAIDS_ResP-sex.Rmd")
     })
 
-    output$s211_code_plot20 <- renderText({
-        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
-            && naf(input$s211_datachoice) && input$s211_datachoice == "AIDS"
-            && naf(input$s211_typePlot) && input$s211_typePlot == "QQnorm"
-            && naf(input$s211_type_res) && input$s211_type_res == "Pearson"
-            && naf(input$s211_var_res) && !input$s211_sex)
-            includeMarkdown("./md/s211_code_QQplotAIDS_ResP.Rmd")
+    output$s212_code_plot20 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.12"
+            && naf(input$s212_datachoice) && input$s212_datachoice == "AIDS"
+            && naf(input$s212_typePlot) && input$s212_typePlot == "QQnorm"
+            && naf(input$s212_type_res) && input$s212_type_res == "Pearson"
+            && naf(input$s212_var_res) && !input$s212_sex)
+            includeMarkdown("./md/s212_code_QQplotAIDS_ResP.Rmd")
     })
     
-    output$s211_code_plot21 <- renderText({
-        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
-            && naf(input$s211_datachoice) && input$s211_datachoice == "AIDS"
-            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
-            && naf(input$s211_type_res) && input$s211_type_res == "Pearson"
-            && naf(input$s211_var_res) && input$s211_var_res == "fitted" && !input$s211_sex)
-            includeMarkdown("./md/s211_code_plotAIDS_ResPFitt.Rmd")
+    output$s212_code_plot21 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.12"
+            && naf(input$s212_datachoice) && input$s212_datachoice == "AIDS"
+            && naf(input$s212_typePlot) && input$s212_typePlot == "Scatterplot"
+            && naf(input$s212_type_res) && input$s212_type_res == "Pearson"
+            && naf(input$s212_var_res) && input$s212_var_res == "fitted" && !input$s212_sex)
+            includeMarkdown("./md/s212_code_plotAIDS_ResPFitt.Rmd")
     })
     
-    output$s211_code_plot22 <- renderText({
-        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
-            && naf(input$s211_datachoice) && input$s211_datachoice == "AIDS"
-            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
-            && naf(input$s211_type_res) && input$s211_type_res == "normalized"
-            && naf(input$s211_var_res) && input$s211_var_res == "fitted" && !input$s211_sex)
-            includeMarkdown("./md/s211_code_plotAIDS_ResNFitt.Rmd")
+    output$s212_code_plot22 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.12"
+            && naf(input$s212_datachoice) && input$s212_datachoice == "AIDS"
+            && naf(input$s212_typePlot) && input$s212_typePlot == "Scatterplot"
+            && naf(input$s212_type_res) && input$s212_type_res == "normalized"
+            && naf(input$s212_var_res) && input$s212_var_res == "fitted" && !input$s212_sex)
+            includeMarkdown("./md/s212_code_plotAIDS_ResNFitt.Rmd")
     })
     
-    output$s211_code_plot23 <- renderText({
-        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
-            && naf(input$s211_datachoice) && input$s211_datachoice == "AIDS"
-            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
-            && naf(input$s211_type_res) && input$s211_type_res == "Pearson"
-            && naf(input$s211_var_res) && input$s211_var_res == "fitted" && input$s211_sex)
-            includeMarkdown("./md/s211_code_plotAIDS_ResPFitt-sex.Rmd")
+    output$s212_code_plot23 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.12"
+            && naf(input$s212_datachoice) && input$s212_datachoice == "AIDS"
+            && naf(input$s212_typePlot) && input$s212_typePlot == "Scatterplot"
+            && naf(input$s212_type_res) && input$s212_type_res == "Pearson"
+            && naf(input$s212_var_res) && input$s212_var_res == "fitted" && input$s212_sex)
+            includeMarkdown("./md/s212_code_plotAIDS_ResPFitt-sex.Rmd")
     })
     
-    output$s211_code_plot24 <- renderText({
-        if (input$chapter == "Chapter 2" && input$section == "Section 2.11"
-            && naf(input$s211_datachoice) && input$s211_datachoice == "AIDS"
-            && naf(input$s211_typePlot) && input$s211_typePlot == "Scatterplot"
-            && naf(input$s211_type_res) && input$s211_type_res == "normalized"
-            && naf(input$s211_var_res) && input$s211_var_res == "fitted" && input$s211_sex)
-            includeMarkdown("./md/s211_code_plotAIDS_ResNFitt-sex.Rmd")
+    output$s212_code_plot24 <- renderText({
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.12"
+            && naf(input$s212_datachoice) && input$s212_datachoice == "AIDS"
+            && naf(input$s212_typePlot) && input$s212_typePlot == "Scatterplot"
+            && naf(input$s212_type_res) && input$s212_type_res == "normalized"
+            && naf(input$s212_var_res) && input$s212_var_res == "fitted" && input$s212_sex)
+            includeMarkdown("./md/s212_code_plotAIDS_ResNFitt-sex.Rmd")
     })
     
     ######################################################################################
@@ -2277,63 +2277,63 @@ shinyServer(function(input, output) {
             corrplot.mixed(testCS(Fun, input$corrStr_param), col = rev(col4(200)))
         }
         
-        if (input$chapter == "Chapter 2" && input$section == "Section 2.11") {
-            if (naf(input$s211_typePlot) && input$s211_typePlot == "QQnorm") {
-                form <- if (naf(input$s211_type_res) && input$s211_type_res == "Pearson") {
+        if (input$chapter == "Chapter 2" && input$section == "Section 2.12") {
+            if (naf(input$s212_typePlot) && input$s212_typePlot == "QQnorm") {
+                form <- if (naf(input$s212_type_res) && input$s212_type_res == "Pearson") {
                     '~ resid(., "p")'
                 } else {
                     '~ resid(., "n")'
                 }
-                if (naf(input$s211_sex) && input$s211_sex) {
-                    form <- if (naf(input$s211_datachoice) && input$s211_datachoice == "AIDS") {
+                if (naf(input$s212_sex) && input$s212_sex) {
+                    form <- if (naf(input$s212_datachoice) && input$s212_datachoice == "AIDS") {
                         paste(form, "| drug")
                     } else { 
                         paste(form, "| sex")
                     }
                 }
                 form <- as.formula(form)
-                if (naf(input$s211_datachoice) && input$s211_datachoice == "AIDS") {
-                    if (!exists("fm_s211_aids")) {
+                if (naf(input$s212_datachoice) && input$s212_datachoice == "AIDS") {
+                    if (!exists("fm_s212_aids")) {
                         withProgress({
                             fm <- gls(CD4 ~ obstime + obstime:drug, data = aids,
                                   correlation = corSymm(form = ~ 1 | patient),
                                   weights = varIdent(form = ~ 1 | obstime))
                         }, message = "Fitting the model...")
                         fm_s29_aids2 <<- fm
-                        fm_s211_aids <<- fm
+                        fm_s212_aids <<- fm
                     }
-                    print(qqnorm(fm_s211_aids, form))
+                    print(qqnorm(fm_s212_aids, form))
                 } else {
                     print(qqnorm(gls(log(serBilir) ~ year + year:drug + year*sex + age, 
                                      data = pbc2, correlation = corCAR1(form = ~ year | id)), 
                                  form))
                 }
             } else {
-                v <- if (naf(input$s211_var_res) && input$s211_var_res == "fitted") "fitted(.)" else input$s211_var_res
-                form <- if (naf(input$s211_type_res) && input$s211_type_res == "Pearson") {
+                v <- if (naf(input$s212_var_res) && input$s212_var_res == "fitted") "fitted(.)" else input$s212_var_res
+                form <- if (naf(input$s212_type_res) && input$s212_type_res == "Pearson") {
                     paste('resid(., "p") ~', v)
                 } else {
                     paste('resid(., "n") ~', v)
                 }
-                if (naf(input$s211_sex) && input$s211_sex) {
-                    form <- if (naf(input$s211_datachoice) && input$s211_datachoice == "AIDS") {
+                if (naf(input$s212_sex) && input$s212_sex) {
+                    form <- if (naf(input$s212_datachoice) && input$s212_datachoice == "AIDS") {
                         paste(form, "| drug")
                     } else { 
                         paste(form, "| sex")
                     }
                 }
                 form <- as.formula(form)
-                if (naf(input$s211_datachoice) && input$s211_datachoice == "AIDS") {
-                    if (!exists("fm_s211_aids")) {
+                if (naf(input$s212_datachoice) && input$s212_datachoice == "AIDS") {
+                    if (!exists("fm_s212_aids")) {
                         withProgress({
                             fm <- gls(CD4 ~ obstime + obstime:drug, data = aids,
                                   correlation = corSymm(form = ~ 1 | patient),
                                   weights = varIdent(form = ~ 1 | obstime))
                         }, message = 'Fitting the model...')
                         fm_s29_aids2 <<- fm
-                        fm_s211_aids <<- fm
+                        fm_s212_aids <<- fm
                     }
-                    print(plot(fm_s211_aids, form, type = c("p", "smooth"), lwd = 3))
+                    print(plot(fm_s212_aids, form, type = c("p", "smooth"), lwd = 3))
                 } else {
                     print(plot(gls(log(serBilir) ~ year + year:drug + year*sex + age, 
                                    data = pbc2, correlation = corCAR1(form = ~ year | id)), 

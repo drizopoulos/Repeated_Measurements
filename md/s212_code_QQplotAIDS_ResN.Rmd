@@ -1,8 +1,8 @@
 ```{r}
-fm_s211_aids <- gls(CD4 ~ obstime + obstime:drug, data = aids,
+fm_s212_aids <- gls(CD4 ~ obstime + obstime:drug, data = aids,
                     correlation = corSymm(form = ~ 1 | patient),
                     weights = varIdent(form = ~ 1 | obstime))
 
-qqnorm(fm_s211_aids, ~ resid(., type = "n"))
+qqnorm(fm_s212_aids, ~ resid(., type = "n"))
 ```
 
