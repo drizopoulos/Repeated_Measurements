@@ -1,7 +1,8 @@
 # shiny app for Repeated Measurements Course
-This repository contains a [shiny](http://shiny.rstudio.com/) that replicates all analyses
-presented in the course **Statistical Analysis of Repeated Measurements Data**, including 
-also some additional illustrations. The app requires [R](http://cran.r-project.org/) 
+This repository contains a [shiny](http://shiny.rstudio.com/) application that replicates 
+all analyses presented in the course 
+**Statistical Analysis of Repeated Measurements Data**, including also some additional 
+illustrations. The app requires [R](http://cran.r-project.org/) 
 (version >= 3.2.2) and the following packages:
 
 * [nlme](http://cran.r-project.org/package=nlme) (version >= 3.1-121)
