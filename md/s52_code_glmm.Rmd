@@ -1,0 +1,19 @@
+```{r}
+# create low CD4 indicator
+aids$lowCD4 <- aids$CD4 < sqrt(150)
+
+# fit the mixed effects logistic regression
+fm_s52_aids <- glmer(lowCD4 ~ obstime * drug + (1 | patient), family = binomial, 
+                     data = aids, nAGQ = 15)
+
+# subject-specific parameters
+summary(fm_s52_aids)
+
+# marginal parameters
+sigma_b2 <- unname(unlist(VarCorr(fm_s52_aids)))
+margs_coefs <- coef(summary(fm_s52_aids))
+margs_coefs[, 1:2] <- margs_coefs[, 1:2] / sqrt(1 + 0.346 * sigma_b2)
+margs_coefs[, "z value"] <- margs_coefs[, "Estimate"] / margs_coefs[, "Std. Error"]
+margs_coefs[, "Pr(>|z|)"] <- 2 * pnorm(abs(margs_coefs[, "z value"]), lower.tail = FALSE)
+margs_coefs
+```

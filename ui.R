@@ -40,6 +40,9 @@ shinyUI(fluidPage(
             uiOutput("s43_Agechoice"),
             uiOutput("s45_choice"),
             uiOutput("s46_choice"),
+            uiOutput("s52_choice"),
+            uiOutput("s52_parms"),
+            uiOutput("s52_Agechoice"),
             uiOutput("s63_choice"),
             uiOutput("sPract_1"),
             uiOutput("sPract_2"),
@@ -106,6 +109,9 @@ shinyUI(fluidPage(
                      htmlOutput('s43_code_gee'),
                      htmlOutput('s45_code_gee'),
                      htmlOutput('s46_code_gee'),
+                     #########################
+                     htmlOutput('s52_code_glmm'),
+                     #########################
                      htmlOutput('s63_code'),
                      htmlOutput('sPract_motivate'),
                      htmlOutput('sPract_code')
@@ -135,6 +141,9 @@ shinyUI(fluidPage(
                      htmlOutput('s43_Routput_gee'),
                      htmlOutput('s45_Routput_gee'),
                      htmlOutput('s46_Routput_gee'),
+                     ##########################
+                     htmlOutput('s52_Routput_glmm'),
+                     ##########################
                      dataTableOutput("s63_Routput_table"),
                      htmlOutput('s63_Routput'),
                      htmlOutput('sPract_motivate2'),

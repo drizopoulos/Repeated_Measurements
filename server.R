@@ -7,6 +7,7 @@ shinyServer(function(input, output) {
                 "Chapter 2" = paste("Section", c("2.2", "2.4", "2.7", "2.9", "2.12")),
                 "Chapter 3" = paste("Section", c("3.2", "3.3", "3.4", "3.6*", "3.7", "3.8*", "3.10", "3.11")),
                 "Chapter 4" = paste("Section", c("4.1", "4.3", "4.5", "4.6")),
+                "Chapter 5" = paste("Section", c("5.2", "5.3")),
                 "Chapter 6" = paste("Section", c("6.3")),
                 "Practicals" = paste("Practical", 1:4)
             )
@@ -1548,6 +1549,69 @@ shinyServer(function(input, output) {
             )
         }
     })
+    
+    ######################################################################################
+    ######################################################################################
+    
+    ###############
+    # Section 5.2 #
+    ###############
+    
+    output$s52_choice <- renderUI({
+        if (input$chapter == "Chapter 5" && input$section == "Section 5.2")
+            radioButtons("fit_effPlt", "Select:", 
+                         c("Model fit", "Effect plot"))
+    })
+    
+    output$s52_parms <- renderUI({
+        if (input$chapter == "Chapter 5" && input$section == "Section 5.2"
+            && naf(input$fit_effPlt) && input$fit_effPlt == "Model fit")
+            radioButtons('parms_s52', 'Level Parameters', c('subject-specific', 'marginal'))
+    })
+    
+    
+    output$s52_Agechoice <- renderUI({
+        if (input$chapter == "Chapter 5" && input$section == "Section 5.2"
+            && naf(input$fit_effPlt) && input$fit_effPlt == "Effect plot")
+            fluidRow(column(7, sliderInput("age_select_pbc_glmm", "Age", min = 30, max = 65, 
+                                           value = 49, animate = TRUE, step = 5)),
+                     column(5, radioButtons('scale_s52', 'Scale', 
+                                            c('log Odds', 'Probabilities'))))
+    })
+    
+    output$s52_code_glmm <- renderText({
+        if (input$chapter == "Chapter 5" && input$section == "Section 5.2") {
+            if (naf(input$fit_effPlt) && input$fit_effPlt == "Effect plot") {
+                includeMarkdown("./md/s52_code_glmm_effectPlot.Rmd")
+            } else {
+                includeMarkdown("./md/s52_code_glmm.Rmd")
+            }
+        }
+    })
+    
+    output$s52_Routput_glmm <- renderPrint({
+        if (input$chapter == "Chapter 5" && input$section == "Section 5.2") {
+            if (naf(input$fit_effPlt) && input$fit_effPlt == "Model fit") {
+                aids$lowCD4 <- aids$CD4 < sqrt(150)
+                if (!exists("fm_s52_aids")) {
+                    withProgress({
+                        fm_s52_aids <<- glmer(lowCD4 ~ obstime * drug + (1 | patient), 
+                                              family = binomial, data = aids, nAGQ = 15)
+                    }, message = 'Fitting the model...')
+                }
+                sigma_b2 <- unname(unlist(VarCorr(fm_s52_aids)))
+                margs_coefs <- coef(summary(fm_s52_aids))
+                margs_coefs[, 1:2] <- margs_coefs[, 1:2] / sqrt(1 + 0.346 * sigma_b2)
+                margs_coefs[, "z value"] <- margs_coefs[, "Estimate"] / margs_coefs[, "Std. Error"]
+                margs_coefs[, "Pr(>|z|)"] <- 2 * pnorm(abs(margs_coefs[, "z value"]), lower.tail = FALSE)
+                switch(input$parms_s52, 
+                       'subject-specific' = htmlPrint(summary(fm_s52_aids)),
+                       'marginal' = htmlPrint(round(margs_coefs, 4))
+                )
+            }
+        }
+    })
+    
     
     ######################################################################################
     ######################################################################################
