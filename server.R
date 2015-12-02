@@ -1617,6 +1617,20 @@ shinyServer(function(input, output) {
     ######################################################################################
     
     ###############
+    # Section 5.3 #
+    ###############
+    
+    output$s53_code_glmm <- renderText({
+        if (input$chapter == "Chapter 5" && input$section == "Section 5.3") {
+                includeMarkdown("./md/s53_code_glmm.Rmd")
+        }
+    })
+    
+    
+    ######################################################################################
+    ######################################################################################
+    
+    ###############
     # Section 6.3 #
     ###############
     
@@ -2759,6 +2773,84 @@ shinyServer(function(input, output) {
                     key = simpleKey(c("Robust Standard Errors", "Naive Standard Errors"), 
                                     points = FALSE, lines = TRUE, col = c("blue", "magenta2")),
                     scales = list(x = list(relation = "free"))))
+        }
+        
+        if (input$chapter == "Chapter 5" && input$section == "Section 5.3") {
+            aids$lowCD4 <- aids$CD4 < sqrt(150)
+            aids$obstimef <- factor(aids$obstime)
+            if (!exists('fm_s53_PQL')) {
+                withProgress({
+                    fm_s53_PQL <<- glmmPQL(lowCD4 ~ obstimef, family = binomial, 
+                                           data = aids, random = ~ 1 | patient)
+                }, message = "Fitting the model...")
+            }
+            if (!exists('fm_s53_q1')) {
+                withProgress({
+                    fm_s53_q1 <<- glmer(lowCD4 ~ obstimef + (1 | patient), 
+                                        family = binomial, data = aids, nAGQ = 1)
+                }, message = "Fitting the model...")
+            }
+            if (!exists('fm_s53_q7')) {
+                withProgress({
+                    fm_s53_q7 <<- glmer(lowCD4 ~ obstimef + (1 | patient), 
+                                        family = binomial, data = aids, nAGQ = 7)
+                }, message = "Fitting the model...")
+            }
+            if (!exists('fm_s53_q11')) {
+                withProgress({
+                    fm_s53_q11 <<- glmer(lowCD4 ~ obstimef + (1 | patient), 
+                                        family = binomial, data = aids, nAGQ = 11)
+                }, message = "Fitting the model...")
+            }
+            if (!exists('fm_s53_q15')) {
+                withProgress({
+                    fm_s53_q15 <<- glmer(lowCD4 ~ obstimef + (1 | patient), 
+                                        family = binomial, data = aids, nAGQ = 15)
+                }, message = "Fitting the model...")
+            }
+            if (!exists('fm_s53_q21')) {
+                withProgress({
+                    fm_s53_q21 <<- glmer(lowCD4 ~ obstimef + (1 | patient), 
+                                        family = binomial, data = aids, nAGQ = 21)
+                }, message = "Fitting the model...")
+            }
+            extractCIS <- function (object) {
+                if (inherits(object, 'merMod')) {
+                    cis <- confint(object, method = "Wald")[-1, ]
+                    cbind(cis[, 1], fixef(object), cis[, 2])
+                } else {
+                    intervals(object)[[1]]
+                }
+            }
+            models <- list(fm_s53_PQL, fm_s53_q1, fm_s53_q7, fm_s53_q11, fm_s53_q15, fm_s53_q21)
+            mat <- do.call("rbind", lapply(models, extractCIS))
+            coef.nam <- rownames(mat)
+            rownames(mat) <- NULL
+            dat <- as.data.frame(mat)
+            dat$coef.nam <- factor(coef.nam, levels = unique(coef.nam))
+            dat$model <- gl(6, nrow(mat)/6, labels = c('PQL', 'Laplace', 'AGQ-q7', 'AGQ-q11', 
+                                                       'AGQ-q15', 'AGQ-q21'))
+            prepanel.ci <- function (x, y, lx, ux, subscripts, ...) {
+                x <- as.numeric(x)
+                lx <- as.numeric(lx[subscripts])
+                ux <- as.numeric(ux[subscripts])
+                list(xlim = range(x, ux, lx, finite = TRUE))
+            }
+            panel.ci <- function (x, y, lx, ux, subscripts, pch = 16, ...) {
+                x <- as.numeric(x)
+                y <- as.numeric(y)
+                lx <- as.numeric(lx[subscripts])
+                ux <- as.numeric(ux[subscripts])
+                panel.abline(h = c(unique(y)), 
+                             col = "grey", lty = 2, lwd = 1.5)
+                panel.arrows(lx, y, ux, y,
+                             length = 0.1, unit = "native",
+                             angle = 90, code = 3, lwd = 3, col = "blue")
+                panel.xyplot(x, y, pch = pch, col = 2, cex = 1.5, ...)
+            }
+            print(dotplot(model ~  est. | coef.nam, lx = dat$lower, ux = dat$upper, 
+                          data = dat, xlab = "", prepanel = prepanel.ci, panel = panel.ci, 
+                          as.table = TRUE, scales = list(x = list(relation = "free"))))
         }
         
         if (input$chapter == "Chapter 6" && input$section == "Section 6.3"
