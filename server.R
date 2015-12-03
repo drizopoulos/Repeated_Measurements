@@ -1612,7 +1612,6 @@ shinyServer(function(input, output) {
         }
     })
     
-    
     ######################################################################################
     ######################################################################################
     
@@ -2775,6 +2774,84 @@ shinyServer(function(input, output) {
                     scales = list(x = list(relation = "free"))))
         }
         
+        if (input$chapter == "Chapter 5" && input$section == "Section 5.2" &&
+            naf(input$fit_effPlt) && input$fit_effPlt == "Effect plot") {
+            if (!exists('fm_s52_pbc')) {
+                withProgress({
+                    fm_s52_pbc <<- glmer(serCholD ~ year * drug + I(age - 50) * sex + (1 | id), 
+                                        family = binomial(), data = pbc2, nAGQ = 15)
+                }, message = "Fitting the model...")
+            }
+            effectPlotData_lmer <- function (object, newdata, orig_data, 
+                                             type = c("lp", "response"), M = 100) {
+                type <- match.arg(type)
+                form <- formula(object)
+                namesVars <- all.vars(form)
+                fam <- family(object)
+                orig_data <- orig_data[complete.cases(orig_data[namesVars]), ]
+                TermsX <- delete.response(terms(object, fixed.only = TRUE))
+                mfX <- model.frame(TermsX, data = orig_data)
+                TermsX_new <- attr(mfX, "terms")
+                betas <- fixef(object)
+                V <- vcov(object)
+                if (type == "lp" || (fam$family == "gaussian" && fam$link == "indentity")) {
+                    mfX_new <- model.frame(TermsX_new, newdata, xlev = .getXlevels(TermsX, mfX))
+                    X <- model.matrix(TermsX_new, mfX_new)
+                    eta <- c(X %*% betas)
+                    ses <- sqrt(diag(X %*% V %*% t(X)))
+                    newdata$pred <- eta
+                    newdata$low <- eta - 1.96 * ses
+                    newdata$upp <- eta + 1.96 * ses
+                    newdata
+                } else {
+                    idVar <- names(object@flist)
+                    if (length(idVar) > 1)
+                        stop("The current version of this function only works for ",
+                             "a single grouping factor.")
+                    ind <- rep(1:nrow(newdata), each = M)
+                    newdata2 <- newdata[ind, ]
+                    newdata2[[idVar]] <- factor(1:nrow(newdata2))
+                    mfX_new <- model.frame(TermsX_new, newdata2, xlev = .getXlevels(TermsX, mfX))
+                    X <- model.matrix(TermsX_new, mfX_new)
+                    formRE <- as.character(formula(object, random.only = TRUE))
+                    formRE <- as.formula(paste(formRE[c(1, 3)]))
+                    newRE <- lme4:::mkNewReTrms(object, newdata2, re.form = formRE,
+                                                allow.new.levels = TRUE)
+                    D <- VarCorr(object)[[1]]
+                    b <- c(mvrnorm(nrow(newdata2), rep(0, NROW(D)), D))
+                    eta0 <- c(X %*% betas)
+                    eta <- c(X %*% betas) + rowSums(newRE$Zt * b)
+                    newdata$pred0 <- tapply(fam$linkinv(eta0), ind, mean)
+                    newdata$pred <- tapply(fam$linkinv(eta), ind, mean)
+                    newdata
+                }
+            }
+            newDF <- with(pbc2, expand.grid(
+                year = seq(0, 12, length.out = 25),
+                age = input$age_select_pbc_glmm,
+                drug = levels(drug),
+                sex = levels(sex)
+            ))
+            if (input$scale_s52 == 'log Odds') {
+                print(xyplot(pred + low + upp ~ year | sex * drug, 
+                             data = effectPlotData_lmer(fm_s52_pbc, newDF, orig_data = pbc2), 
+                             lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2, type = "l",
+                             xlab = "Follow-up time (years)",
+                             ylab = "log Odds"))
+            } else {
+                key <- simpleKey(c("marginal probabilities", "median patient"), 
+                                 points = FALSE, lines = TRUE)
+                key$lines$col <- c("red", "blue")
+                key$lines$lwd <- c(2, 2)
+                print(xyplot(pred + pred0 ~ year | sex * drug, 
+                             data = effectPlotData_lmer(fm_s52_pbc, newDF, orig_data = pbc2, 
+                                                        type = "r", M = 3000), 
+                             lty = 1, col = c("red", "blue"), lwd = 2, type = "l",
+                             xlab = "Follow-up time (years)", key = key,
+                             ylab = "Probabilities"))
+            }
+        }
+
         if (input$chapter == "Chapter 5" && input$section == "Section 5.3") {
             aids$lowCD4 <- aids$CD4 < sqrt(150)
             aids$obstimef <- factor(aids$obstime)
