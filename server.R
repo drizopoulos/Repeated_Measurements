@@ -7,7 +7,7 @@ shinyServer(function(input, output) {
                 "Chapter 2" = paste("Section", c("2.2", "2.4", "2.7", "2.9", "2.12")),
                 "Chapter 3" = paste("Section", c("3.2", "3.3", "3.4", "3.6*", "3.7", "3.8*", "3.10", "3.11")),
                 "Chapter 4" = paste("Section", c("4.1", "4.3", "4.5", "4.6")),
-                "Chapter 5" = paste("Section", c("5.2", "5.3")),
+                "Chapter 5" = paste("Section", c("5.2", "5.3", "5.6")),
                 "Chapter 6" = paste("Section", c("6.3")),
                 "Practicals" = paste("Practical", 1:4)
             )
@@ -1625,6 +1625,39 @@ shinyServer(function(input, output) {
         }
     })
     
+    
+    ######################################################################################
+    ######################################################################################
+    
+    ###############
+    # Section 5.6 #
+    ###############
+    
+    output$s56_code_glmm <- renderText({
+        if (input$chapter == "Chapter 5" && input$section == "Section 5.6") {
+            includeMarkdown("./md/s56_code_glmm.Rmd")
+        }
+    })
+    
+    output$s56_Routput_glmm <- renderPrint({
+        if (input$chapter == "Chapter 5" && input$section == "Section 5.6") {
+            if (!exists("fm_s56_alt")) {
+                withProgress({
+                    fm_s56_alt <<- glmer(serCholD ~ year * drug + sex + drug:sex + (1 | id), 
+                                        family = binomial(), data = pbc2, nAGQ = 15)
+                }, message = 'Fitting the model...')
+            }
+            if (!exists("fm_s56_null")) {
+                withProgress({
+                    fm_s56_null <<- glmer(serCholD ~ year + drug + sex + (1 | id), 
+                                         family = binomial(), data = pbc2, nAGQ = 15)
+                }, message = 'Fitting the model...')
+            }
+            htmlPrint2("# Likelihood ratio test for all interaction terms",
+                       anova(fm_s56_null, fm_s56_alt)
+            )
+        }
+    })
     
     ######################################################################################
     ######################################################################################

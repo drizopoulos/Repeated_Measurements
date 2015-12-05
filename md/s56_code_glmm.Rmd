@@ -1,0 +1,12 @@
+```{r}
+# model under the alternative hypothesis
+fm_s56_alt <- glmer(serCholD ~ year * drug + sex + drug:sex + (1 | id), 
+                    family = binomial(), data = pbc2, nAGQ = 15)
+
+# model under the null hypothesis
+fm_s56_null <- glmer(serCholD ~ year + drug + sex + (1 | id), 
+                     family = binomial(), data = pbc2, nAGQ = 15)
+
+# Likelihood ratio test for all interaction terms
+anova(fm_s56_null, fm_s56_alt)
+```

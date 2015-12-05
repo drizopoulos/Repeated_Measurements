@@ -112,6 +112,7 @@ shinyUI(fluidPage(
                      #########################
                      htmlOutput('s52_code_glmm'),
                      htmlOutput('s53_code_glmm'),
+                     htmlOutput('s56_code_glmm'),
                      #########################
                      htmlOutput('s63_code'),
                      htmlOutput('sPract_motivate'),
@@ -144,6 +145,7 @@ shinyUI(fluidPage(
                      htmlOutput('s46_Routput_gee'),
                      ##########################
                      htmlOutput('s52_Routput_glmm'),
+                     htmlOutput('s56_Routput_glmm'),
                      ##########################
                      dataTableOutput("s63_Routput_table"),
                      htmlOutput('s63_Routput'),
