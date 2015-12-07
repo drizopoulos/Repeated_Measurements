@@ -2003,7 +2003,7 @@ shinyServer(function(input, output) {
             wellPanel(selectInput("pract_Q", "Select Question:", chs, chs[1]))
         } else if (input$chapter == "Practicals" && input$section == "Practical 4"
                    && !is.null(v$Pract4)) {
-            chs <- c(paste("Question", 1:9), "All")
+            chs <- c(paste("Question", 1:8), "All")
             wellPanel(selectInput("pract_Q", "Select Question:", chs, chs[1]))
         }
     })
@@ -2060,7 +2060,6 @@ shinyServer(function(input, output) {
                    "Question 6" = includeMarkdown("./md/sPract46_code.Rmd"),
                    "Question 7" = includeMarkdown("./md/sPract47_code.Rmd"),
                    "Question 8" = includeMarkdown("./md/sPract48_code.Rmd"),
-                   "Question 9" = includeMarkdown("./md/sPract49_code.Rmd"),
                    "All" = includeMarkdown("./md/sPract4_code.Rmd"))
         }
     })

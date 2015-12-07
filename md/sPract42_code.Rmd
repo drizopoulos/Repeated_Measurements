@@ -1,0 +1,18 @@
+```{r}
+#######################################################
+# Practical 4: Mixed Effects Models for Discrete Data #
+#######################################################
+
+######
+# Q2 #
+######
+
+# find which subjects have more than five measurements
+ind <- with(pbc2, ave(Dicht_prothro, id, FUN = length)) >= 5
+xyplot(Dicht_prothro ~ year | id, data = pbc2, subset = ind,
+       type = c("p", "spline"), lwd = 2,
+       xlab = "Time (years)", ylab = "Abnormal Prothrombin Time",
+       layout = c(6, 6), as.table = TRUE,
+       scales = list(y = list(at = 0:1, labels = c("No", "Yes"))))
+```
+

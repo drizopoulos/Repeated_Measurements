@@ -7,6 +7,8 @@ summary(fm_s52_pbc)
 # function to create the data for the plot
 effectPlotData_lmer <- function (object, newdata, orig_data, 
                                  type = c("lp", "response"), M = 100) {
+    require("MASS")
+    require("lme4")
     type <- match.arg(type)
     form <- formula(object)
     namesVars <- all.vars(form)
@@ -41,9 +43,9 @@ effectPlotData_lmer <- function (object, newdata, orig_data,
         newRE <- lme4:::mkNewReTrms(object, newdata2, re.form = formRE,
                                     allow.new.levels = TRUE)
         D <- VarCorr(object)[[1]]
-        b <- c(mvrnorm(nrow(newdata2), rep(0, NROW(D)), D))
+        b <- c(t(mvrnorm(nrow(newdata2), rep(0, NROW(D)), D)))
         eta0 <- c(X %*% betas)
-        eta <- c(X %*% betas) + rowSums(newRE$Zt * b)
+        eta <- c(X %*% betas) + colSums(newRE$Zt * b)
         newdata$pred0 <- tapply(fam$linkinv(eta0), ind, mean)
         newdata$pred <- tapply(fam$linkinv(eta), ind, mean)
         newdata
@@ -71,6 +73,6 @@ key$lines$col <- c("red", "blue")
 key$lines$lwd <- c(2, 2)
 xyplot(pred + pred0 ~ year | sex * drug, 
        data = effectPlotData_lmer(fm_s52_pbc, newDF, orig_data = pbc2, 
-                                  type = "r", M = 3000), 
+                                  type = "response", M = 3000), 
        type = "l", lty = 1, lwd = 2, col = c("red", "blue"), key = key)
 ```

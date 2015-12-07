@@ -1,0 +1,17 @@
+```{r}
+#######################################################
+# Practical 4: Mixed Effects Models for Discrete Data #
+#######################################################
+
+######
+# Q4 #
+######
+
+fm_2 <- glmer(Dicht_prothro ~ year * sex + drug + drug:sex + (year | id), 
+              data = pbc2, family = binomial(), nAGQ = 1)
+
+anova(fm_1, fm_2)
+
+summary(fm_2)
+```
+

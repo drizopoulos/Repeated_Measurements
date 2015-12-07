@@ -1,0 +1,20 @@
+```{r}
+#######################################################
+# Practical 4: Mixed Effects Models for Discrete Data #
+#######################################################
+
+######
+# Q8 #
+######
+
+# marginal probabilities and conditional probabilities corresponding to
+# the median individual (i.e., the one with random effects value equal to zero)
+key <- simpleKey(c("marginal probabilities", "median patient"), points = FALSE, lines = TRUE)
+key$lines$col <- c("red", "blue")
+key$lines$lwd <- c(2, 2)
+xyplot(pred + pred0 ~ year | sex * drug, 
+       data = effectPlotData_lmer(fm_3, newDF, orig_data = pbc2, 
+                                  type = "response", M = 3000), 
+       type = "l", lty = 1, lwd = 2, col = c("red", "blue"), key = key)
+```
+

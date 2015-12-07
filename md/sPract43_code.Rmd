@@ -1,0 +1,15 @@
+```{r}
+#######################################################
+# Practical 4: Mixed Effects Models for Discrete Data #
+#######################################################
+
+######
+# Q3 #
+######
+
+fm_1 <- glmer(Dicht_prothro ~ year * sex + drug + drug:sex + (1 | id), 
+              data = pbc2, family = binomial(), nAGQ = 15)
+
+summary(fm_1)
+```
+

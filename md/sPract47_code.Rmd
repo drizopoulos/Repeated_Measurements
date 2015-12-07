@@ -3,74 +3,6 @@
 # Practical 4: Mixed Effects Models for Discrete Data #
 #######################################################
 
-# First we load the package we need
-library("lattice")
-library("lme4")
-library("MASS")
-library("splines")
-
-# We load the data from GitHub
-con <- url("https://raw.github.com/drizopoulos/Repeated_Measurements/master/Data.RData")
-load(con)
-close(con)
-
-######
-# Q1 #
-######
-
-pbc2$Dicht_prothro <- as.numeric(with(pbc2, prothrombin < 11 | prothrombin > 13))
-
-######
-# Q2 #
-######
-
-# find which subjects have more than five measurements
-ind <- with(pbc2, ave(Dicht_prothro, id, FUN = length)) >= 5
-xyplot(Dicht_prothro ~ year | id, data = pbc2, subset = ind,
-       type = c("p", "spline"), lwd = 2,
-       xlab = "Time (years)", ylab = "Abnormal Prothrombin Time",
-       layout = c(6, 6), as.table = TRUE,
-       scales = list(y = list(at = 0:1, labels = c("No", "Yes"))))
-
-
-######
-# Q3 #
-######
-
-fm_1 <- glmer(Dicht_prothro ~ year * sex + drug + drug:sex + (1 | id), 
-              data = pbc2, family = binomial(), nAGQ = 15)
-
-summary(fm_1)
-
-
-######
-# Q4 #
-######
-
-fm_2 <- glmer(Dicht_prothro ~ year * sex + drug + drug:sex + (year | id), 
-              data = pbc2, family = binomial(), nAGQ = 1)
-
-anova(fm_1, fm_2)
-
-summary(fm_2)
-
-
-######
-# Q5 #
-######
-
-fm_3 <- glmer(Dicht_prothro ~ year + sex + drug + (year | id), 
-              data = pbc2, family = binomial(), nAGQ = 1)
-
-anova(fm_3, fm_2)
-
-
-######
-# Q6 #
-######
-
-summary(fm_3)
-
 ######
 # Q7 #
 ######
@@ -132,19 +64,5 @@ newDF <- with(pbc2, expand.grid(
 xyplot(pred + low + upp ~ year | sex * drug, 
        data = effectPlotData_lmer(fm_3, newDF, orig_data = pbc2), 
        type = "l", lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2)
-
-######
-# Q8 #
-######
-
-# marginal probabilities and conditional probabilities corresponding to
-# the median individual (i.e., the one with random effects value equal to zero)
-key <- simpleKey(c("marginal probabilities", "median patient"), points = FALSE, lines = TRUE)
-key$lines$col <- c("red", "blue")
-key$lines$lwd <- c(2, 2)
-xyplot(pred + pred0 ~ year | sex * drug, 
-       data = effectPlotData_lmer(fm_3, newDF, orig_data = pbc2, 
-                                  type = "response", M = 3000), 
-       type = "l", lty = 1, lwd = 2, col = c("red", "blue"), key = key)
 ```
 
