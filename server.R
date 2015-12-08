@@ -1162,7 +1162,7 @@ shinyServer(function(input, output) {
                     "\n",
                     '# F-test for the overal treatment effect',
                     "# anova(fm_s310_pro1, Terms = c('treat', 'ns(time, 3):treat'))",
-                    '# produces an error because all terms must all have the same denominator DF'
+                    '# produces an error because all terms must have the same denominator DF'
                 )
             } else if (naf(input$test_lme) && input$test_lme == "LRT regression coefficients") {
                 if (!exists('fm_s310_pro1_ML')) {
