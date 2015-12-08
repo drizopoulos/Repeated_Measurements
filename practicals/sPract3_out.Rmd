@@ -88,7 +88,7 @@ parameter estimates, standard errors and corresponding p-values.
 ### Question 4
 We continue the analysis by re-fitting the model of Question 3 with the independence and 
 auto-regressive of order 1 working correlation matrices. This is done with the following 
-calls to [geeglm()](https://goo.gl/1S1uix) by suitably changing the `corstr` argument:
+call to [geeglm()](https://goo.gl/1S1uix) by suitably changing the `corstr` argument:
 ```{r}
 fm_2 <- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age + age : sex, 
                family = binomial(), data = pbc2, id = id, corstr = "independence")

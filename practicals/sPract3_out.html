@@ -143,7 +143,7 @@ summary(fm_1)</code></pre>
 </div>
 <div id="question-4" class="section level3">
 <h3>Question 4</h3>
-<p>We continue the analysis by re-fitting the model of Question 3 with the independence and auto-regressive of order 1 working correlation matrices. This is done with the following calls to <a href="https://goo.gl/1S1uix">geeglm()</a> by suitably changing the <code>corstr</code> argument:</p>
+<p>We continue the analysis by re-fitting the model of Question 3 with the independence and auto-regressive of order 1 working correlation matrices. This is done with the following call to <a href="https://goo.gl/1S1uix">geeglm()</a> by suitably changing the <code>corstr</code> argument:</p>
 <pre class="r"><code>fm_2 &lt;- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age + age : sex, 
                family = binomial(), data = pbc2, id = id, corstr = &quot;independence&quot;)
 

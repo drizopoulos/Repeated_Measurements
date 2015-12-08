@@ -2,7 +2,7 @@
 We start by loading the packages we will need for this practical and the data from 
 [GitHub](https://github.com/drizopoulos/Repeated_Measurements). This is achieved with the
 following commands:
-```{r}
+```{r, message = FALSE}
 # packages
 library("lattice")
 library("lme4")
@@ -26,13 +26,17 @@ pbc2$Dicht_prothro <- as.numeric(with(pbc2, prothrombin < 11 | prothrombin > 13)
 
 ### Question 2
 To examine graphically the shape of the probability of abnormal prothrombin time we can
-smooth the scatterplot of the `Dicht_prothro`. Using function 
-[xyplot()](https://goo.gl/cGSjZk) as in previous practicals, ***
+smooth the scatterplot of the `Dicht_prothro` for each patient separately. To obtain more
+useful information we do that only in patients with five or more measurements. The 
+following line of code creates an indicator variable denoting the rows of the `pbc2` 
+dataset that correspond to patient with five measurements or more:
 ```{r}
 ind <- with(pbc2, ave(Dicht_prothro, id, FUN = length)) >= 5
 ```
 
-
+Next, using function [xyplot()](https://goo.gl/cGSjZk), we plot the smoothed 
+subject-specific profiles of abnormal prothrombin time -- here we have opted for option 
+`"spline"` in the `type` argument of [xyplot()](https://goo.gl/cGSjZk):
 ```{r}
 xyplot(Dicht_prothro ~ year | id, data = pbc2, subset = ind,
        type = c("p", "spline"), lwd = 2,
@@ -41,43 +45,75 @@ xyplot(Dicht_prothro ~ year | id, data = pbc2, subset = ind,
        scales = list(y = list(at = 0:1, labels = c("No", "Yes"))))
 ```
 
+***
 
 ### Question 3
-
+Based on the description of Question 3, we need to fit a mixed-effects logistic regression
+model with random intercepts, and include in the mean structure the linear effect
+of time, the main effect of sex and drug, the interaction of time with sex and the 
+interaction effect of drug with sex. This model is fitted with following call to function
+[glmer()](https://goo.gl/U7tf8T) (**note:** we also need to set the `family` argument to
+`binomial()`, and the `nAGQ` argument to 15 to approximate the integrals with 15 
+quadrature points):
 ```{r}
-fm_1 <- glmer(Dicht_prothro ~ ns(year, 2) * sex + drug + drug:sex + (1 | id), 
+fm_1 <- glmer(Dicht_prothro ~ year * sex + drug + drug:sex + (1 | id), 
               data = pbc2, family = binomial(), nAGQ = 15)
 
 summary(fm_1)
 ```
 
 ### Question 4
-
+We continue the analysis by re-fitting the model of Question 3 by also including a random 
+slopes term. This is done with the following call to [glmer()](https://goo.gl/U7tf8T) 
+(**note:** the current version of [glmer()](https://goo.gl/U7tf8T) only allows for the 
+adaptive Gaussian quadrature rule if only a single random effect is included; for more 
+than one only the Laplace approximation is available):
 ```{r}
 fm_2 <- glmer(Dicht_prothro ~ year * sex + drug + drug:sex + (year | id), 
               data = pbc2, family = binomial(), nAGQ = 1)
+```
 
+The likelihood ratio test is performed using the `anova()`:
+```{r}
 anova(fm_1, fm_2)
 ```
 
+The results indicate that the random slopes is required. Nonetheless, due to the fact 
+mixed models for categorical grouped data are more susceptible to numerical problems, it
+is in general a good idea not only to look at the p-value from the likelihood ratio test,
+but also at the estimated variance components. By doing this you could pick-up pathological
+situations in which some variance parameters have converged on the boundary (i.e., very 
+close to zero). Hence, we also inspect the `summary()` of the fitted model with random
+intercepts and random slopes:
 ```{r}
 summary(fm_2)
 ```
 
-### Question 5
+The estimated variances for the random intercepts and random slopes terms do not indicate
+convergence on the boundary.
 
+### Question 5
+Next, we attempt to simplify the model by dropping all interaction terms. The additive 
+mixed effects logistic regression model with only main effects is fitted using the 
+following call to [glmer()](https://goo.gl/U7tf8T):
 ```{r}
 fm_3 <- glmer(Dicht_prothro ~ year + sex + drug + (year | id), 
               data = pbc2, family = binomial(), nAGQ = 1)
+```
 
+Again the likelihood ratio test is calculated using the `anova()` function:
+```{r}
 anova(fm_3, fm_2)
 ```
 
-### Question 6
+The resulting p-value suggests that we can the simpler additive model.
 
+### Question 6
+The estimated fixed-effects coefficients from our final model are:
 ```{r}
 summary(fm_3)
 ```
+
 
 ### Question 7
 
