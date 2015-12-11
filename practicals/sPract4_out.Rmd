@@ -45,7 +45,9 @@ xyplot(Dicht_prothro ~ year | id, data = pbc2, subset = ind,
        scales = list(y = list(at = 0:1, labels = c("No", "Yes"))))
 ```
 
-***
+We observe substianl varibility in the shapes of the smoothed longitudinal trajectories. 
+However, due to the fact that we are dealing with dichotomous data, it is always a bit 
+difficult to get a clear picture from these graphs.
 
 ### Question 3
 Based on the description of Question 3, we need to fit a mixed-effects logistic regression
@@ -114,8 +116,42 @@ The estimated fixed-effects coefficients from our final model are:
 summary(fm_3)
 ```
 
+Interpretation of the fixed-effects coefficients:
 
+* For patients of the sex who recieved the same treatment and who have the same random 
+effects values, per year increase of follow-up the log odds of abnormal prothrombin
+decrease by `r abs(round(fixef(fm_3)['year'], 2))`.
+
+* The odds ratio between females and males, who recieved the same treatment, who have the
+same random effects values and are compared at the same follow-up time is 
+$e^{`r round(fixef(fm_3)['sexfemale'], 2)`} = 
+`r round(exp(fixef(fm_3)['sexfemale']), 2)`$.
+
+* The odds ratio between D-penicil and placebo, for patients of the same sex, who have the
+same random effects values and are compared at the same follow-up time is 
+$e^{`r round(fixef(fm_3)['drugD-penicil'], 2)`} = 
+`r round(exp(fixef(fm_3)['drugD-penicil']), 2)`$.
+
+    
 ### Question 7
+To create the effect plot we first need to define the function `effectPlotData_lmer()` which we
+have introduced in Section 5.2. This function takes a fitted GLMM, the data frame 
+`newdata` based on which the plot will be made, and the original data we used to fit the 
+model. Argument `type` specifies what type of predictions we aim to compute. The default
+is `"lp"` standing for linear predictor; for example, for dichotomous data fitted under 
+the default link function, this denote the log odds ratios. When this option is invoked
+the prediction on the linear predictors scale and the associated lower and upper limits of
+the 95% confidence intervals are returned as extra columns in the data frame `newdata`.
+When `type` is set to `"response"`, then predictions are obtained in the scale of the 
+response variable; for example, for dichotomous outcome, we obtain probabilities. When 
+this option in invoked, then two columns of predictions are returned as extra columns in
+the data frame `newdata`, column `pred0` denoting the predictions for the mean individual
+(i.e., the individual with random-effects values equal to zero), and the column `pred` 
+denoting the marginal predictions over all the individuals. The latter are obtained using 
+a Monte Carlo procedure in which for each of the rows of the data frame `newdata`, `M` 
+random inviduals are simulated (i.e., inviduals with random effects values coming from 
+the estimated distribution of the random effects), for each of theses subjects the fitted
+responses are calculated and then averaged.
 
 ```{r}
 effectPlotData_lmer <- function (object, newdata, orig_data, 
@@ -164,6 +200,10 @@ effectPlotData_lmer <- function (object, newdata, orig_data,
 }
 ```
 
+Next we define the data frame with the combination of values of the covariates for which
+we would like to create the plot. In our example, we set a regular sequence of 15 values 
+from 0 to 12 for the time variable, the levels of the sex variable, and the levels of the 
+drug variable:
 ```{r}
 newDF <- with(pbc2, expand.grid(
     year = seq(0, 12, length.out = 15),
@@ -172,24 +212,31 @@ newDF <- with(pbc2, expand.grid(
 ))
 ```
 
+The effect plot is created with the following call to [xyplot()](https://goo.gl/KhfGGL) -
+first we produce the plot for the log odds of abnormal prothrombin time:
 ```{r}
 xyplot(pred + low + upp ~ year | sex * drug, 
        data = effectPlotData_lmer(fm_3, newDF, orig_data = pbc2), 
-       type = "l", lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2)
+       type = "l", lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2,
+       xlab = "Follow-up time (years)",
+       ylab = "log Odds")
 ```
 
 
 ### Question 8
-
+Following we produce the plot of the probabilities of abnormal prothrombin time; both
+the marginal probabilities and probabilities corresponding to the median patient. For the
+formed we use 3000 Monte Carlo samples. The first lines of code specify the arguments for
+the `key` argument of [xyplot()](https://goo.gl/KhfGGL):
 ```{r}
-key <- simpleKey(c("marginal probabilities", "median patient"), points = FALSE, lines = TRUE)
+key <- simpleKey(c("marginal probabilities", "median patient"), points = FALSE, 
+                 lines = TRUE)
 key$lines$col <- c("red", "blue")
 key$lines$lwd <- c(2, 2)
-```
 
-```{r}
 xyplot(pred + pred0 ~ year | sex * drug, 
        data = effectPlotData_lmer(fm_3, newDF, orig_data = pbc2, 
                                   type = "response", M = 3000), 
-       type = "l", lty = 1, lwd = 2, col = c("red", "blue"), key = key)
+       type = "l", lty = 1, lwd = 2, col = c("red", "blue"), key = key,
+       xlab = "Follow-up time (years)", ylab = "Probability")
 ```
