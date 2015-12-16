@@ -1,0 +1,20 @@
+```{r}
+# fit the model
+pbc2$basePro <- with(pbc2, ave(prothrombin, id, FUN = function (x) x[1]))
+fm_s34_pbc <- lme(log(serBilir) ~ ns(year, 2) * sex + (age + basePro) * sex, 
+                  data = pbc2, random = ~ ns(year, 2) | id)
+
+# marginal and subject-specific predictions, respectively
+pbc2$fitted_marg <- fitted(fm_s34_pbc, level = 0)
+pbc2$fitted_subj <- fitted(fm_s34_pbc, level = 1)
+
+# 16 sample patients
+ids <- c(38, 39, 51, 68, 70, 82, 90, 93, 134, 148, 
+         173, 200, 216, 242, 269, 290)
+
+xyplot(fitted_subj ~ year | id, data = pbc2, type = "l", 
+       col = "blue", lwd = 2, subset = id %in% ids, 
+       layout = c(4, 4), as.table = TRUE, 
+       xlab = "Time (years)", ylab = "log serum Bilirubin")
+```
+

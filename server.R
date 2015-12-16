@@ -872,7 +872,21 @@ shinyServer(function(input, output) {
     
     output$s34_code_lme <- renderText({
         if (input$chapter == "Chapter 3" && input$section == "Section 3.4") {
-                includeMarkdown("./md/s34_code_lme_preds.Rmd")
+                if (input$s34_data && input$s34_marg && input$s34_subj) {
+                    includeMarkdown("./md/s34_code_lme_preds.Rmd")
+                } else if (!input$s34_data && input$s34_marg && input$s34_subj) {
+                    includeMarkdown("./md/s34_code_lme_preds_nodata.Rmd")
+                } else if (input$s34_data && !input$s34_marg && input$s34_subj) {
+                    includeMarkdown("./md/s34_code_lme_preds_nomarg.Rmd")
+                } else if (!input$s34_data && !input$s34_marg && input$s34_subj) {
+                    includeMarkdown("./md/s34_code_lme_preds_nodatanomarg.Rmd")
+                } else if (input$s34_data && input$s34_marg && !input$s34_subj) {
+                    includeMarkdown("./md/s34_code_lme_preds_nosubj.Rmd")
+                } else if (!input$s34_data && input$s34_marg && !input$s34_subj) {
+                    includeMarkdown("./md/s34_code_lme_preds_nodatanosubj.Rmd")
+                } else if (input$s34_data && !input$s34_marg && !input$s34_subj) {
+                    includeMarkdown("./md/s34_code_lme_preds_nomargnosubj.Rmd")
+                }
         }
     })
     
