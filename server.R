@@ -135,26 +135,26 @@ shinyServer(function(input, output) {
     output$s24_choice <- renderUI({
         if (input$chapter == "Chapter 2" && input$section == "Section 2.4")
             radioButtons("fit_effPlt", "Select:", 
-                         c("Model fit", "Effect plot"))
+                         c("Model fit (AIDS data)", "Effect plot (PBC data)"))
     })
    
     output$s24_Agechoice <- renderUI({
         if (input$chapter == "Chapter 2" && input$section == "Section 2.4"
-            && naf(input$fit_effPlt) && input$fit_effPlt == "Effect plot")
+            && naf(input$fit_effPlt) && input$fit_effPlt == "Effect plot (PBC data)")
             sliderInput("age_select_pbc", "Age",
                         min = 30, max = 65, value = 49, animate = TRUE, step = 5)
     })
     
     output$s24_code_gls <- renderText({
         if (input$chapter == "Chapter 2" && input$section == "Section 2.4"
-            && naf(input$fit_effPlt) && input$fit_effPlt == "Model fit") {
+            && naf(input$fit_effPlt) && input$fit_effPlt == "Model fit (AIDS data)") {
             includeMarkdown("./md/s24_code_gls.Rmd")
         }
     })
     
     output$s24_Routput_gls <- renderPrint({
         if (input$chapter == "Chapter 2" && input$section == "Section 2.4"
-            && naf(input$fit_effPlt) && input$fit_effPlt == "Model fit") {
+            && naf(input$fit_effPlt) && input$fit_effPlt == "Model fit (AIDS data)") {
             fm_s24_aids <- gls(CD4 ~ obstime + obstime:drug,
                           correlation = corCompSymm(form = ~ obstime | patient),
                           data = aids)
@@ -171,7 +171,7 @@ shinyServer(function(input, output) {
     
     output$s24_code_gls_effectPlot <- renderText({
         if (input$chapter == "Chapter 2" && input$section == "Section 2.4"
-            && naf(input$fit_effPlt) && input$fit_effPlt == "Effect plot") {
+            && naf(input$fit_effPlt) && input$fit_effPlt == "Effect plot (PBC data)") {
             includeMarkdown("./md/s24_code_gls_effectPlot.Rmd")
         }
     })
@@ -620,33 +620,33 @@ shinyServer(function(input, output) {
     output$s32_choice <- renderUI({
         if (input$chapter == "Chapter 3" && input$section == "Section 3.2")
             radioButtons("fit_effPlt", "Select:", 
-                         c("Model fit", "Effect plot"))
+                         c("Model fit (AIDS data)", "Effect plot (PBC data)"))
     })
     
     output$s32_Agechoice <- renderUI({
         if (input$chapter == "Chapter 3" && input$section == "Section 3.2"
-            && naf(input$fit_effPlt) && input$fit_effPlt == "Effect plot")
+            && naf(input$fit_effPlt) && input$fit_effPlt == "Effect plot (PBC data)")
             sliderInput("age_select_pbc", "Age",
                         min = 30, max = 65, value = 49, animate = TRUE, step = 5)
     })
     
     output$s32_Prochoice <- renderUI({
         if (input$chapter == "Chapter 3" && input$section == "Section 3.2"
-            && naf(input$fit_effPlt) && input$fit_effPlt == "Effect plot")
+            && naf(input$fit_effPlt) && input$fit_effPlt == "Effect plot (PBC data)")
             sliderInput("pro_select_pbc", "Prothrombin",
                         min = 9.5, max = 13, value = 10.6, step = 0.5, animate = TRUE)
     })
 
     output$s32_code_lme <- renderText({
         if (input$chapter == "Chapter 3" && input$section == "Section 3.2"
-            && naf(input$fit_effPlt) && input$fit_effPlt == "Model fit") {
+            && naf(input$fit_effPlt) && input$fit_effPlt == "Model fit (AIDS data)") {
             includeMarkdown("./md/s32_code_lme.Rmd")
         }
     })
     
     output$s32_Routput_lme <- renderPrint({
         if (input$chapter == "Chapter 3" && input$section == "Section 3.2"
-            && naf(input$fit_effPlt) && input$fit_effPlt == "Model fit") {
+            && naf(input$fit_effPlt) && input$fit_effPlt == "Model fit (AIDS data)") {
             fm_s32_aids1 <- lme(CD4 ~ obstime + obstime:drug, random = ~ obstime | patient,
                                data = aids)
             fm_s32_aids2 <- lmer(CD4 ~ obstime + obstime:drug + (obstime | patient),
@@ -676,7 +676,7 @@ shinyServer(function(input, output) {
     
     output$s32_code_lme_effectPlot <- renderText({
         if (input$chapter == "Chapter 3" && input$section == "Section 3.2"
-            && naf(input$fit_effPlt) && input$fit_effPlt == "Effect plot") {
+            && naf(input$fit_effPlt) && input$fit_effPlt == "Effect plot (PBC data)") {
             includeMarkdown("./md/s32_code_lme_effectPlot.Rmd")
         }
     })
@@ -1574,19 +1574,19 @@ shinyServer(function(input, output) {
     output$s52_choice <- renderUI({
         if (input$chapter == "Chapter 5" && input$section == "Section 5.2")
             radioButtons("fit_effPlt", "Select:", 
-                         c("Model fit", "Effect plot"))
+                         c("Model fit (AIDS data)", "Effect plot (PBC data)"))
     })
     
     output$s52_parms <- renderUI({
         if (input$chapter == "Chapter 5" && input$section == "Section 5.2"
-            && naf(input$fit_effPlt) && input$fit_effPlt == "Model fit")
+            && naf(input$fit_effPlt) && input$fit_effPlt == "Model fit (AIDS data)")
             radioButtons('parms_s52', 'Level Parameters', c('subject-specific', 'marginal'))
     })
     
     
     output$s52_Agechoice <- renderUI({
         if (input$chapter == "Chapter 5" && input$section == "Section 5.2"
-            && naf(input$fit_effPlt) && input$fit_effPlt == "Effect plot")
+            && naf(input$fit_effPlt) && input$fit_effPlt == "Effect plot (PBC data)")
             fluidRow(column(7, sliderInput("age_select_pbc_glmm", "Age", min = 30, max = 65, 
                                            value = 49, animate = TRUE, step = 5)),
                      column(5, radioButtons('scale_s52', 'Scale', 
@@ -1595,7 +1595,7 @@ shinyServer(function(input, output) {
     
     output$s52_code_glmm <- renderText({
         if (input$chapter == "Chapter 5" && input$section == "Section 5.2") {
-            if (naf(input$fit_effPlt) && input$fit_effPlt == "Effect plot") {
+            if (naf(input$fit_effPlt) && input$fit_effPlt == "Effect plot (PBC data)") {
                 includeMarkdown("./md/s52_code_glmm_effectPlot.Rmd")
             } else {
                 includeMarkdown("./md/s52_code_glmm.Rmd")
@@ -1605,7 +1605,7 @@ shinyServer(function(input, output) {
     
     output$s52_Routput_glmm <- renderPrint({
         if (input$chapter == "Chapter 5" && input$section == "Section 5.2") {
-            if (naf(input$fit_effPlt) && input$fit_effPlt == "Model fit") {
+            if (naf(input$fit_effPlt) && input$fit_effPlt == "Model fit (AIDS data)") {
                 aids$lowCD4 <- aids$CD4 < sqrt(150)
                 if (!exists("fm_s52_aids")) {
                     withProgress({
@@ -2342,7 +2342,7 @@ shinyServer(function(input, output) {
         }
         
         if (input$chapter == "Chapter 2" && input$section == "Section 2.4" &&
-            input$fit_effPlt == "Effect plot") {
+            input$fit_effPlt == "Effect plot (PBC data)") {
             fm_s24_pbc <- gls(log(serBilir) ~ ns(year, 2) * sex + age + age:sex, data = pbc2,
                               correlation = corCAR1(form = ~ year | id))
             
@@ -2466,7 +2466,7 @@ shinyServer(function(input, output) {
         }
         
         if (input$chapter == "Chapter 3" && input$section == "Section 3.2" &&
-            input$fit_effPlt == "Effect plot") {
+            input$fit_effPlt == "Effect plot (PBC data)") {
             pbc2$basePro <- with(pbc2, ave(prothrombin, id, FUN = function (x) x[1]))
             if (!exists("fm_s32_pbc")) {
                 withProgress({
@@ -2821,7 +2821,7 @@ shinyServer(function(input, output) {
         }
         
         if (input$chapter == "Chapter 5" && input$section == "Section 5.2" &&
-            naf(input$fit_effPlt) && input$fit_effPlt == "Effect plot") {
+            naf(input$fit_effPlt) && input$fit_effPlt == "Effect plot (PBC data)") {
             if (!exists('fm_s52_pbc')) {
                 withProgress({
                     fm_s52_pbc <<- glmer(serCholD ~ year * drug + I(age - 50) * sex + (1 | id), 
