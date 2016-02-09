@@ -346,7 +346,7 @@ shinyServer(function(input, output) {
                 anova(fm_s29_pbc, Terms = c("sex", "year:sex")),
                 paste0("\n # the same as above but with a contrast matrix;\n",
                        " # first we see how many coefficients we have"),
-                coef(fm_s29_pbc),
+                as.matrix(coef(fm_s29_pbc)),
                 paste0("\n # we want to test the coefficients of that ",
                        "include 'sex'. We have two\n # the 3rd and 6th. ",
                        "Hence, the contrast matrix is:"),
