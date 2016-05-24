@@ -1009,24 +1009,14 @@ shinyServer(function(input, output) {
             fm_s37_aids2 <- lme(CD4 ~ obstime + I(obstime^2) + (obstime + I(obstime^2)):drug, data = aids,
                                 random = ~ obstime | patient, 
                                 correlation = corExp(form = ~ obstime | patient))
-            if (!exists('fm_s37_aids3')) {
-                withProgress({
-                    fm_s37_aids3 <<- lme(CD4 ~ obstime + I(obstime^2) + (obstime + I(obstime^2)):drug, data = aids,
-                                    random = ~ obstime + I(obstime^2) | patient, 
-                                    correlation = corExp(form = ~ obstime | patient),
-                                    control = lmeControl(opt = "optim"))
-                }, message = "Fitting the model...")
-            }
-            
+
             htmlPrint2(
                 '# fixed effects per model',
                 cbind("Int" = fixef(fm_s37_aids1), 
-                      "Linear Slp" = fixef(fm_s37_aids2), 
-                      "Quad Slp" = fixef(fm_s37_aids3)),
+                      "Linear Slp" = fixef(fm_s37_aids2)),
                 '\n# 95% CI for correlation parameter per model',
                 intervals(fm_s37_aids1, which = "var-cov")$corStruct,
-                intervals(fm_s37_aids2, which = "var-cov")$corStruct,
-                intervals(fm_s37_aids3, which = "var-cov")$corStruct
+                intervals(fm_s37_aids2, which = "var-cov")$corStruct
             )
         }
     })
