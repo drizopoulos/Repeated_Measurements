@@ -15,7 +15,7 @@ fm_3 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2,
             correlation = corCAR1(form = ~ year | id))
 
 fm_4 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
-            correlation = corExp(form = ~ year | id))
+            correlation = corLin(form = ~ year | id))
 
 fm_5 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
             correlation = corGaus(form = ~ year | id))
@@ -30,7 +30,7 @@ fm_7 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2,
             weights = varExp(form = ~ year))
 
 fm_8 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
-            correlation = corExp(form = ~ year | id),
+            correlation = corLin(form = ~ year | id),
             weights = varExp(form = ~ year))
 
 fm_9 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
