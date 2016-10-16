@@ -9,7 +9,8 @@ shinyServer(function(input, output) {
                 "Chapter 4" = paste("Section", c("4.1", "4.3", "4.5", "4.6")),
                 "Chapter 5" = paste("Section", c("5.2", "5.3", "5.6")),
                 "Chapter 6" = paste("Section", c("6.3")),
-                "Practicals" = paste("Practical", 1:4)
+                "Practicals" = paste("Practical", 1:4),
+                "Quizzes" = paste("Quiz", 1:5)
             )
             selectInput("section", "Select section:", chs, chs[1])
         }
@@ -1903,6 +1904,329 @@ shinyServer(function(input, output) {
                              "LOCF" = fixef(fm_s63_aids3),
                              "Mean Imputation" = fixef(fm_s63_aids4)))
         }
+    })
+    ######################################################################################
+    ######################################################################################
+    
+    ###########
+    # Quizzes #
+    ###########
+    
+    show_Qns <- reactiveValues(Q1 = TRUE, Q2 = FALSE, Q3 = FALSE, Q4 = FALSE, Q5 = FALSE)
+    show_Ans <- reactiveValues(Q1 = FALSE, Q2 = FALSE, Q3 = FALSE, Q4 = FALSE, Q5 = FALSE)
+    
+    
+    output$sQuiz_question <- renderText({
+        if (input$chapter == "Quizzes" && input$section == "Quiz 1") {
+            if (show_Qns$Q1) {
+                includeHTML("./html/Quiz1_Q1.Rhtml")
+            } else if (show_Qns$Q2) {
+                includeHTML("./html/Quiz1_Q2.Rhtml")
+            } else if (show_Qns$Q3) {
+                includeHTML("./html/Quiz1_Q3.Rhtml")
+            } else if (show_Qns$Q4) {
+                includeHTML("./html/Quiz1_Q4.Rhtml")
+            } else if (show_Qns$Q5) {
+                includeHTML("./html/Quiz1_Q5.Rhtml")
+            }
+        } else if (input$chapter == "Quizzes" && input$section == "Quiz 2") {
+            if (show_Qns$Q1) {
+                includeHTML("./html/Quiz2_Q1.Rhtml")
+            } else if (show_Qns$Q2) {
+                includeHTML("./html/Quiz2_Q2.Rhtml")
+            } else if (show_Qns$Q3) {
+                includeHTML("./html/Quiz2_Q3.Rhtml")
+            } else if (show_Qns$Q4) {
+                includeHTML("./html/Quiz2_Q4.Rhtml")
+            } else if (show_Qns$Q5) {
+                includeHTML("./html/Quiz2_Q5.Rhtml")
+            }
+        }
+    })
+    
+    answers <- reactive({
+        if (input$chapter == "Quizzes" && input$section == "Quiz 1") {
+            opt1 <- c("Every unit increase in BMI decreases LDL by 0.07. This is for patient receiving the same treatment and this effect does not remain constant during follow-up.", 
+                      "Every unit increase in BMI decreases LDL by 0.07. This is for patient receiving the same treatment and this effect remains constant during follow-up.",
+                      "Every unit increase in BMI increases LDL by 0.07. This is for patient receiving the same treatment and this effect does not remain constant during follow-up.", 
+                      "Every unit increase in BMI increases LDL by 0.07. This is for patient receiving the same treatment and this effect remains constant during follow-up.")
+            
+            opt2 <- c("Perform a likelihood ratio test between the two models because they are nested.", 
+                      "Perform a t-test for the regression coefficients of Model I and Model II and see if the p-values differ.",
+                      "Perform an F-test for the regression coefficients of Model I and Model II and see if the p-values differ.",
+                      "Use AIC or BIC to compare the two models because they are not nested.")
+            
+            opt3 <- c("Yes, because the scores are a continuous outcome and because this model does account for the correlations between children in the same school.", 
+                      "No, because even though the outcome is continuous, the linear regression model does not account for the correlations between children in the same school.",
+                      "Yes, because the scores are a continuous outcome and because it is not required to account for the correlations between children in the same school.")
+            
+            opt4 <- c("Based on the expectations of the researchers we would fit a linear mixed model for PSA including random interecepts and random slopes",
+                      "The description indicates a potential nonlinear effect of time. Hence, we should include splines in the random effects but not in the fixed effects.",
+                      "The description indicates a potential nonlinear effect of time. Hence, we should inverstigate whether splines should be included both in the fixed and random effects.",
+                      "The description indicates a potential nonlinear effect of time. Hence, we should include splines in the fixed effects but not in the random effects.")
+            
+            opt5 <- c("The error terms are normally distributed with a diagonal covariance matrix.",
+                      "The error terms are normally distributed and have constant variance in time.",
+                      "The error terms are normally distributed and are uncorrelated.",
+                      "The error terms are normally distributed with a general covariance matrix.")
+            
+            chs1 <- lapply(seq_along(opt1), c); names(chs1) <- opt1
+            chs2 <- lapply(seq_along(opt2), c); names(chs2) <- opt2
+            chs3 <- lapply(seq_along(opt3), c); names(chs3) <- opt3
+            chs4 <- lapply(seq_along(opt4), c); names(chs4) <- opt4
+            chs5 <- lapply(seq_along(opt5), c); names(chs5) <- opt5
+            
+            correct <- c(2, 4, 2, 3, 4)
+            
+            cols1 <- rep("red", length(opt1)); cols1[correct[1L]] <- "green"
+            cols2 <- rep("red", length(opt2)); cols2[correct[2L]] <- "green"
+            cols3 <- rep("red", length(opt3)); cols3[correct[3L]] <- "green"
+            cols4 <- rep("red", length(opt4)); cols4[correct[4L]] <- "green"
+            cols5 <- rep("red", length(opt5)); cols5[correct[5L]] <- "green"
+            
+            list(chs1 = chs1, chs2 = chs2, chs3 = chs3, chs4 = chs4, chs5 = chs5,
+                 cols1 = cols1, cols2 = cols2, cols3 = cols3, cols4 = cols4, cols5 = cols5)
+        } else if (input$chapter == "Quizzes" && input$section == "Quiz 2") {
+            opt1 <- c("Linear mixed models aim only at the population level.",
+                      "Linear mixed models aim only at the subjects level.",
+                      "Linear mixed models aim at both the population and the subjects level.",
+                      "None of the above.")
+            
+            opt2 <- c("As the name suggests, linear mixed models can only be used with linear time effects.",
+                      "In linear mixed models we need to use a combination of linear and nonlinear time effects.",
+                      "Depending on the features of the data we may or may not include nonlinear effects.",
+                      " In linear mixed models we typically need to include nonlinear time effects.")
+            
+            opt3 <- c("Assuming conditional independence means that some observed subject characteristics explain the correlation in the measurements of each subject.",
+                      "Assuming conditional independence means that we assume that some of the measurements of each subject are dependent and some independent.",
+                      "Assuming conditional independence means that we assume that measurements of each subject are independent.",
+                      "Assuming conditional independence means that some unobserved subject characteristics explain the correlation in the measurements of each subject.")
+            
+            opt4 <- c("When we only include random intercepts the variance decreases over time, whereas when include both random intercepts and random slopes it increases in time.",
+                      "When we only include random intercepts the correlation between the repeated measurements remains constant in time, whereas when we include both random intercepts and random slopes it changes over time.",
+                      "When we only include random intercepts the variance increases over time, whereas when include both random intercepts and random slopes it decreases in time.",
+                      "When we include only random intercepts the correlation between the repeated measurements decreases over time, whereas when we include both random intercepts and random slopes it remains constant in time.")
+            
+            opt5 <- c("Only argument 1 is correct.", "Only argument 2 is correct.", "Only argument 3 is correct.",
+                      "Only arguments 1 and 2 are correct.", "Only arguments 1 and 3 are correct.", "Only arguments 2 and 3 are correct.",
+                      "All arguments are correct.", "None of the arguments is correct.")
+            
+            
+            chs1 <- lapply(seq_along(opt1), c); names(chs1) <- opt1
+            chs2 <- lapply(seq_along(opt2), c); names(chs2) <- opt2
+            chs3 <- lapply(seq_along(opt3), c); names(chs3) <- opt3
+            chs4 <- lapply(seq_along(opt4), c); names(chs4) <- opt4
+            chs5 <- lapply(seq_along(opt5), c); names(chs5) <- opt5
+            
+            correct <- c(3, 3, 4, 2, 8)
+            
+            cols1 <- rep("red", length(opt1)); cols1[correct[1L]] <- "green"
+            cols2 <- rep("red", length(opt2)); cols2[correct[2L]] <- "green"
+            cols3 <- rep("red", length(opt3)); cols3[correct[3L]] <- "green"
+            cols4 <- rep("red", length(opt4)); cols4[correct[4L]] <- "green"
+            cols5 <- rep("red", length(opt5)); cols5[correct[5L]] <- "green"
+            
+            list(chs1 = chs1, chs2 = chs2, chs3 = chs3, chs4 = chs4, chs5 = chs5,
+                 cols1 = cols1, cols2 = cols2, cols3 = cols3, cols4 = cols4, cols5 = cols5)
+        }
+    })
+    
+    output$sQuiz_1_ans <- renderUI({
+        local_answers <- answers()
+        if (input$chapter == "Quizzes" && input$section == "Quiz 1") {
+            if (show_Qns$Q1 && !show_Ans$Q1) {
+                fluidRow(column(5, radioButtons("ans_Quiz1_q1", label = "", 
+                                                choices = local_answers$chs1, 
+                                                selected = character(0))),
+                         column(1),
+                         column(4, actionButton("ansQ1", "Check your answer", "success"))
+                )
+            } else if (show_Qns$Q2 && !show_Ans$Q2) {
+                fluidRow(column(5, radioButtons("ans_Quiz1_q2", label = "", 
+                                                choices = local_answers$chs2, 
+                                                selected = character(0))),
+                         column(1),
+                         column(4, actionButton("ansQ2", "Check your answer", "success"))
+                )
+            } else if (show_Qns$Q3 && !show_Ans$Q3) {
+                fluidRow(column(5, radioButtons("ans_Quiz1_q3", label = "",
+                                                choices = local_answers$chs3, 
+                                                selected = character(0))),
+                         column(1),
+                         column(4, actionButton("ansQ3", "Check your answer", "success"))
+                )
+            } else if (show_Qns$Q4 && !show_Ans$Q4) {
+                fluidRow(column(5, radioButtons("ans_Quiz1_q4", label = "",
+                                                choices = local_answers$chs4, 
+                                                selected = character(0))),
+                         column(1),
+                         column(4, actionButton("ansQ4", "Check your answer", "success"))
+                )
+            } else if (show_Qns$Q5 && !show_Ans$Q5) {
+                fluidRow(column(5, radioButtons("ans_Quiz1_q5", label = "",
+                                                choices = local_answers$chs5, 
+                                                selected = character(0))),
+                         column(1),
+                         column(4, actionButton("ansQ5", "Check your answer", "success"))
+                )
+            }
+        } else if (input$chapter == "Quizzes" && input$section == "Quiz 2") {
+            if (show_Qns$Q1 && !show_Ans$Q1) {
+                fluidRow(column(5, radioButtons("ans_Quiz2_q1", label = "", 
+                                                choices = local_answers$chs1, 
+                                                selected = character(0))),
+                         column(1),
+                         column(4, actionButton("ansQ1", "Check your answer", "success"))
+                )
+            } else if (show_Qns$Q2 && !show_Ans$Q2) {
+                fluidRow(column(5, radioButtons("ans_Quiz2_q2", label = "", 
+                                                choices = local_answers$chs2, 
+                                                selected = character(0))),
+                         column(1),
+                         column(4, actionButton("ansQ2", "Check your answer", "success"))
+                )
+            } else if (show_Qns$Q3 && !show_Ans$Q3) {
+                fluidRow(column(5, radioButtons("ans_Quiz2_q3", label = "",
+                                                choices = local_answers$chs3, 
+                                                selected = character(0))),
+                         column(1),
+                         column(4, actionButton("ansQ3", "Check your answer", "success"))
+                )
+            } else if (show_Qns$Q4 && !show_Ans$Q4) {
+                fluidRow(column(5, radioButtons("ans_Quiz2_q4", label = "",
+                                                choices = local_answers$chs4, 
+                                                selected = character(0))),
+                         column(1),
+                         column(4, actionButton("ansQ4", "Check your answer", "success"))
+                )
+            } else if (show_Qns$Q5 && !show_Ans$Q5) {
+                fluidRow(column(5, radioButtons("ans_Quiz2_q5", label = "",
+                                                choices = local_answers$chs5, 
+                                                selected = character(0))),
+                         column(1),
+                         column(4, actionButton("ansQ5", "Check your answer", "success"))
+                )
+            }
+        }
+    })
+    
+    observeEvent(input$ansQ1, {
+        if (length(input$ans_Quiz1_q1) || length(input$ans_Quiz2_q1)) 
+            show_Ans$Q1 <- TRUE
+    })
+    observeEvent(input$ansQ2, {
+        if (length(input$ans_Quiz1_q2) || length(input$ans_Quiz2_q2)) 
+            show_Ans$Q2 <- TRUE
+    })
+    observeEvent(input$ansQ3, {
+        if (length(input$ans_Quiz1_q3) || length(input$ans_Quiz2_q3)) 
+            show_Ans$Q3 <- TRUE
+    })
+    observeEvent(input$ansQ4, {
+        if (length(input$ans_Quiz1_q4) || length(input$ans_Quiz2_q4)) 
+            show_Ans$Q4 <- TRUE
+    })
+    observeEvent(input$ansQ5, {
+        if (length(input$ans_Quiz1_q5) || length(input$ans_Quiz2_q5)) 
+            show_Ans$Q5 <- TRUE
+    })
+    
+    output$sQuiz_1_ans_check <- renderUI({
+        local_answers <- answers()
+        if (input$chapter == "Quizzes" && input$section == "Quiz 1") {
+            if (show_Qns$Q1 && show_Ans$Q1) {
+                fluidRow(column(5, myRadioButtons("ans_Quiz1_q1.", label = "", 
+                                                choices = local_answers$chs1, 
+                                                selected = input$ans_Quiz1_q1,
+                                                colors = local_answers$cols1)),
+                         column(1),
+                         column(4, actionButton("prcQ1", "Next Question", "primary"))
+                )
+            } else if (show_Qns$Q2 && show_Ans$Q2) {
+                fluidRow(column(5, myRadioButtons("ans_Quiz1_q2.", label = "", 
+                                                choices = local_answers$chs2, 
+                                                selected = input$ans_Quiz1_q2,
+                                                colors = local_answers$cols2)),
+                         column(1),
+                         column(4, actionButton("prcQ2", "Next Question", "primary"))
+                )
+            } else if (show_Qns$Q3 && show_Ans$Q3) {
+                fluidRow(column(5, myRadioButtons("ans_Quiz1_q3.", label = "",
+                                                choices = local_answers$chs3, 
+                                                selected = input$ans_Quiz1_q3,
+                                                colors = local_answers$cols3)),
+                         column(1),
+                         column(4, actionButton("prcQ3", "Next Question", "primary"))
+                )
+            } else if (show_Qns$Q4 && show_Ans$Q4) {
+                fluidRow(column(5, myRadioButtons("ans_Quiz1_q4.", label = "",
+                                                  choices = local_answers$chs4, 
+                                                  selected = input$ans_Quiz1_q4,
+                                                  colors = local_answers$cols4)),
+                         column(1),
+                         column(4, actionButton("prcQ4", "Next Question", "primary"))
+                )
+            } else if (show_Qns$Q5 && show_Ans$Q5) {
+                fluidRow(column(5, myRadioButtons("ans_Quiz1_q5.", label = "",
+                                                  choices = local_answers$chs5, 
+                                                  selected = input$ans_Quiz1_q5,
+                                                  colors = local_answers$cols5))
+                )
+            }
+        } else if (input$chapter == "Quizzes" && input$section == "Quiz 2") {
+            if (show_Qns$Q1 && show_Ans$Q1) {
+                fluidRow(column(5, myRadioButtons("ans_Quiz2_q1.", label = "", 
+                                                  choices = local_answers$chs1, 
+                                                  selected = input$ans_Quiz2_q1,
+                                                  colors = local_answers$cols1)),
+                         column(1),
+                         column(4, actionButton("prcQ1", "Next Question", "primary"))
+                )
+            } else if (show_Qns$Q2 && show_Ans$Q2) {
+                fluidRow(column(5, myRadioButtons("ans_Quiz2_q2.", label = "", 
+                                                  choices = local_answers$chs2, 
+                                                  selected = input$ans_Quiz2_q2,
+                                                  colors = local_answers$cols2)),
+                         column(1),
+                         column(4, actionButton("prcQ2", "Next Question", "primary"))
+                )
+            } else if (show_Qns$Q3 && show_Ans$Q3) {
+                fluidRow(column(5, myRadioButtons("ans_Quiz2_q3.", label = "",
+                                                  choices = local_answers$chs3, 
+                                                  selected = input$ans_Quiz2_q3,
+                                                  colors = local_answers$cols3)),
+                         column(1),
+                         column(4, actionButton("prcQ3", "Next Question", "primary"))
+                )
+            } else if (show_Qns$Q4 && show_Ans$Q4) {
+                fluidRow(column(5, myRadioButtons("ans_Quiz2_q4.", label = "",
+                                                  choices = local_answers$chs4, 
+                                                  selected = input$ans_Quiz2_q4,
+                                                  colors = local_answers$cols4)),
+                         column(1),
+                         column(4, actionButton("prcQ4", "Next Question", "primary"))
+                )
+            } else if (show_Qns$Q5 && show_Ans$Q5) {
+                fluidRow(column(5, myRadioButtons("ans_Quiz2_q5.", label = "",
+                                                  choices = local_answers$chs5, 
+                                                  selected = input$ans_Quiz2_q5,
+                                                  colors = local_answers$cols5))
+                )
+            }
+        }
+    })
+    
+    observeEvent(input$prcQ1, {
+        show_Qns$Q2 <- TRUE; show_Qns$Q1 <- FALSE
+    })
+    observeEvent(input$prcQ2, {
+        show_Qns$Q3 <- TRUE; show_Qns$Q2 <- FALSE
+    })
+    observeEvent(input$prcQ3, {
+        show_Qns$Q4 <- TRUE; show_Qns$Q3 <- FALSE
+    })
+    observeEvent(input$prcQ4, {
+        show_Qns$Q5 <- TRUE; show_Qns$Q4 <- FALSE
     })
     
     ######################################################################################

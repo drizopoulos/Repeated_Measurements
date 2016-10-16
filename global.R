@@ -125,3 +125,18 @@ naf <- function (x) {
         !is.na(x)
     }
 }
+
+myRadioButtons <- function(inputId, label, choices, selected = NULL, inline = FALSE, 
+                           width = NULL, colors){
+    buttons <- radioButtons(inputId, label, choices, selected, inline, width)
+    for (i in seq_along(colors)) {
+        chs_default <- paste0('<span>', names(choices)[i], '</span>')
+        replc <- paste0("<span style='color:", colors[i], "'>", names(choices)[i], 
+                        "</span>")
+        if (colors[i] == "green")
+            replc <- paste0("<strong>", replc, "</strong>")
+        buttons <- gsub(chs_default, replc, buttons, fixed = TRUE)
+    }
+    HTML(buttons)
+}
+
