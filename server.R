@@ -1912,33 +1912,36 @@ shinyServer(function(input, output) {
     # Quizzes #
     ###########
     
-    show_Qns <- reactiveValues(Q1 = TRUE, Q2 = FALSE, Q3 = FALSE, Q4 = FALSE, Q5 = FALSE)
-    show_Ans <- reactiveValues(Q1 = FALSE, Q2 = FALSE, Q3 = FALSE, Q4 = FALSE, Q5 = FALSE)
+    show_Quiz1_Qns <- reactiveValues(Q1 = TRUE, Q2 = FALSE, Q3 = FALSE, Q4 = FALSE, Q5 = FALSE)
+    show_Quiz2_Qns <- reactiveValues(Q1 = TRUE, Q2 = FALSE, Q3 = FALSE, Q4 = FALSE, Q5 = FALSE)
+    show_Ans <- reactiveValues(show = FALSE)
     
     
     output$sQuiz_question <- renderText({
         if (input$chapter == "Quizzes" && input$section == "Quiz 1") {
-            if (show_Qns$Q1) {
+            show_Ans$show <- FALSE
+            if (show_Quiz1_Qns$Q1) {
                 includeHTML("./html/Quiz1_Q1.Rhtml")
-            } else if (show_Qns$Q2) {
+            } else if (show_Quiz1_Qns$Q2) {
                 includeHTML("./html/Quiz1_Q2.Rhtml")
-            } else if (show_Qns$Q3) {
+            } else if (show_Quiz1_Qns$Q3) {
                 includeHTML("./html/Quiz1_Q3.Rhtml")
-            } else if (show_Qns$Q4) {
+            } else if (show_Quiz1_Qns$Q4) {
                 includeHTML("./html/Quiz1_Q4.Rhtml")
-            } else if (show_Qns$Q5) {
+            } else if (show_Quiz1_Qns$Q5) {
                 includeHTML("./html/Quiz1_Q5.Rhtml")
             }
         } else if (input$chapter == "Quizzes" && input$section == "Quiz 2") {
-            if (show_Qns$Q1) {
+            show_Ans$show <- FALSE
+            if (show_Quiz2_Qns$Q1) {
                 includeHTML("./html/Quiz2_Q1.Rhtml")
-            } else if (show_Qns$Q2) {
+            } else if (show_Quiz2_Qns$Q2) {
                 includeHTML("./html/Quiz2_Q2.Rhtml")
-            } else if (show_Qns$Q3) {
+            } else if (show_Quiz2_Qns$Q3) {
                 includeHTML("./html/Quiz2_Q3.Rhtml")
-            } else if (show_Qns$Q4) {
+            } else if (show_Quiz2_Qns$Q4) {
                 includeHTML("./html/Quiz2_Q4.Rhtml")
-            } else if (show_Qns$Q5) {
+            } else if (show_Quiz2_Qns$Q5) {
                 includeHTML("./html/Quiz2_Q5.Rhtml")
             }
         }
@@ -2034,35 +2037,35 @@ shinyServer(function(input, output) {
     output$sQuiz_1_ans <- renderUI({
         local_answers <- answers()
         if (input$chapter == "Quizzes" && input$section == "Quiz 1") {
-            if (show_Qns$Q1 && !show_Ans$Q1) {
+            if (show_Quiz1_Qns$Q1 && !show_Ans$show) {
                 fluidRow(column(5, radioButtons("ans_Quiz1_q1", label = "", 
                                                 choices = local_answers$chs1, 
                                                 selected = character(0))),
                          column(1),
                          column(4, actionButton("ansQ1", "Check your answer", "success"))
                 )
-            } else if (show_Qns$Q2 && !show_Ans$Q2) {
+            } else if (show_Quiz1_Qns$Q2 && !show_Ans$show) {
                 fluidRow(column(5, radioButtons("ans_Quiz1_q2", label = "", 
                                                 choices = local_answers$chs2, 
                                                 selected = character(0))),
                          column(1),
                          column(4, actionButton("ansQ2", "Check your answer", "success"))
                 )
-            } else if (show_Qns$Q3 && !show_Ans$Q3) {
+            } else if (show_Quiz1_Qns$Q3 && !show_Ans$show) {
                 fluidRow(column(5, radioButtons("ans_Quiz1_q3", label = "",
                                                 choices = local_answers$chs3, 
                                                 selected = character(0))),
                          column(1),
                          column(4, actionButton("ansQ3", "Check your answer", "success"))
                 )
-            } else if (show_Qns$Q4 && !show_Ans$Q4) {
+            } else if (show_Quiz1_Qns$Q4 && !show_Ans$show) {
                 fluidRow(column(5, radioButtons("ans_Quiz1_q4", label = "",
                                                 choices = local_answers$chs4, 
                                                 selected = character(0))),
                          column(1),
                          column(4, actionButton("ansQ4", "Check your answer", "success"))
                 )
-            } else if (show_Qns$Q5 && !show_Ans$Q5) {
+            } else if (show_Quiz1_Qns$Q5 && !show_Ans$show) {
                 fluidRow(column(5, radioButtons("ans_Quiz1_q5", label = "",
                                                 choices = local_answers$chs5, 
                                                 selected = character(0))),
@@ -2071,35 +2074,35 @@ shinyServer(function(input, output) {
                 )
             }
         } else if (input$chapter == "Quizzes" && input$section == "Quiz 2") {
-            if (show_Qns$Q1 && !show_Ans$Q1) {
+            if (show_Quiz2_Qns$Q1 && !show_Ans$show) {
                 fluidRow(column(5, radioButtons("ans_Quiz2_q1", label = "", 
                                                 choices = local_answers$chs1, 
                                                 selected = character(0))),
                          column(1),
                          column(4, actionButton("ansQ1", "Check your answer", "success"))
                 )
-            } else if (show_Qns$Q2 && !show_Ans$Q2) {
+            } else if (show_Quiz2_Qns$Q2 && !show_Ans$show) {
                 fluidRow(column(5, radioButtons("ans_Quiz2_q2", label = "", 
                                                 choices = local_answers$chs2, 
                                                 selected = character(0))),
                          column(1),
                          column(4, actionButton("ansQ2", "Check your answer", "success"))
                 )
-            } else if (show_Qns$Q3 && !show_Ans$Q3) {
+            } else if (show_Quiz2_Qns$Q3 && !show_Ans$show) {
                 fluidRow(column(5, radioButtons("ans_Quiz2_q3", label = "",
                                                 choices = local_answers$chs3, 
                                                 selected = character(0))),
                          column(1),
                          column(4, actionButton("ansQ3", "Check your answer", "success"))
                 )
-            } else if (show_Qns$Q4 && !show_Ans$Q4) {
+            } else if (show_Quiz2_Qns$Q4 && !show_Ans$show) {
                 fluidRow(column(5, radioButtons("ans_Quiz2_q4", label = "",
                                                 choices = local_answers$chs4, 
                                                 selected = character(0))),
                          column(1),
                          column(4, actionButton("ansQ4", "Check your answer", "success"))
                 )
-            } else if (show_Qns$Q5 && !show_Ans$Q5) {
+            } else if (show_Quiz2_Qns$Q5 && !show_Ans$show) {
                 fluidRow(column(5, radioButtons("ans_Quiz2_q5", label = "",
                                                 choices = local_answers$chs5, 
                                                 selected = character(0))),
@@ -2111,30 +2114,30 @@ shinyServer(function(input, output) {
     })
     
     observeEvent(input$ansQ1, {
-        if (length(input$ans_Quiz1_q1) || length(input$ans_Quiz2_q1)) 
-            show_Ans$Q1 <- TRUE
+        if (any(length(input$ans_Quiz1_q1), length(input$ans_Quiz2_q1))) 
+            show_Ans$show <- TRUE
     })
     observeEvent(input$ansQ2, {
-        if (length(input$ans_Quiz1_q2) || length(input$ans_Quiz2_q2)) 
-            show_Ans$Q2 <- TRUE
+        if (any(length(input$ans_Quiz1_q2), length(input$ans_Quiz2_q2))) 
+            show_Ans$show <- TRUE
     })
     observeEvent(input$ansQ3, {
-        if (length(input$ans_Quiz1_q3) || length(input$ans_Quiz2_q3)) 
-            show_Ans$Q3 <- TRUE
+        if (any(length(input$ans_Quiz1_q3), length(input$ans_Quiz2_q3)))
+            show_Ans$show <- TRUE
     })
     observeEvent(input$ansQ4, {
-        if (length(input$ans_Quiz1_q4) || length(input$ans_Quiz2_q4)) 
-            show_Ans$Q4 <- TRUE
+        if (any(length(input$ans_Quiz1_q4), length(input$ans_Quiz2_q4)))
+            show_Ans$show <- TRUE
     })
     observeEvent(input$ansQ5, {
-        if (length(input$ans_Quiz1_q5) || length(input$ans_Quiz2_q5)) 
-            show_Ans$Q5 <- TRUE
+        if (any(length(input$ans_Quiz1_q5), length(input$ans_Quiz2_q5)))
+            show_Ans$show <- TRUE
     })
     
     output$sQuiz_1_ans_check <- renderUI({
         local_answers <- answers()
         if (input$chapter == "Quizzes" && input$section == "Quiz 1") {
-            if (show_Qns$Q1 && show_Ans$Q1) {
+            if (show_Quiz1_Qns$Q1 && show_Ans$show) {
                 fluidRow(column(5, myRadioButtons("ans_Quiz1_q1.", label = "", 
                                                 choices = local_answers$chs1, 
                                                 selected = input$ans_Quiz1_q1,
@@ -2142,7 +2145,7 @@ shinyServer(function(input, output) {
                          column(1),
                          column(4, actionButton("prcQ1", "Next Question", "primary"))
                 )
-            } else if (show_Qns$Q2 && show_Ans$Q2) {
+            } else if (show_Quiz1_Qns$Q2 && show_Ans$show) {
                 fluidRow(column(5, myRadioButtons("ans_Quiz1_q2.", label = "", 
                                                 choices = local_answers$chs2, 
                                                 selected = input$ans_Quiz1_q2,
@@ -2150,7 +2153,7 @@ shinyServer(function(input, output) {
                          column(1),
                          column(4, actionButton("prcQ2", "Next Question", "primary"))
                 )
-            } else if (show_Qns$Q3 && show_Ans$Q3) {
+            } else if (show_Quiz1_Qns$Q3 && show_Ans$show) {
                 fluidRow(column(5, myRadioButtons("ans_Quiz1_q3.", label = "",
                                                 choices = local_answers$chs3, 
                                                 selected = input$ans_Quiz1_q3,
@@ -2158,7 +2161,7 @@ shinyServer(function(input, output) {
                          column(1),
                          column(4, actionButton("prcQ3", "Next Question", "primary"))
                 )
-            } else if (show_Qns$Q4 && show_Ans$Q4) {
+            } else if (show_Quiz1_Qns$Q4 && show_Ans$show) {
                 fluidRow(column(5, myRadioButtons("ans_Quiz1_q4.", label = "",
                                                   choices = local_answers$chs4, 
                                                   selected = input$ans_Quiz1_q4,
@@ -2166,7 +2169,7 @@ shinyServer(function(input, output) {
                          column(1),
                          column(4, actionButton("prcQ4", "Next Question", "primary"))
                 )
-            } else if (show_Qns$Q5 && show_Ans$Q5) {
+            } else if (show_Quiz1_Qns$Q5 && show_Ans$show) {
                 fluidRow(column(5, myRadioButtons("ans_Quiz1_q5.", label = "",
                                                   choices = local_answers$chs5, 
                                                   selected = input$ans_Quiz1_q5,
@@ -2174,7 +2177,7 @@ shinyServer(function(input, output) {
                 )
             }
         } else if (input$chapter == "Quizzes" && input$section == "Quiz 2") {
-            if (show_Qns$Q1 && show_Ans$Q1) {
+            if (show_Quiz2_Qns$Q1 && show_Ans$show) {
                 fluidRow(column(5, myRadioButtons("ans_Quiz2_q1.", label = "", 
                                                   choices = local_answers$chs1, 
                                                   selected = input$ans_Quiz2_q1,
@@ -2182,7 +2185,7 @@ shinyServer(function(input, output) {
                          column(1),
                          column(4, actionButton("prcQ1", "Next Question", "primary"))
                 )
-            } else if (show_Qns$Q2 && show_Ans$Q2) {
+            } else if (show_Quiz2_Qns$Q2 && show_Ans$show) {
                 fluidRow(column(5, myRadioButtons("ans_Quiz2_q2.", label = "", 
                                                   choices = local_answers$chs2, 
                                                   selected = input$ans_Quiz2_q2,
@@ -2190,7 +2193,7 @@ shinyServer(function(input, output) {
                          column(1),
                          column(4, actionButton("prcQ2", "Next Question", "primary"))
                 )
-            } else if (show_Qns$Q3 && show_Ans$Q3) {
+            } else if (show_Quiz2_Qns$Q3 && show_Ans$show) {
                 fluidRow(column(5, myRadioButtons("ans_Quiz2_q3.", label = "",
                                                   choices = local_answers$chs3, 
                                                   selected = input$ans_Quiz2_q3,
@@ -2198,7 +2201,7 @@ shinyServer(function(input, output) {
                          column(1),
                          column(4, actionButton("prcQ3", "Next Question", "primary"))
                 )
-            } else if (show_Qns$Q4 && show_Ans$Q4) {
+            } else if (show_Quiz2_Qns$Q4 && show_Ans$show) {
                 fluidRow(column(5, myRadioButtons("ans_Quiz2_q4.", label = "",
                                                   choices = local_answers$chs4, 
                                                   selected = input$ans_Quiz2_q4,
@@ -2206,7 +2209,7 @@ shinyServer(function(input, output) {
                          column(1),
                          column(4, actionButton("prcQ4", "Next Question", "primary"))
                 )
-            } else if (show_Qns$Q5 && show_Ans$Q5) {
+            } else if (show_Quiz2_Qns$Q5 && show_Ans$show) {
                 fluidRow(column(5, myRadioButtons("ans_Quiz2_q5.", label = "",
                                                   choices = local_answers$chs5, 
                                                   selected = input$ans_Quiz2_q5,
@@ -2217,16 +2220,48 @@ shinyServer(function(input, output) {
     })
     
     observeEvent(input$prcQ1, {
-        show_Qns$Q2 <- TRUE; show_Qns$Q1 <- FALSE
+        if (input$chapter == "Quizzes" && input$section == "Quiz 1") {
+            show_Quiz1_Qns$Q2 <- TRUE; show_Quiz1_Qns$Q1 <- FALSE; show_Ans$show <- FALSE
+            show_Quiz2_Qns$Q1 <- TRUE
+            show_Quiz2_Qns$Q2 <- show_Quiz2_Qns$Q3 <- show_Quiz2_Qns$Q4 <- show_Quiz2_Qns$Q5 <- FALSE
+        } else if (input$chapter == "Quizzes" && input$section == "Quiz 2") {
+            show_Quiz2_Qns$Q2 <- TRUE; show_Quiz2_Qns$Q1 <- FALSE; show_Ans$show <- FALSE
+            show_Quiz1_Qns$Q1 <- TRUE
+            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- FALSE
+        }
     })
     observeEvent(input$prcQ2, {
-        show_Qns$Q3 <- TRUE; show_Qns$Q2 <- FALSE
+        if (input$chapter == "Quizzes" && input$section == "Quiz 1") {
+            show_Quiz1_Qns$Q3 <- TRUE; show_Quiz1_Qns$Q2 <- FALSE; show_Ans$show <- FALSE
+            show_Quiz2_Qns$Q1 <- TRUE
+            show_Quiz2_Qns$Q2 <- show_Quiz2_Qns$Q3 <- show_Quiz2_Qns$Q4 <- show_Quiz2_Qns$Q5 <- FALSE
+        } else if (input$chapter == "Quizzes" && input$section == "Quiz 2") {
+            show_Quiz2_Qns$Q3 <- TRUE; show_Quiz2_Qns$Q2 <- FALSE; show_Ans$show <- FALSE
+            show_Quiz1_Qns$Q1 <- TRUE
+            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- FALSE
+        }
     })
     observeEvent(input$prcQ3, {
-        show_Qns$Q4 <- TRUE; show_Qns$Q3 <- FALSE
+        if (input$chapter == "Quizzes" && input$section == "Quiz 1") {
+            show_Quiz1_Qns$Q4 <- TRUE; show_Quiz1_Qns$Q3 <- FALSE; show_Ans$show <- FALSE
+            show_Quiz2_Qns$Q1 <- TRUE
+            show_Quiz2_Qns$Q2 <- show_Quiz2_Qns$Q3 <- show_Quiz2_Qns$Q4 <- show_Quiz2_Qns$Q5 <- FALSE
+        } else if (input$chapter == "Quizzes" && input$section == "Quiz 2") {
+            show_Quiz2_Qns$Q4 <- TRUE; show_Quiz2_Qns$Q3 <- FALSE; show_Ans$show <- FALSE
+            show_Quiz1_Qns$Q1 <- TRUE
+            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- FALSE
+        }
     })
     observeEvent(input$prcQ4, {
-        show_Qns$Q5 <- TRUE; show_Qns$Q4 <- FALSE
+        if (input$chapter == "Quizzes" && input$section == "Quiz 1") {
+            show_Quiz1_Qns$Q5 <- TRUE; show_Quiz1_Qns$Q4 <- FALSE; show_Ans$show <- FALSE
+            show_Quiz2_Qns$Q1 <- TRUE
+            show_Quiz2_Qns$Q2 <- show_Quiz2_Qns$Q3 <- show_Quiz2_Qns$Q4 <- show_Quiz2_Qns$Q5 <- FALSE
+        } else if (input$chapter == "Quizzes" && input$section == "Quiz 2") {
+            show_Quiz2_Qns$Q5 <- TRUE; show_Quiz2_Qns$Q4 <- FALSE; show_Ans$show <- FALSE
+            show_Quiz1_Qns$Q1 <- TRUE
+            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- FALSE
+        }
     })
     
     ######################################################################################
