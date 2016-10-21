@@ -118,8 +118,8 @@ shinyUI(fluidPage(
                      htmlOutput('sPract_motivate'),
                      htmlOutput('sPract_code'),
                      htmlOutput('sQuiz_question'),
-                     uiOutput("sQuiz_1_ans"),
-                     uiOutput("sQuiz_1_ans_check")
+                     uiOutput("sQuiz_ans"),
+                     uiOutput("sQuiz_ans_check")
                      ),
             
             tabPanel("Output", 
@@ -155,6 +155,8 @@ shinyUI(fluidPage(
                      htmlOutput('sPract_motivate2'),
                      htmlOutput('sPract_Routput'),
                      ##########################
+                     htmlOutput('sQuizzes'),
+                     ##########################
                      plotOutput('plot')),
             
             tabPanel("Help", 
@@ -165,7 +167,8 @@ shinyUI(fluidPage(
                      htmlOutput('Chapter4_help'),
                      htmlOutput('Chapter5_help'),
                      htmlOutput('Chapter6_help'),
-                     htmlOutput('Chapter7_help')),
+                     htmlOutput('Chapter7_help'),
+                     htmlOutput('Chapter8_help')),
             
             tabPanel("Slides", htmlOutput('slides'))
         )
