@@ -1912,7 +1912,7 @@ shinyServer(function(input, output) {
     # Quizzes #
     ###########
     
-    show_Quiz1_Qns <- reactiveValues(Q1 = TRUE, Q2 = FALSE, Q3 = FALSE, Q4 = FALSE, Q5 = FALSE)
+    show_Quiz1_Qns <- reactiveValues(Q1 = TRUE, Q2 = FALSE, Q3 = FALSE, Q4 = FALSE, Q5 = FALSE, Q6 = FALSE)
     show_Quiz2_Qns <- reactiveValues(Q1 = TRUE, Q2 = FALSE, Q3 = FALSE, Q4 = FALSE, Q5 = FALSE)
     show_Quiz3_Qns <- reactiveValues(Q1 = TRUE, Q2 = FALSE, Q3 = FALSE, Q4 = FALSE, Q5 = FALSE)
     show_Quiz4_Qns <- reactiveValues(Q1 = TRUE, Q2 = FALSE, Q3 = FALSE, Q4 = FALSE, Q5 = FALSE)
@@ -1933,6 +1933,8 @@ shinyServer(function(input, output) {
                 includeHTML("./html/Quiz1_Q4.Rhtml")
             } else if (show_Quiz1_Qns$Q5) {
                 includeHTML("./html/Quiz1_Q5.Rhtml")
+            } else if (show_Quiz1_Qns$Q6) {
+                includeHTML("./html/Quiz1_Q6.Rhtml")
             }
         } else if (input$chapter == "Quizzes" && input$section == "Quiz 2") {
             show_Ans$show <- FALSE
@@ -2015,22 +2017,32 @@ shinyServer(function(input, output) {
                       "The error terms are normally distributed and are uncorrelated.",
                       "The error terms are normally distributed with a general covariance matrix.")
             
+            opt6 <- c("Statement 1 is correct.", 
+                      "Statement 2 is correct.",
+                      "Statement 3 is correct.",
+                      "Statements 1 and 2 are correct.",
+                      "Statements 1 and 3 are correct.",
+                      "Statements 2 and 3 are correct.",
+                      "None of them is correct.")
+            
             chs1 <- lapply(seq_along(opt1), c); names(chs1) <- opt1
             chs2 <- lapply(seq_along(opt2), c); names(chs2) <- opt2
             chs3 <- lapply(seq_along(opt3), c); names(chs3) <- opt3
             chs4 <- lapply(seq_along(opt4), c); names(chs4) <- opt4
             chs5 <- lapply(seq_along(opt5), c); names(chs5) <- opt5
+            chs6 <- lapply(seq_along(opt6), c); names(chs6) <- opt6
             
-            correct <- c(2, 4, 2, 3, 4)
+            correct <- c(2, 4, 2, 3, 4, 3)
             
             cols1 <- rep("red", length(opt1)); cols1[correct[1L]] <- "green"
             cols2 <- rep("red", length(opt2)); cols2[correct[2L]] <- "green"
             cols3 <- rep("red", length(opt3)); cols3[correct[3L]] <- "green"
             cols4 <- rep("red", length(opt4)); cols4[correct[4L]] <- "green"
             cols5 <- rep("red", length(opt5)); cols5[correct[5L]] <- "green"
+            cols6 <- rep("red", length(opt6)); cols6[correct[6L]] <- "green"
             
-            list(chs1 = chs1, chs2 = chs2, chs3 = chs3, chs4 = chs4, chs5 = chs5,
-                 cols1 = cols1, cols2 = cols2, cols3 = cols3, cols4 = cols4, cols5 = cols5)
+            list(chs1 = chs1, chs2 = chs2, chs3 = chs3, chs4 = chs4, chs5 = chs5, chs6 = chs6,
+                 cols1 = cols1, cols2 = cols2, cols3 = cols3, cols4 = cols4, cols5 = cols5, cols6 = cols6)
         } else if (input$chapter == "Quizzes" && input$section == "Quiz 2") {
             opt1 <- c("Linear mixed models aim only at the population level.",
                       "Linear mixed models aim only at the subjects level.",
@@ -2234,6 +2246,13 @@ shinyServer(function(input, output) {
                          column(1),
                          column(4, actionButton("ansQ5", "Check your answer", "success"))
                 )
+            } else if (show_Quiz1_Qns$Q6 && !show_Ans$show) {
+                fluidRow(column(5, radioButtons("ans_Quiz1_q6", label = "",
+                                                choices = local_answers$chs6, 
+                                                selected = character(0))),
+                         column(1),
+                         column(4, actionButton("ansQ6", "Check your answer", "success"))
+                )
             }
         } else if (input$chapter == "Quizzes" && input$section == "Quiz 2") {
             if (show_Quiz2_Qns$Q1 && !show_Ans$show) {
@@ -2411,6 +2430,11 @@ shinyServer(function(input, output) {
                 length(input$ans_Quiz4_q5), length(input$ans_Quiz5_q5)))
             show_Ans$show <- TRUE
     })
+    observeEvent(input$ansQ6, {
+        if (any(length(input$ans_Quiz1_q6), length(input$ans_Quiz2_q6), length(input$ans_Quiz3_q6),
+                length(input$ans_Quiz4_q6), length(input$ans_Quiz5_q6)))
+            show_Ans$show <- TRUE
+    })
     
     output$sQuiz_ans_check <- renderUI({
         local_answers <- answers()
@@ -2451,7 +2475,15 @@ shinyServer(function(input, output) {
                 fluidRow(column(5, myRadioButtons("ans_Quiz1_q5.", label = "",
                                                   choices = local_answers$chs5, 
                                                   selected = input$ans_Quiz1_q5,
-                                                  colors = local_answers$cols5))
+                                                  colors = local_answers$cols5)),
+                         column(1),
+                         column(4, actionButton("prcQ5", "Next Question", "primary"))
+                )
+            } else if (show_Quiz1_Qns$Q6 && show_Ans$show) {
+                fluidRow(column(5, myRadioButtons("ans_Quiz1_q6.", label = "",
+                                                  choices = local_answers$chs6, 
+                                                  selected = input$ans_Quiz1_q6,
+                                                  colors = local_answers$cols6))
                 )
             }
         } else if (input$chapter == "Quizzes" && input$section == "Quiz 2") {
@@ -2631,7 +2663,7 @@ shinyServer(function(input, output) {
         } else if (input$chapter == "Quizzes" && input$section == "Quiz 2") {
             show_Quiz2_Qns$Q2 <- TRUE; show_Quiz2_Qns$Q1 <- FALSE; show_Ans$show <- FALSE
             show_Quiz1_Qns$Q1 <- TRUE
-            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- FALSE
+            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- show_Quiz1_Qns$Q6 <- FALSE
             show_Quiz3_Qns$Q1 <- TRUE
             show_Quiz3_Qns$Q2 <- show_Quiz3_Qns$Q3 <- show_Quiz3_Qns$Q4 <- show_Quiz3_Qns$Q5 <- FALSE
             show_Quiz4_Qns$Q1 <- TRUE
@@ -2641,7 +2673,7 @@ shinyServer(function(input, output) {
         } else if (input$chapter == "Quizzes" && input$section == "Quiz 3") {
             show_Quiz3_Qns$Q2 <- TRUE; show_Quiz3_Qns$Q1 <- FALSE; show_Ans$show <- FALSE
             show_Quiz1_Qns$Q1 <- TRUE
-            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz2_Qns$Q4 <- show_Quiz2_Qns$Q5 <- FALSE
+            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- show_Quiz1_Qns$Q6 <- FALSE
             show_Quiz2_Qns$Q1 <- TRUE
             show_Quiz2_Qns$Q2 <- show_Quiz2_Qns$Q3 <- show_Quiz2_Qns$Q4 <- show_Quiz2_Qns$Q5 <- FALSE
             show_Quiz4_Qns$Q1 <- TRUE
@@ -2651,7 +2683,7 @@ shinyServer(function(input, output) {
         } else if (input$chapter == "Quizzes" && input$section == "Quiz 4") {
             show_Quiz4_Qns$Q2 <- TRUE; show_Quiz4_Qns$Q1 <- FALSE; show_Ans$show <- FALSE
             show_Quiz1_Qns$Q1 <- TRUE
-            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz2_Qns$Q4 <- show_Quiz2_Qns$Q5 <- FALSE
+            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- show_Quiz1_Qns$Q6 <- FALSE
             show_Quiz2_Qns$Q1 <- TRUE
             show_Quiz2_Qns$Q2 <- show_Quiz2_Qns$Q3 <- show_Quiz2_Qns$Q4 <- show_Quiz2_Qns$Q5 <- FALSE
             show_Quiz3_Qns$Q1 <- TRUE
@@ -2661,7 +2693,7 @@ shinyServer(function(input, output) {
         } else if (input$chapter == "Quizzes" && input$section == "Quiz 5") {
             show_Quiz5_Qns$Q2 <- TRUE; show_Quiz5_Qns$Q1 <- FALSE; show_Ans$show <- FALSE
             show_Quiz1_Qns$Q1 <- TRUE
-            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz2_Qns$Q4 <- show_Quiz2_Qns$Q5 <- FALSE
+            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- show_Quiz1_Qns$Q6 <- FALSE
             show_Quiz2_Qns$Q1 <- TRUE
             show_Quiz2_Qns$Q2 <- show_Quiz2_Qns$Q3 <- show_Quiz2_Qns$Q4 <- show_Quiz2_Qns$Q5 <- FALSE
             show_Quiz3_Qns$Q1 <- TRUE
@@ -2684,7 +2716,7 @@ shinyServer(function(input, output) {
         } else if (input$chapter == "Quizzes" && input$section == "Quiz 2") {
             show_Quiz2_Qns$Q3 <- TRUE; show_Quiz2_Qns$Q2 <- FALSE; show_Ans$show <- FALSE
             show_Quiz1_Qns$Q1 <- TRUE
-            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- FALSE
+            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- show_Quiz1_Qns$Q6 <- FALSE
             show_Quiz3_Qns$Q1 <- TRUE
             show_Quiz3_Qns$Q2 <- show_Quiz3_Qns$Q3 <- show_Quiz3_Qns$Q4 <- show_Quiz3_Qns$Q5 <- FALSE
             show_Quiz4_Qns$Q1 <- TRUE
@@ -2694,7 +2726,7 @@ shinyServer(function(input, output) {
         } else if (input$chapter == "Quizzes" && input$section == "Quiz 3") {
             show_Quiz3_Qns$Q3 <- TRUE; show_Quiz3_Qns$Q2 <- FALSE; show_Ans$show <- FALSE
             show_Quiz1_Qns$Q1 <- TRUE
-            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- FALSE
+            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- show_Quiz1_Qns$Q6 <- FALSE
             show_Quiz2_Qns$Q1 <- TRUE
             show_Quiz2_Qns$Q2 <- show_Quiz2_Qns$Q3 <- show_Quiz2_Qns$Q4 <- show_Quiz2_Qns$Q5 <- FALSE
             show_Quiz4_Qns$Q1 <- TRUE
@@ -2704,7 +2736,7 @@ shinyServer(function(input, output) {
         } else if (input$chapter == "Quizzes" && input$section == "Quiz 4") {
             show_Quiz4_Qns$Q3 <- TRUE; show_Quiz4_Qns$Q2 <- FALSE; show_Ans$show <- FALSE
             show_Quiz1_Qns$Q1 <- TRUE
-            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- FALSE
+            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- show_Quiz1_Qns$Q6 <- FALSE
             show_Quiz2_Qns$Q1 <- TRUE
             show_Quiz2_Qns$Q2 <- show_Quiz2_Qns$Q3 <- show_Quiz2_Qns$Q4 <- show_Quiz2_Qns$Q5 <- FALSE
             show_Quiz3_Qns$Q1 <- TRUE
@@ -2714,7 +2746,7 @@ shinyServer(function(input, output) {
         } else if (input$chapter == "Quizzes" && input$section == "Quiz 5") {
             show_Quiz5_Qns$Q3 <- TRUE; show_Quiz5_Qns$Q2 <- FALSE; show_Ans$show <- FALSE
             show_Quiz1_Qns$Q1 <- TRUE
-            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- FALSE
+            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- show_Quiz1_Qns$Q6 <- FALSE
             show_Quiz2_Qns$Q1 <- TRUE
             show_Quiz2_Qns$Q2 <- show_Quiz2_Qns$Q3 <- show_Quiz2_Qns$Q4 <- show_Quiz2_Qns$Q5 <- FALSE
             show_Quiz3_Qns$Q1 <- TRUE
@@ -2737,7 +2769,7 @@ shinyServer(function(input, output) {
         } else if (input$chapter == "Quizzes" && input$section == "Quiz 2") {
             show_Quiz2_Qns$Q4 <- TRUE; show_Quiz2_Qns$Q3 <- FALSE; show_Ans$show <- FALSE
             show_Quiz1_Qns$Q1 <- TRUE
-            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- FALSE
+            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- show_Quiz1_Qns$Q6 <- FALSE
             show_Quiz3_Qns$Q1 <- TRUE
             show_Quiz3_Qns$Q2 <- show_Quiz3_Qns$Q3 <- show_Quiz3_Qns$Q4 <- show_Quiz3_Qns$Q5 <- FALSE
             show_Quiz4_Qns$Q1 <- TRUE
@@ -2747,7 +2779,7 @@ shinyServer(function(input, output) {
         } else if (input$chapter == "Quizzes" && input$section == "Quiz 3") {
             show_Quiz3_Qns$Q4 <- TRUE; show_Quiz3_Qns$Q3 <- FALSE; show_Ans$show <- FALSE
             show_Quiz1_Qns$Q1 <- TRUE
-            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- FALSE
+            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- show_Quiz1_Qns$Q6 <- FALSE
             show_Quiz2_Qns$Q1 <- TRUE
             show_Quiz2_Qns$Q2 <- show_Quiz2_Qns$Q3 <- show_Quiz2_Qns$Q4 <- show_Quiz2_Qns$Q5 <- FALSE
             show_Quiz4_Qns$Q1 <- TRUE
@@ -2757,7 +2789,7 @@ shinyServer(function(input, output) {
         } else if (input$chapter == "Quizzes" && input$section == "Quiz 4") {
             show_Quiz4_Qns$Q4 <- TRUE; show_Quiz4_Qns$Q3 <- FALSE; show_Ans$show <- FALSE
             show_Quiz1_Qns$Q1 <- TRUE
-            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- FALSE
+            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- show_Quiz1_Qns$Q6 <- FALSE
             show_Quiz2_Qns$Q1 <- TRUE
             show_Quiz2_Qns$Q2 <- show_Quiz2_Qns$Q3 <- show_Quiz2_Qns$Q4 <- show_Quiz2_Qns$Q5 <- FALSE
             show_Quiz3_Qns$Q1 <- TRUE
@@ -2767,7 +2799,7 @@ shinyServer(function(input, output) {
         } else if (input$chapter == "Quizzes" && input$section == "Quiz 5") {
             show_Quiz5_Qns$Q4 <- TRUE; show_Quiz5_Qns$Q3 <- FALSE; show_Ans$show <- FALSE
             show_Quiz1_Qns$Q1 <- TRUE
-            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- FALSE
+            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- show_Quiz1_Qns$Q6 <- FALSE
             show_Quiz2_Qns$Q1 <- TRUE
             show_Quiz2_Qns$Q2 <- show_Quiz2_Qns$Q3 <- show_Quiz2_Qns$Q4 <- show_Quiz2_Qns$Q5 <- FALSE
             show_Quiz3_Qns$Q1 <- TRUE
@@ -2790,7 +2822,7 @@ shinyServer(function(input, output) {
         } else if (input$chapter == "Quizzes" && input$section == "Quiz 2") {
             show_Quiz2_Qns$Q5 <- TRUE; show_Quiz2_Qns$Q4 <- FALSE; show_Ans$show <- FALSE
             show_Quiz1_Qns$Q1 <- TRUE
-            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- FALSE
+            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- show_Quiz1_Qns$Q6 <- FALSE
             show_Quiz3_Qns$Q1 <- TRUE
             show_Quiz3_Qns$Q2 <- show_Quiz3_Qns$Q3 <- show_Quiz3_Qns$Q4 <- show_Quiz3_Qns$Q5 <- FALSE
             show_Quiz4_Qns$Q1 <- TRUE
@@ -2800,7 +2832,7 @@ shinyServer(function(input, output) {
         } else if (input$chapter == "Quizzes" && input$section == "Quiz 3") {
             show_Quiz3_Qns$Q5 <- TRUE; show_Quiz3_Qns$Q4 <- FALSE; show_Ans$show <- FALSE
             show_Quiz1_Qns$Q1 <- TRUE
-            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- FALSE
+            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- show_Quiz1_Qns$Q6 <- FALSE
             show_Quiz2_Qns$Q1 <- TRUE
             show_Quiz2_Qns$Q2 <- show_Quiz2_Qns$Q3 <- show_Quiz2_Qns$Q4 <- show_Quiz2_Qns$Q5 <- FALSE
             show_Quiz4_Qns$Q1 <- TRUE
@@ -2810,7 +2842,7 @@ shinyServer(function(input, output) {
         } else if (input$chapter == "Quizzes" && input$section == "Quiz 4") {
             show_Quiz4_Qns$Q5 <- TRUE; show_Quiz4_Qns$Q4 <- FALSE; show_Ans$show <- FALSE
             show_Quiz1_Qns$Q1 <- TRUE
-            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- FALSE
+            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- show_Quiz1_Qns$Q6 <- FALSE
             show_Quiz2_Qns$Q1 <- TRUE
             show_Quiz2_Qns$Q2 <- show_Quiz2_Qns$Q3 <- show_Quiz2_Qns$Q4 <- show_Quiz2_Qns$Q5 <- FALSE
             show_Quiz3_Qns$Q1 <- TRUE
@@ -2820,7 +2852,7 @@ shinyServer(function(input, output) {
         } else if (input$chapter == "Quizzes" && input$section == "Quiz 5") {
             show_Quiz5_Qns$Q5 <- TRUE; show_Quiz5_Qns$Q4 <- FALSE; show_Ans$show <- FALSE
             show_Quiz1_Qns$Q1 <- TRUE
-            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- FALSE
+            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- show_Quiz1_Qns$Q6 <- FALSE
             show_Quiz2_Qns$Q1 <- TRUE
             show_Quiz2_Qns$Q2 <- show_Quiz2_Qns$Q3 <- show_Quiz2_Qns$Q4 <- show_Quiz2_Qns$Q5 <- FALSE
             show_Quiz3_Qns$Q1 <- TRUE
@@ -2829,6 +2861,61 @@ shinyServer(function(input, output) {
             show_Quiz4_Qns$Q2 <- show_Quiz4_Qns$Q3 <- show_Quiz4_Qns$Q4 <- show_Quiz4_Qns$Q5 <- FALSE
         }
     })
+    observeEvent(input$prcQ5, {
+        if (input$chapter == "Quizzes" && input$section == "Quiz 1") {
+            show_Quiz1_Qns$Q6 <- TRUE; show_Quiz1_Qns$Q5 <- FALSE; show_Ans$show <- FALSE
+            show_Quiz2_Qns$Q1 <- TRUE
+            show_Quiz2_Qns$Q2 <- show_Quiz2_Qns$Q3 <- show_Quiz2_Qns$Q4 <- show_Quiz2_Qns$Q5 <- FALSE
+            show_Quiz3_Qns$Q1 <- TRUE
+            show_Quiz3_Qns$Q2 <- show_Quiz3_Qns$Q3 <- show_Quiz3_Qns$Q4 <- show_Quiz3_Qns$Q5 <- FALSE
+            show_Quiz4_Qns$Q1 <- TRUE
+            show_Quiz4_Qns$Q2 <- show_Quiz4_Qns$Q3 <- show_Quiz4_Qns$Q4 <- show_Quiz4_Qns$Q5 <- FALSE
+            show_Quiz5_Qns$Q1 <- TRUE
+            show_Quiz5_Qns$Q2 <- show_Quiz5_Qns$Q3 <- show_Quiz5_Qns$Q4 <- show_Quiz5_Qns$Q5 <- FALSE
+        } else if (input$chapter == "Quizzes" && input$section == "Quiz 2") {
+            show_Quiz2_Qns$Q5 <- TRUE; show_Quiz2_Qns$Q4 <- FALSE; show_Ans$show <- FALSE
+            show_Quiz1_Qns$Q1 <- TRUE
+            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- show_Quiz1_Qns$Q6 <- FALSE
+            show_Quiz3_Qns$Q1 <- TRUE
+            show_Quiz3_Qns$Q2 <- show_Quiz3_Qns$Q3 <- show_Quiz3_Qns$Q4 <- show_Quiz3_Qns$Q5 <- FALSE
+            show_Quiz4_Qns$Q1 <- TRUE
+            show_Quiz4_Qns$Q2 <- show_Quiz4_Qns$Q3 <- show_Quiz4_Qns$Q4 <- show_Quiz4_Qns$Q5 <- FALSE
+            show_Quiz5_Qns$Q1 <- TRUE
+            show_Quiz5_Qns$Q2 <- show_Quiz5_Qns$Q3 <- show_Quiz5_Qns$Q4 <- show_Quiz5_Qns$Q5 <- FALSE
+        } else if (input$chapter == "Quizzes" && input$section == "Quiz 3") {
+            show_Quiz3_Qns$Q5 <- TRUE; show_Quiz3_Qns$Q4 <- FALSE; show_Ans$show <- FALSE
+            show_Quiz1_Qns$Q1 <- TRUE
+            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- show_Quiz1_Qns$Q6 <- FALSE
+            show_Quiz2_Qns$Q1 <- TRUE
+            show_Quiz2_Qns$Q2 <- show_Quiz2_Qns$Q3 <- show_Quiz2_Qns$Q4 <- show_Quiz2_Qns$Q5 <- FALSE
+            show_Quiz4_Qns$Q1 <- TRUE
+            show_Quiz4_Qns$Q2 <- show_Quiz4_Qns$Q3 <- show_Quiz4_Qns$Q4 <- show_Quiz4_Qns$Q5 <- FALSE
+            show_Quiz5_Qns$Q1 <- TRUE
+            show_Quiz5_Qns$Q2 <- show_Quiz5_Qns$Q3 <- show_Quiz5_Qns$Q4 <- show_Quiz5_Qns$Q5 <- FALSE
+        } else if (input$chapter == "Quizzes" && input$section == "Quiz 4") {
+            show_Quiz4_Qns$Q5 <- TRUE; show_Quiz4_Qns$Q4 <- FALSE; show_Ans$show <- FALSE
+            show_Quiz1_Qns$Q1 <- TRUE
+            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- show_Quiz1_Qns$Q6 <- FALSE
+            show_Quiz2_Qns$Q1 <- TRUE
+            show_Quiz2_Qns$Q2 <- show_Quiz2_Qns$Q3 <- show_Quiz2_Qns$Q4 <- show_Quiz2_Qns$Q5 <- FALSE
+            show_Quiz3_Qns$Q1 <- TRUE
+            show_Quiz3_Qns$Q2 <- show_Quiz3_Qns$Q3 <- show_Quiz3_Qns$Q4 <- show_Quiz3_Qns$Q5 <- FALSE
+            show_Quiz5_Qns$Q1 <- TRUE
+            show_Quiz5_Qns$Q2 <- show_Quiz5_Qns$Q3 <- show_Quiz5_Qns$Q4 <- show_Quiz5_Qns$Q5 <- FALSE
+        } else if (input$chapter == "Quizzes" && input$section == "Quiz 5") {
+            show_Quiz5_Qns$Q5 <- TRUE; show_Quiz5_Qns$Q4 <- FALSE; show_Ans$show <- FALSE
+            show_Quiz1_Qns$Q1 <- TRUE
+            show_Quiz1_Qns$Q2 <- show_Quiz1_Qns$Q3 <- show_Quiz1_Qns$Q4 <- show_Quiz1_Qns$Q5 <- show_Quiz1_Qns$Q6 <- FALSE
+            show_Quiz2_Qns$Q1 <- TRUE
+            show_Quiz2_Qns$Q2 <- show_Quiz2_Qns$Q3 <- show_Quiz2_Qns$Q4 <- show_Quiz2_Qns$Q5 <- FALSE
+            show_Quiz3_Qns$Q1 <- TRUE
+            show_Quiz3_Qns$Q2 <- show_Quiz3_Qns$Q3 <- show_Quiz3_Qns$Q4 <- show_Quiz3_Qns$Q5 <- FALSE
+            show_Quiz4_Qns$Q1 <- TRUE
+            show_Quiz4_Qns$Q2 <- show_Quiz4_Qns$Q3 <- show_Quiz4_Qns$Q4 <- show_Quiz4_Qns$Q5 <- FALSE
+        }
+    })
+    
+    
     
     output$sQuizzes <- renderText({
         if (input$chapter == "Quizzes")
