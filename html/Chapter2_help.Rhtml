@@ -204,8 +204,43 @@ th, td {
       </li>
   </ul>
   </li>
-
 </ul>
+<br/>
+<h4 align="left">
+    <strong>
+        <span style="color:red">splines package</span>
+    </strong>
+</h4>
+<ul style="list-style-type:circle">
+  <li> Function <a href="https://goo.gl/mRQEXy" target="_blank">ns()</a> generates a basis
+  matrix for a natural cubic splines
+  <ul style="list-style-type:square">
+    <li>
+        <font face="Courier New">x</font>: the variable for which to generate the spline 
+        basis.
+    </li>
+    <li>
+        <font face="Courier New">df</font>: degrees of freedom. When equal to 1 it 
+        corresponds to no internal knots, which is equivalent to a linear fit. When greater
+        than 1, it places <font face="Courier New">df - 1</font> internal knots at the 
+        corresponding percentiles of <font face="Courier New">x</font>.
+    </li>
+    <li>
+        <font face="Courier New">knots, Boundary.knots</font>: instead of specifying 
+        <font face="Courier New">df</font>, you can manually specify the internals knots
+        in the <font face="Courier New">knots</font> argument and the boundary knots in 
+        the <font face="Courier New">Boundary.knots</font> argument. For the boundary 
+        knots it is a good idea not to use the default and place them in the minimun and 
+        maximum of <font face="Courier New">x</font>, but rather place them in the 5% and 
+        95% percentiles of <font face="Courier New">x</font>. You can find these percentiles 
+        using <font face="Courier New">quantile(x, probs = c(0.05, 0.95))</font>. The 
+        internal knots can be placed on the percentiles or could be based on 
+        subject-matter knowledge.
+    </li>
+  </ul>
+  </li>
+</ul>
+
 <br/>
 <br/>
 <h3 align="left">
