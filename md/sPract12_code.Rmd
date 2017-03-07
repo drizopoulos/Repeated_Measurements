@@ -7,7 +7,10 @@
 # Q2 #
 ######
 
-fm_1 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2)
+quantile(pbc2$year, probs = c(0, 0.05, 0.95, 1))
+
+fm_1 <- gls(prothrombin ~ ns(year, 3, B = c(0, 9.3)) * (sex + drug) + age, 
+            data = pbc2)
 
 summary(fm_1)
 ```

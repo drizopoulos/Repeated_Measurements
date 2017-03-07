@@ -77,12 +77,19 @@ structure (i.e., argument `correlation`) or a variance function (i.e., argument 
 fits a simple linear regression model (i.e., it is equivalent to 
 [lm()](https://goo.gl/tewND3) and postulates that the repeated measurements of each 
 patient are uncorrelated). To include the natural cubic splines of time with 3 degrees of 
-freedom we need use function [ns()](https://goo.gl/0g115B). Hence, the call to
-[gls()](https://goo.gl/0KBq4B) that includes the nonlinear time effect, the main effect 
+freedom we need use function [ns()](https://goo.gl/0g115B). As mentioned in Section 2.4, it
+is advisable to set the boundary knots to the 5% and 95% percentiles of the visit times. To 
+find these time points we use function [quantile()](https://goo.gl/e1krNy), i.e.,
+```{r}
+quantile(pbc2$year, probs = c(0, 0.05, 0.95, 1))
+```
+Hence, the call to [gls()](https://goo.gl/0KBq4B) that includes the nonlinear time effect, 
+the main effect 
 of age, sex and drug, and the interaction terms between the nonlinear time and sex and 
 drug is:
 ```{r}
-fm_1 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2)
+fm_1 <- gls(prothrombin ~ ns(year, 3, B = c(0, 9.3)) * (sex + drug) + age, 
+            data = pbc2)
 
 summary(fm_1)
 ```
@@ -114,17 +121,17 @@ corresponding constructor functions [corCompSymm()](https://goo.gl/nq5XUs),
 [corCAR1()](https://goo.gl/Zhbzfc), [corLin()](https://goo.gl/FDw6GB) and 
 [corGaus()](https://goo.gl/fTyrVg):
 ```{r}
-fm_2 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
-            correlation = corCompSymm(form = ~ year | id))
+fm_2 <- gls(prothrombin ~ ns(year, 3, B = c(0, 9.3)) * (sex + drug) + age, 
+            data = pbc2, correlation = corCompSymm(form = ~ year | id))
 
-fm_3 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
-            correlation = corCAR1(form = ~ year | id))
+fm_3 <- gls(prothrombin ~ ns(year, 3, B = c(0, 9.3)) * (sex + drug) + age, 
+            data = pbc2, correlation = corCAR1(form = ~ year | id))
 
-fm_4 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
-            correlation = corLin(form = ~ year | id))
+fm_4 <- gls(prothrombin ~ ns(year, 3, B = c(0, 9.3)) * (sex + drug) + age, 
+            data = pbc2, correlation = corLin(form = ~ year | id))
 
-fm_5 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
-            correlation = corGaus(form = ~ year | id))
+fm_5 <- gls(prothrombin ~ ns(year, 3, B = c(0, 9.3)) * (sex + drug) + age, 
+            data = pbc2, correlation = corGaus(form = ~ year | id))
 ```
 
 The models above are homoscedastic, i.e., they assume constant variance for the error 
@@ -133,20 +140,20 @@ terms. To fit heteroscedastic marginal models we can utilize the `weights` argum
 using the constructor function [varExp()](https://goo.gl/nOZBqT) that postulates that the 
 variance of the error terms is an exponential function of time:
 ```{r}
-fm_6 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
-            correlation = corCompSymm(form = ~ year | id),
+fm_6 <- gls(prothrombin ~ ns(year, 3, B = c(0, 9.3)) * (sex + drug) + age, 
+            data = pbc2, correlation = corCompSymm(form = ~ year | id),
             weights = varExp(form = ~ year))
 
-fm_7 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
-            correlation = corCAR1(form = ~ year | id),
+fm_7 <- gls(prothrombin ~ ns(year, 3, B = c(0, 9.3)) * (sex + drug) + age, 
+            data = pbc2, correlation = corCAR1(form = ~ year | id),
             weights = varExp(form = ~ year))
 
-fm_8 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
-            correlation = corLin(form = ~ year | id),
+fm_8 <- gls(prothrombin ~ ns(year, 3, B = c(0, 9.3)) * (sex + drug) + age, 
+            data = pbc2, correlation = corLin(form = ~ year | id),
             weights = varExp(form = ~ year))
 
-fm_9 <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
-            correlation = corGaus(form = ~ year | id),
+fm_9 <- gls(prothrombin ~ ns(year, 3, B = c(0, 9.3)) * (sex + drug) + age, 
+            data = pbc2, correlation = corGaus(form = ~ year | id),
             weights = varExp(form = ~ year))
 ```
 
@@ -184,11 +191,13 @@ using model `fm_3`
 ### Question 5
 We continue by testing whether we can drop all the interaction terms between the nonlinear
 time effect and sex, and the nonlinear time effect and drug. The corresponding model 
-terms that we wish to test are `ns(year, 3):sex` and `ns(year, 3):drug`. Using the 
-`Terms` argument of the [anova()](https://goo.gl/RuqkSV) function we perform the 
-corresponding F-test as we have seen in Section 2.9:
+terms that we wish to test are `ns(year, 3, B = c(0, 9.3)):sex` and 
+`ns(year, 3, B = c(0, 9.3)):drug`. Using the `Terms` argument of the 
+[anova()](https://goo.gl/RuqkSV) function we perform the corresponding F-test as we have 
+seen in Section 2.9:
 ```{r}
-anova(fm_3, Terms = c('ns(year, 3):sex', 'ns(year, 3):drug'))
+anova(fm_3, Terms = c('ns(year, 3, B = c(0, 9.3)):sex', 
+                      'ns(year, 3, B = c(0, 9.3)):drug'))
 ```
 
 The results indicate that average longitudinal evolutions of prothrombin time do not 
@@ -197,8 +206,8 @@ same terms using a likelihood ratio test we need first to fit the model under th
 hypothesis, i.e., the model that excludes these terms. The call to 
 [gls()](https://goo.gl/0KBq4B) that fits this model is:
 ```{r}
-fm_3_noInt <- gls(prothrombin ~ ns(year, 3) + sex + drug + age, data = pbc2, 
-                  correlation = corCAR1(form = ~ year | id))
+fm_3_noInt <- gls(prothrombin ~ ns(year, 3, B = c(0, 9.3)) + sex + drug + age, 
+                  data = pbc2, correlation = corCAR1(form = ~ year | id))
 ```
 
 To perform the likelihood ratio test we need to give the model under the null `fm_3_noInt`
@@ -216,11 +225,11 @@ Likelihood (REML). REML is the default method to fit the model in
 particular,
 
 ```{r}
-fm_3ML <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
-            correlation = corCAR1(form = ~ year | id), method = "ML")
+fm_3ML <- gls(prothrombin ~ ns(year, 3, B = c(0, 9.3)) * (sex + drug) + age, 
+              data = pbc2, correlation = corCAR1(form = ~ year | id), method = "ML")
 
-fm_3ML_noInt <- gls(prothrombin ~ ns(year, 3) + sex + drug + age, data = pbc2, 
-                  correlation = corCAR1(form = ~ year | id), method = "ML")
+fm_3ML_noInt <- gls(prothrombin ~ ns(year, 3, B = c(0, 9.3)) + sex + drug + age, 
+                    data = pbc2, correlation = corCAR1(form = ~ year | id), method = "ML")
 
 anova(fm_3ML_noInt, fm_3ML)
 ```

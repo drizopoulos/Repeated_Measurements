@@ -8,21 +8,21 @@
 ######
 
 # F-test
-anova(fm_3, Terms = c('ns(year, 3):sex', 'ns(year, 3):drug'))
-
+anova(fm_3, Terms = c('ns(year, 3, B = c(0, 9.3)):sex', 
+                      'ns(year, 3, B = c(0, 9.3)):drug'))
 
 # LRT
-fm_3_noInt <- gls(prothrombin ~ ns(year, 3) + sex + drug + age, data = pbc2, 
-                  correlation = corCAR1(form = ~ year | id))
+fm_3_noInt <- gls(prothrombin ~ ns(year, 3, B = c(0, 9.3)) + sex + drug + age, 
+                  data = pbc2, correlation = corCAR1(form = ~ year | id))
 
 anova(fm_3_noInt, fm_3)
 
 
-fm_3ML <- gls(prothrombin ~ ns(year, 3) * (sex + drug) + age, data = pbc2, 
-            correlation = corCAR1(form = ~ year | id), method = "ML")
+fm_3ML <- gls(prothrombin ~ ns(year, 3, B = c(0, 9.3)) * (sex + drug) + age, 
+              data = pbc2, correlation = corCAR1(form = ~ year | id), method = "ML")
 
-fm_3ML_noInt <- gls(prothrombin ~ ns(year, 3) + sex + drug + age, data = pbc2, 
-                  correlation = corCAR1(form = ~ year | id), method = "ML")
+fm_3ML_noInt <- gls(prothrombin ~ ns(year, 3, B = c(0, 9.3)) + sex + drug + age, 
+                    data = pbc2, correlation = corCAR1(form = ~ year | id), method = "ML")
 
 anova(fm_3ML_noInt, fm_3ML)
 ```
