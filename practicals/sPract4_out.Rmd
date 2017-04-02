@@ -118,9 +118,8 @@ summary(fm_3)
 
 Interpretation of the fixed-effects coefficients:
 
-* For patients of the sex who recieved the same treatment and who have the same random 
-effects values, per year increase of follow-up the log odds of abnormal prothrombin
-decrease by `r abs(round(fixef(fm_3)['year'], 2))`.
+* For patients of the sex who recieved the same treatment, per year increase of follow-up 
+the log odds of abnormal prothrombin decrease by `r abs(round(fixef(fm_3)['year'], 2))`.
 
 * The odds ratio between females and males, who recieved the same treatment, who have the
 same random effects values and are compared at the same follow-up time is 

@@ -438,7 +438,7 @@ nDF_female
 
 And we use it in the call to `rowDiff()`:
 ```{r}
-rowDiff(fm_3_IntSexAge, nDF_female, pbc2, adjust.p = TRUE)
+rowDiff(fm_3_IntFinal, nDF_female, pbc2, adjust.p = TRUE)
 ```
 
 For females, and after adjusting for multiple comparisons we observe that all differences
