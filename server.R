@@ -3404,7 +3404,8 @@ shinyServer(function(input, output) {
                           "Gaussian" = corGaus)
             col4 <- colorRampPalette(c("#7F0000","red","#FF7F00","yellow","#7FFF7F", 
                                        "cyan", "#007FFF", "blue","#00007F"))
-            corrplot.mixed(testCS(Fun, input$corrStr_param), col = rev(col4(200)))
+            corrplot.mixed(testCS(Fun, input$corrStr_param), upper.col = rev(col4(200)),
+                           lower.col = 1)
         }
         
         if (input$chapter == "Chapter 2" && input$section == "Section 2.12") {
@@ -3549,7 +3550,8 @@ shinyServer(function(input, output) {
             }
             col4 <- colorRampPalette(c("#7F0000","red","#FF7F00","yellow","#7FFF7F", 
                                        "cyan", "#007FFF", "blue","#00007F"))
-            corrplot.mixed(cov2cor(testRES(input$reStr, params)), col = rev(col4(200)))
+            corrplot.mixed(cov2cor(testRES(input$reStr, params)), upper.col = rev(col4(200)),
+                           lower.col = 1)
         }
         
         if (input$chapter == "Chapter 3" && input$section == "Section 3.4") {
