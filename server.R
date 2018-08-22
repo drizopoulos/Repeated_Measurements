@@ -1571,7 +1571,7 @@ shinyServer(function(input, output) {
     output$s52_parms <- renderUI({
         if (input$chapter == "Chapter 5" && input$section == "Section 5.2"
             && naf(input$fit_effPlt) && input$fit_effPlt == "Model fit (AIDS data)")
-            radioButtons('parms_s52', 'Level Parameters', c('subject-specific', 'marginal'))
+            radioButtons('parms_s52', 'Type Coefficients', c('subject-specific', 'marginal'))
     })
     
     
@@ -1581,7 +1581,7 @@ shinyServer(function(input, output) {
             fluidRow(column(7, sliderInput("age_select_pbc_glmm", "Age", min = 30, max = 65, 
                                            value = 49, animate = TRUE, step = 5)),
                      column(5, radioButtons('scale_s52', 'Scale', 
-                                            c('log Odds', 'Probabilities'))))
+                                            c('log Odds', 'Marginal Probs'))))
     })
     
     output$s52_code_glmm <- renderText({
@@ -1600,15 +1600,24 @@ shinyServer(function(input, output) {
                 aids$lowCD4 <- aids$CD4 < sqrt(150)
                 if (!exists("fm_s52_aids")) {
                     withProgress({
-                        fm_s52_aids <<- glmer(lowCD4 ~ obstime * drug + (1 | patient), 
-                                              family = binomial, data = aids, nAGQ = 15)
+                        fm_s52_aids <<- mixed_model(lowCD4 ~ obstime * drug,
+                                                    random = ~ 1 | patient, 
+                                                    family = binomial(), data = aids, 
+                                                    nAGQ = 15)
                     }, message = 'Fitting the model...')
                 }
-                sigma_b2 <- unname(unlist(VarCorr(fm_s52_aids)))
+                if (input$parms_s52 == 'marginal' && !exists("mcoefs_fm_s52_aids")) {
+                    withProgress({
+                        mcoefs_fm_s52_aids <<- marginal_coefs(fm_s52_aids, 
+                                                              std_errors = TRUE,
+                                                              cores = 5)
+                    }, message = 'Calculating standard errors...')
+                }
+                sigma_b2 <- as.vector(fm_s52_aids$D)
                 margs_coefs <- coef(summary(fm_s52_aids))
                 margs_coefs[, 1:2] <- margs_coefs[, 1:2] / sqrt(1 + 0.346 * sigma_b2)
-                margs_coefs[, "z value"] <- margs_coefs[, "Estimate"] / margs_coefs[, "Std. Error"]
-                margs_coefs[, "Pr(>|z|)"] <- 2 * pnorm(abs(margs_coefs[, "z value"]), lower.tail = FALSE)
+                margs_coefs[, "z-value"] <- margs_coefs[, "Value"] / margs_coefs[, "Std.Err"]
+                margs_coefs[, "p-value"] <- 2 * pnorm(abs(margs_coefs[, "z-value"]), lower.tail = FALSE)
                 switch(input$parms_s52, 
                        'subject-specific' = htmlPrint(summary(fm_s52_aids)),
                        'marginal' = htmlPrint(round(margs_coefs, 4))
@@ -1648,14 +1657,17 @@ shinyServer(function(input, output) {
         if (input$chapter == "Chapter 5" && input$section == "Section 5.6") {
             if (!exists("fm_s56_alt")) {
                 withProgress({
-                    fm_s56_alt <<- glmer(serCholD ~ year * drug + sex + drug:sex + (1 | id), 
-                                        family = binomial(), data = pbc2, nAGQ = 15)
+                    fm_s56_alt <<- mixed_model(serCholD ~ year * drug + sex + drug:sex,
+                                               random = ~ 1 | id, 
+                                               family = binomial(), data = pbc2, nAGQ = 15)
                 }, message = 'Fitting the model...')
             }
             if (!exists("fm_s56_null")) {
                 withProgress({
-                    fm_s56_null <<- glmer(serCholD ~ year + drug + sex + (1 | id), 
-                                         family = binomial(), data = pbc2, nAGQ = 15)
+                    fm_s56_null <<- mixed_model(serCholD ~ year + drug + sex,
+                                                random = ~ 1 | id, 
+                                                family = binomial(), data = pbc2, 
+                                                nAGQ = 15)
                 }, message = 'Fitting the model...')
             }
             htmlPrint2("# Likelihood ratio test for all interaction terms",
@@ -3833,53 +3845,10 @@ shinyServer(function(input, output) {
             naf(input$fit_effPlt) && input$fit_effPlt == "Effect plot (PBC data)") {
             if (!exists('fm_s52_pbc')) {
                 withProgress({
-                    fm_s52_pbc <<- glmer(serCholD ~ year * drug + I(age - 50) * sex + (1 | id), 
-                                        family = binomial(), data = pbc2, nAGQ = 15)
+                    fm_s52_pbc <<- mixed_model(serCholD ~ year * drug + I(age - 50) * sex,
+                                               random = ~ 1 | id, 
+                                               family = binomial(), data = pbc2, nAGQ = 15)
                 }, message = "Fitting the model...")
-            }
-            effectPlotData_lmer <- function (object, newdata, orig_data, 
-                                             type = c("lp", "response"), M = 100) {
-                type <- match.arg(type)
-                form <- formula(object)
-                namesVars <- all.vars(form)
-                fam <- family(object)
-                orig_data <- orig_data[complete.cases(orig_data[namesVars]), ]
-                TermsX <- delete.response(terms(object, fixed.only = TRUE))
-                mfX <- model.frame(TermsX, data = orig_data)
-                TermsX_new <- attr(mfX, "terms")
-                betas <- fixef(object)
-                V <- vcov(object)
-                if (type == "lp" || (fam$family == "gaussian" && fam$link == "indentity")) {
-                    mfX_new <- model.frame(TermsX_new, newdata, xlev = .getXlevels(TermsX, mfX))
-                    X <- model.matrix(TermsX_new, mfX_new)
-                    eta <- c(X %*% betas)
-                    ses <- sqrt(diag(X %*% V %*% t(X)))
-                    newdata$pred <- eta
-                    newdata$low <- eta - 1.96 * ses
-                    newdata$upp <- eta + 1.96 * ses
-                    newdata
-                } else {
-                    idVar <- names(object@flist)
-                    if (length(idVar) > 1)
-                        stop("The current version of this function only works for ",
-                             "a single grouping factor.")
-                    ind <- rep(1:nrow(newdata), each = M)
-                    newdata2 <- newdata[ind, ]
-                    newdata2[[idVar]] <- factor(1:nrow(newdata2))
-                    mfX_new <- model.frame(TermsX_new, newdata2, xlev = .getXlevels(TermsX, mfX))
-                    X <- model.matrix(TermsX_new, mfX_new)
-                    formRE <- as.character(formula(object, random.only = TRUE))
-                    formRE <- as.formula(paste(formRE[c(1, 3)]))
-                    newRE <- lme4:::mkNewReTrms(object, newdata2, re.form = formRE,
-                                                allow.new.levels = TRUE)
-                    D <- VarCorr(object)[[1]]
-                    b <- c(mvrnorm(nrow(newdata2), rep(0, NROW(D)), D))
-                    eta0 <- c(X %*% betas)
-                    eta <- c(X %*% betas) + rowSums(newRE$Zt * b)
-                    newdata$pred0 <- tapply(fam$linkinv(eta0), ind, mean)
-                    newdata$pred <- tapply(fam$linkinv(eta), ind, mean)
-                    newdata
-                }
             }
             newDF <- with(pbc2, expand.grid(
                 year = seq(0, 12, length.out = 25),
@@ -3889,21 +3858,26 @@ shinyServer(function(input, output) {
             ))
             if (input$scale_s52 == 'log Odds') {
                 print(xyplot(pred + low + upp ~ year | sex * drug, 
-                             data = effectPlotData_lmer(fm_s52_pbc, newDF, orig_data = pbc2), 
+                             data = effectPlotData(fm_s52_pbc, newDF), 
                              lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2, type = "l",
                              xlab = "Follow-up time (years)",
                              ylab = "log Odds"))
             } else {
-                key <- simpleKey(c("marginal probabilities", "median patient"), 
+                plot_data_marg <- effectPlotData(fm_s52_pbc, newDF, marginal = TRUE, 
+                                                 cores = 5)
+                plot_data_marg$pred0 <- effectPlotData(fm_s52_pbc, newDF)$pred
+                key <- simpleKey(c("marginal probabilities", "probabilities average patient"), 
                                  points = FALSE, lines = TRUE)
                 key$lines$col <- c("red", "blue")
                 key$lines$lwd <- c(2, 2)
-                print(xyplot(pred + pred0 ~ year | sex * drug, 
-                             data = effectPlotData_lmer(fm_s52_pbc, newDF, orig_data = pbc2, 
-                                                        type = "r", M = 3000), 
-                             lty = 1, col = c("red", "blue"), lwd = 2, type = "l",
-                             xlab = "Follow-up time (years)", key = key,
-                             ylab = "Probabilities"))
+                key$lines$lty <- c(1, 1)
+                expit <- function (x) exp(x) / (1 + exp(x))
+                print(xyplot(expit(pred) + expit(pred0) + expit(low) + expit(upp) ~ year | sex * drug, 
+                             data = plot_data_marg, key = key,
+                             type = "l", lty = c(1, 1, 2, 2), lwd = 2, 
+                             col = c("red", "blue", "black", "black"), 
+                             xlab = "Follow-up time (years)", 
+                             ylab = "Marginal Probabilities"))
             }
         }
 
@@ -3918,49 +3892,48 @@ shinyServer(function(input, output) {
             }
             if (!exists('fm_s53_q1')) {
                 withProgress({
-                    fm_s53_q1 <<- glmer(lowCD4 ~ obstimef + (1 | patient), 
-                                        family = binomial, data = aids, nAGQ = 1)
+                    fm_s53_q1 <<- mixed_model(lowCD4 ~ obstimef, random = ~ 1 | patient, 
+                                              family = binomial(), data = aids, nAGQ = 1)
                 }, message = "Fitting the model...")
             }
-            if (!exists('fm_s53_q7')) {
+            if (!exists('fm_s53_q5')) {
                 withProgress({
-                    fm_s53_q7 <<- glmer(lowCD4 ~ obstimef + (1 | patient), 
-                                        family = binomial, data = aids, nAGQ = 7)
+                    fm_s53_q5 <<- mixed_model(lowCD4 ~ obstimef, random = ~ 1 | patient, 
+                                              family = binomial(), data = aids, nAGQ = 5)
                 }, message = "Fitting the model...")
             }
-            if (!exists('fm_s53_q11')) {
+            if (!exists('fm_s53_q10')) {
                 withProgress({
-                    fm_s53_q11 <<- glmer(lowCD4 ~ obstimef + (1 | patient), 
-                                        family = binomial, data = aids, nAGQ = 11)
+                    fm_s53_q10 <<- mixed_model(lowCD4 ~ obstimef, random = ~ 1 | patient, 
+                                               family = binomial(), data = aids, nAGQ = 10)
                 }, message = "Fitting the model...")
             }
             if (!exists('fm_s53_q15')) {
                 withProgress({
-                    fm_s53_q15 <<- glmer(lowCD4 ~ obstimef + (1 | patient), 
-                                        family = binomial, data = aids, nAGQ = 15)
+                    fm_s53_q15 <<- mixed_model(lowCD4 ~ obstimef, random = ~ 1 | patient, 
+                                               family = binomial(), data = aids, nAGQ = 15)
                 }, message = "Fitting the model...")
             }
             if (!exists('fm_s53_q21')) {
                 withProgress({
-                    fm_s53_q21 <<- glmer(lowCD4 ~ obstimef + (1 | patient), 
-                                        family = binomial, data = aids, nAGQ = 21)
+                    fm_s53_q21 <<- mixed_model(lowCD4 ~ obstimef, random = ~ 1 | patient, 
+                                               family = binomial(), data = aids, nAGQ = 21)
                 }, message = "Fitting the model...")
             }
             extractCIS <- function (object) {
-                if (inherits(object, 'merMod')) {
-                    cis <- confint(object, method = "Wald")[-1, ]
-                    cbind(cis[, 1], fixef(object), cis[, 2])
+                if (inherits(object, 'MixMod')) {
+                    confint(object)
                 } else {
                     intervals(object)[[1]]
                 }
             }
-            models <- list(fm_s53_PQL, fm_s53_q1, fm_s53_q7, fm_s53_q11, fm_s53_q15, fm_s53_q21)
+            models <- list(fm_s53_PQL, fm_s53_q1, fm_s53_q5, fm_s53_q10, fm_s53_q15, fm_s53_q21)
             mat <- do.call("rbind", lapply(models, extractCIS))
             coef.nam <- rownames(mat)
             rownames(mat) <- NULL
             dat <- as.data.frame(mat)
             dat$coef.nam <- factor(coef.nam, levels = unique(coef.nam))
-            dat$model <- gl(6, nrow(mat)/6, labels = c('PQL', 'Laplace', 'AGQ-q7', 'AGQ-q11', 
+            dat$model <- gl(6, nrow(mat)/6, labels = c('PQL', 'Laplace', 'AGQ-q5', 'AGQ-q10', 
                                                        'AGQ-q15', 'AGQ-q21'))
             prepanel.ci <- function (x, y, lx, ux, subscripts, ...) {
                 x <- as.numeric(x)

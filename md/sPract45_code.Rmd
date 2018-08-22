@@ -7,8 +7,9 @@
 # Q5 #
 ######
 
-fm_3 <- glmer(Dicht_prothro ~ year + sex + drug + (year | id), 
-              data = pbc2, family = binomial(), nAGQ = 1)
+fm_3 <- mixed_model(fixed = Dicht_prothro ~ year + sex + drug,
+                    random = ~ year | id, data = pbc2, 
+                    family = binomial(), nAGQ = 15)
 
 anova(fm_3, fm_2)
 ```

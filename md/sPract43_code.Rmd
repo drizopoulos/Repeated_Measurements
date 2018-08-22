@@ -7,8 +7,9 @@
 # Q3 #
 ######
 
-fm_1 <- glmer(Dicht_prothro ~ year * sex + drug + drug:sex + (1 | id), 
-              data = pbc2, family = binomial(), nAGQ = 15)
+fm_1 <- mixed_model(fixed = Dicht_prothro ~ year * sex + drug + drug:sex,
+                    random = ~ 1 | id, data = pbc2, 
+                    family = binomial(), nAGQ = 15)
 
 summary(fm_1)
 ```

@@ -5,8 +5,7 @@
 
 # First we load the package we need
 library("lattice")
-library("lme4")
-library("MASS")
+library("GLMMadaptive")
 library("splines")
 
 # We load the data from GitHub

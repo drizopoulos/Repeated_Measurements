@@ -15,6 +15,68 @@ th, td {
 <br/>
 <h4 align="left">
     <strong>
+        <span style="color:red">GLMMadaptive package</span>
+    </strong>
+</h4>
+<ul style="list-style-type:circle">
+<li> Function <a href="https://goo.gl/KyiDVB" target="_blank">mixed_model()</a> fits 
+  generalized linear mixed effects models for clustered data; main arguments:
+  <ul style="list-style-type:square">
+  <li><font face="Courier New">fixed</font> and <font face="Courier New">random</font>: 
+  Formulas specifying the fixed- and random-effects parts of the model. For the latter, it
+  should only contain the right-hand side part, e.g., 
+  <font face="Courier New">~ time | id</font>, where time is a variable, and 
+  <font face="Courier New">id</font> the grouping factor. When the symbol 
+  <font face="Courier New">||</font> is used in the definition of this argument (instead 
+  of <font face="Courier New">|</font>), then the covariance matrix of the random effects 
+  is assumed to be diagonal. Some examples:
+        <table style="width:100%" aling="center">
+            <tr>
+                <td><strong>Description</strong></td>
+                <td><strong>mixed_model() syntax</strong></td>
+            </tr>
+            <tr>
+                <td>random intercepts</td>
+                <td><font face="Courier New">mixed_model(fixed = y ~ time, random = ~ 1 | id)</font></td>
+            </tr>
+            <tr>
+                <td>random intercepts & random slopes</td>
+                <td><font face="Courier New">mixed_model(fixed = y ~ time, random = ~ time | id)</font></td>
+            </tr>
+            <tr>
+                <td>random intercepts & slopes diagonal covariance matrix</td>
+                <td><font face="Courier New">mixed_model(fixed = y ~ time, random = ~ time || id)</font></td>
+            </tr>
+            <tr>
+                <td>random intercepts & nonlinear slopes with splines and diagonal covariance matrix</td>
+                <td><font face="Courier New">mixed_model(fixed = y ~ time, random = ~ ns(time, 2) || id)</font></td>
+            </tr>
+        </table>
+        <br/>
+        </li>
+  <li><font face="Courier New">family</font>: a 
+        <a href="https://goo.gl/4EicoR" target="_blank">family</a> object providing a 
+        description of the error distribution and link function to be used in the 
+        model.</li>
+    <li><font face="Courier New">data</font>: a 
+        <a href="https://goo.gl/PVVYyn" target="_blank">data frame</a> that contains the 
+        aforementioned variables.</li>
+    <li><font face="Courier New">nAGQ</font>: integer scalar - the number of points per 
+        axis for evaluating the adaptive Gauss-Hermite approximation to the 
+        log-likelihood. Defaults to 11.
+    </li>
+  </ul>
+</li>
+
+<br/>
+
+<li>Function <a href="https://goo.gl/KyiDVB" target="_blank">anova()</a> can be
+  used to peform likelihood ratio tests between nested generalized mixed effects models.</li>
+</ul>
+
+
+<h4 align="left">
+    <strong>
         <span style="color:red">lme4 package</span>
     </strong>
 </h4>
@@ -35,7 +97,7 @@ th, td {
         <table style="width:100%" aling="center">
             <tr>
                 <td><strong>Description</strong></td>
-                <td><strong>lmer() syntax</strong></td>
+                <td><strong>glmer() syntax</strong></td>
             </tr>
             <tr>
                 <td>random intercepts</td>
@@ -84,10 +146,15 @@ th, td {
 </ul>
 <br/>
 <br/>
-<h3 align="left">
-  <strong> Other useful functions and material</strong>
-</h3>
+<h4 align="left">
+  <strong>Other useful functions and material</strong>
+</h4>
 <ul style="list-style-type:circle">
+<li>
+For package <strong>GLMMadaptive</strong> useful material can be found in its 
+dedicated website: 
+<a href="https://drizopoulos.github.io/GLMMadaptive/" target="_blank">https://drizopoulos.github.io/GLMMadaptive/</a>
+</li>
 <li>
   <a href="https://goo.gl/u69ACN" target="_blank">summary()</a> summarizes the 
   fitted model, including the estimated coefficients with corresponding standard errors and 
