@@ -1,0 +1,99 @@
+---
+title: "Count Data Mixed Models - Extensions"
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library("GLMMadaptive")
+library("lattice")
+```
+
+```{r simulate_data, include = FALSE}
+set.seed(1234)
+n <- 300 # number of subjects
+K <- 8 # number of measurements per subject
+t_max <- 5 # maximum follow-up time
+
+# we constuct a data frame with the design: 
+# everyone has a baseline measurment, and then measurements at random follow-up times
+DF <- data.frame(id = rep(seq_len(n), each = K),
+                 time = c(replicate(n, c(0, sort(runif(K - 1, 0, t_max))))),
+                 sex = rep(gl(2, n/2, labels = c("male", "female")), each = K),
+                 age = rep(round(runif(n, 40, 75), 1), each = K))
+
+# design matrices for the fixed and random effects non-zero part
+X <- model.matrix(~ sex * time + age, data = DF)
+Z <- model.matrix(~ time, data = DF)
+# design matrices for the fixed and random effects zero part
+X_zi <- model.matrix(~ sex + age, data = DF)
+Z_zi <- model.matrix(~ 1, data = DF)
+
+betas <- c(1.5, 0.5, 0.05, -0.02, 0.1) # fixed effects coefficients non-zero part
+shape <- 2 # shape/size parameter of the negative binomial distribution
+gammas <- c(-2.5, 0.5, 0.01) # fixed effects coefficients zero part
+D11 <- 0.7 # variance of random intercepts non-zero part
+D22 <- 0.5 # variance of random slopes non-zero part
+D33 <- 0.5 # variance of random intercepts zero part
+
+# we simulate random effects
+b <- cbind(rnorm(n, sd = sqrt(D11)), rnorm(n, sd = sqrt(D22)), rnorm(n, sd = sqrt(D33)))
+# linear predictor non-zero part
+eta_y <- as.vector(X %*% betas + rowSums(Z * b[DF$id, 1:2, drop = FALSE]))
+# linear predictor zero part
+eta_zi <- as.vector(X_zi %*% gammas + rowSums(Z_zi * b[DF$id, 3, drop = FALSE]))
+# we simulate negative binomial longitudinal data
+DF$y <- rnbinom(n * K, size = shape, mu = exp(eta_y))
+# we set the extra zeros
+DF$y[as.logical(rbinom(n * K, size = 1, prob = plogis(eta_zi)))] <- 0
+# set MCAR missing data
+DF$y[sample(nrow(DF), nrow(DF) * 0.18)] <- NA
+DF$y[DF$y > 100] <- NA
+DF <- DF[!is.na(DF$y), ]
+ls <- ls()
+rm(list = c(ls[!ls %in% "DF"], "ls"))
+```
+
+# Introduction
+
+## Over-Dispersion
+
+## Zero-Inflation
+
+# An Example
+Function `mixed_model()` of the **GLMMadaptive** package can also be used to fit zero-inflated and two-part mixed effects models. For both types of models, a suitable `family` object needs to be specified as outlined in `vignette("Custom_Models", package = "GLMMadaptive")`, and also arguments `zi_fixed` and `zi_random` of `mixed_model()` come into play. In these 
+arguments, the user can specify the fixed and random effects `formulas` of the logistic 
+regression for the zero-part of the distribution of the outcome. We should note that the 
+user has the option to leave `zi_random` set to `NULL`, in which case for the zero-part
+we have a logistic regression with only fixed effects and no random effects.
+
+
+## Descriptives
+We will start with descriptive plots to see how the data look like. First, the average longitudinal evolutions
+```{r dscr_marg_evol, fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+library("lattice")
+xyplot(y ~ time | sex, data = DF, 
+       panel = function (...) {
+           panel.xyplot(...)
+           panel.loess(..., lwd = 2, col = "red")
+       })
+```
+
+## Modeling
+Our primary aim here is to illustrate the extensions of the Poisson mixed model described above, to account for over-dispersion and extra zeros. Hence, we will not be focusing on model building and in particular in selecting the appropriate fixed- and random-effects structure.
+
+We start by fitting a Poisson mixed model to the dataset using the `mixed_model()` function from the **GLMMadaptive** package:
+```{r Poisson}
+fm1 <- mixed_model(y ~ sex * time + age, random = ~ time | id, data = DF,
+                   family = poisson())
+```
+
+## Goodness-of-Fit
+
+## Effect Plots
+
+
+
+

@@ -6,7 +6,8 @@ shinyUI(fluidPage(
     sidebarPanel(
         wellPanel(
             selectInput('chapter', 'Select chapter', 
-                        choices = c(paste("Chapter", 0:6), "Practicals", "Quizzes"))
+                        choices = c(paste("Chapter", 0:6), "Practicals", "Quizzes",
+                                    "Advanced Topics"))
         ),
         
         wellPanel(
@@ -119,7 +120,9 @@ shinyUI(fluidPage(
                      htmlOutput('sPract_code'),
                      htmlOutput('sQuiz_question'),
                      uiOutput("sQuiz_ans"),
-                     uiOutput("sQuiz_ans_check")
+                     uiOutput("sQuiz_ans_check"),
+                     #########################
+                     htmlOutput('at_check_tab')
                      ),
             
             tabPanel("Output", 
@@ -156,6 +159,8 @@ shinyUI(fluidPage(
                      htmlOutput('sPract_Routput'),
                      ##########################
                      htmlOutput('sQuizzes'),
+                     ##########################
+                     uiOutput('at_docs'),
                      ##########################
                      plotOutput('plot')),
             

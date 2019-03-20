@@ -76,7 +76,7 @@ and its interaction with sex. This model is fitted with following call to functi
 `binomial()`, and supply the `id` argument to identify the clusters, i.e., in this case 
 the patients):
 ```{r}
-fm_1 <- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age + age : sex, 
+fm_1 <- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age + age:sex, 
                family = binomial(), data = pbc2, id = id, corstr = "exchangeable")
 
 summary(fm_1)
@@ -90,10 +90,10 @@ We continue the analysis by re-fitting the model of Question 3 with the independ
 auto-regressive of order 1 working correlation matrices. This is done with the following 
 call to [geeglm()](https://goo.gl/1S1uix) by suitably changing the `corstr` argument:
 ```{r}
-fm_2 <- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age + age : sex, 
+fm_2 <- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age + age:sex, 
                family = binomial(), data = pbc2, id = id, corstr = "independence")
 
-fm_3 <- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age + age : sex, 
+fm_3 <- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age + age:sex, 
                family = binomial(), data = pbc2, id = id, corstr = "ar1")
 ```
 

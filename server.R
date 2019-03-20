@@ -10,7 +10,10 @@ shinyServer(function(input, output) {
                 "Chapter 5" = paste("Section", c("5.2", "5.3", "5.6")),
                 "Chapter 6" = paste("Section", c("6.3")),
                 "Practicals" = paste("Practical", 1:4),
-                "Quizzes" = paste("Quiz", 1:5)
+                "Quizzes" = paste("Quiz", 1:5),
+                "Advanced Topics" = c("Count Data", "Count Data 2", "Ordinal Data",
+                                      "Bounded Data", "Multiple Comparisons", 
+                                      "Dynamic Predictions")
             )
             selectInput("section", "Select section:", chs, chs[1])
         }
@@ -3165,6 +3168,27 @@ shinyServer(function(input, output) {
         }
     })
     
+    ######################################################################################
+    ######################################################################################
+
+    ###################
+    # Advanced Topics #
+    ###################
+    
+    output$at_check_tab <- renderText({
+        if (input$chapter == "Advanced Topics")
+            includeHTML("./html/check_tab.Rhtml")
+    })
+    
+    output$at_docs <- renderUI({
+        if (input$chapter == "Advanced Topics" && input$section == "Dynamic Predictions") {
+            withMathJax(includeHTML("./Advanced_Topics/Dynamic_Predictions.html"))
+        } else if (input$chapter == "Advanced Topics" && input$section == "Ordinal Data") {
+            withMathJax(includeHTML("./Advanced_Topics/Ordinal_Data.html"))
+        }
+    })
+    
+        
     ######################################################################################
     ######################################################################################
     
