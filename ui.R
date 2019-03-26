@@ -5,9 +5,11 @@ shinyUI(fluidPage(
     
     sidebarPanel(
         wellPanel(
+        #    selectInput('chapter', 'Select chapter', 
+        #                choices = c(paste("Chapter", 0:6), "Practicals", "Quizzes",
+        #                            "Advanced Topics"))
             selectInput('chapter', 'Select chapter', 
-                        choices = c(paste("Chapter", 0:6), "Practicals", "Quizzes",
-                                    "Advanced Topics"))
+                        choices = c(paste("Chapter", 0:6), "Practicals", "Quizzes"))
         ),
         
         wellPanel(
