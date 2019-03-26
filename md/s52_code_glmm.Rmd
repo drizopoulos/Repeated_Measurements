@@ -5,7 +5,7 @@ aids$lowCD4 <- aids$CD4 < sqrt(150)
 # fit the mixed effects logistic regression
 fm_s52_aids <- mixed_model(fixed = lowCD4 ~ obstime * drug,
                            random = ~ 1 | patient, 
-                           family = binomial(), data = aids, nAGQ = 15)
+                           family = binomial(), data = aids, nAGQ = 13)
 
 # subject-specific parameters
 summary(fm_s52_aids)

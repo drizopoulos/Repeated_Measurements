@@ -6,8 +6,8 @@ fm_s53_PQL <- glmmPQL(lowCD4 ~ obstimef, family = binomial, data = aids,
                       random = ~ 1 | patient)
 fm_s53_q1 <- mixed_model(lowCD4 ~ obstimef, random = ~ 1 | patient, 
                          family = binomial(), data = aids, nAGQ = 1)
-fm_s53_q5 <- mixed_model(lowCD4 ~ obstimef, random = ~ 1 | patient, 
-                         family = binomial(), data = aids, nAGQ = 5)
+fm_s53_q7 <- mixed_model(lowCD4 ~ obstimef, random = ~ 1 | patient, 
+                         family = binomial(), data = aids, nAGQ = 7)
 fm_s53_q10 <- mixed_model(lowCD4 ~ obstimef, random = ~ 1 | patient, 
                          family = binomial(), data = aids, nAGQ = 10)
 fm_s53_q15 <- mixed_model(lowCD4 ~ obstimef, random = ~ 1 | patient, 
@@ -25,13 +25,13 @@ extractCIS <- function (object) {
 }
 
 # put the estimated coefficients and associated 95% CIs in a data frame
-models <- list(fm_s53_PQL, fm_s53_q1, fm_s53_q5, fm_s53_q10, fm_s53_q15, fm_s53_q21)
+models <- list(fm_s53_PQL, fm_s53_q1, fm_s53_q7, fm_s53_q10, fm_s53_q15, fm_s53_q21)
 mat <- do.call("rbind", lapply(models, extractCIS))
 coef.nam <- rownames(mat)
 rownames(mat) <- NULL
 dat <- as.data.frame(mat)
 dat$coef.nam <- factor(coef.nam, levels = unique(coef.nam))
-dat$model <- gl(6, nrow(mat)/6, labels = c('PQL', 'Laplace', 'AGQ-q5', 'AGQ-q10', 
+dat$model <- gl(6, nrow(mat)/6, labels = c('PQL', 'Laplace', 'AGQ-q7', 'AGQ-q10', 
                                            'AGQ-q15', 'AGQ-q21'))
 
 # We produce the Coefficients' Plot using dotplot() with some tweaks

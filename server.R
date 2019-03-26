@@ -1606,24 +1606,19 @@ shinyServer(function(input, output) {
                         fm_s52_aids <<- mixed_model(lowCD4 ~ obstime * drug,
                                                     random = ~ 1 | patient, 
                                                     family = binomial(), data = aids, 
-                                                    nAGQ = 15)
+                                                    nAGQ = 13)
                     }, message = 'Fitting the model...')
                 }
                 if (input$parms_s52 == 'marginal' && !exists("mcoefs_fm_s52_aids")) {
                     withProgress({
                         mcoefs_fm_s52_aids <<- marginal_coefs(fm_s52_aids, 
                                                               std_errors = TRUE,
-                                                              cores = 5)
+                                                              cores = 5)[["coef_table"]]
                     }, message = 'Calculating standard errors...')
                 }
-                sigma_b2 <- as.vector(fm_s52_aids$D)
-                margs_coefs <- coef(summary(fm_s52_aids))
-                margs_coefs[, 1:2] <- margs_coefs[, 1:2] / sqrt(1 + 0.346 * sigma_b2)
-                margs_coefs[, "z-value"] <- margs_coefs[, "Value"] / margs_coefs[, "Std.Err"]
-                margs_coefs[, "p-value"] <- 2 * pnorm(abs(margs_coefs[, "z-value"]), lower.tail = FALSE)
                 switch(input$parms_s52, 
                        'subject-specific' = htmlPrint(summary(fm_s52_aids)),
-                       'marginal' = htmlPrint(round(margs_coefs, 4))
+                       'marginal' = htmlPrint(round(mcoefs_fm_s52_aids, 4))
                 )
             }
         }
@@ -3922,8 +3917,8 @@ shinyServer(function(input, output) {
             }
             if (!exists('fm_s53_q5')) {
                 withProgress({
-                    fm_s53_q5 <<- mixed_model(lowCD4 ~ obstimef, random = ~ 1 | patient, 
-                                              family = binomial(), data = aids, nAGQ = 5)
+                    fm_s53_q7 <<- mixed_model(lowCD4 ~ obstimef, random = ~ 1 | patient, 
+                                              family = binomial(), data = aids, nAGQ = 7)
                 }, message = "Fitting the model...")
             }
             if (!exists('fm_s53_q10')) {
@@ -3951,13 +3946,13 @@ shinyServer(function(input, output) {
                     intervals(object)[[1]]
                 }
             }
-            models <- list(fm_s53_PQL, fm_s53_q1, fm_s53_q5, fm_s53_q10, fm_s53_q15, fm_s53_q21)
+            models <- list(fm_s53_PQL, fm_s53_q1, fm_s53_q7, fm_s53_q10, fm_s53_q15, fm_s53_q21)
             mat <- do.call("rbind", lapply(models, extractCIS))
             coef.nam <- rownames(mat)
             rownames(mat) <- NULL
             dat <- as.data.frame(mat)
             dat$coef.nam <- factor(coef.nam, levels = unique(coef.nam))
-            dat$model <- gl(6, nrow(mat)/6, labels = c('PQL', 'Laplace', 'AGQ-q5', 'AGQ-q10', 
+            dat$model <- gl(6, nrow(mat)/6, labels = c('PQL', 'Laplace', 'AGQ-q7', 'AGQ-q10', 
                                                        'AGQ-q15', 'AGQ-q21'))
             prepanel.ci <- function (x, y, lx, ux, subscripts, ...) {
                 x <- as.numeric(x)
