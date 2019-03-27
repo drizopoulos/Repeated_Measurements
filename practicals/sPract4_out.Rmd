@@ -2,7 +2,7 @@
 We start by loading the packages we will need for this practical and the data from 
 [GitHub](https://github.com/drizopoulos/Repeated_Measurements). This is achieved with the
 following commands:
-```{r, message = FALSE}
+```{r, message = FALSE, warning = FALSE}
 # packages
 library("lattice")
 library("GLMMadaptive")
