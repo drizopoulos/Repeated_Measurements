@@ -2017,10 +2017,10 @@ shinyServer(function(input, output) {
                       "No, because even though the outcome is continuous, the linear regression model does not account for the correlations between children in the same school.",
                       "Yes, because the scores are a continuous outcome and because it is not required to account for the correlations between children in the same school.")
             
-            opt4 <- c("Based on the expectations of the researchers we would fit a linear mixed model for PSA including random interecepts and random slopes",
-                      "The description indicates a potential nonlinear effect of time. Hence, we should include splines in the random effects but not in the fixed effects.",
-                      "The description indicates a potential nonlinear effect of time. Hence, we should inverstigate whether splines should be included both in the fixed and random effects.",
-                      "The description indicates a potential nonlinear effect of time. Hence, we should include splines in the fixed effects but not in the random effects.")
+            opt4 <- c("We should the time variable into the model, and test if it is signigicant.",
+                      "We should include investigate graphically the relationship between PSA and time, and decide if we should include nonlinear terms.",
+                      "We should inlcude splines of time into the model and investigate if the log-likelihood increases.",
+                      "We should fit two models one with splines and the other with a linear time effect, and do an likelihood ratio test.")
             
             opt5 <- c("The error terms are normally distributed with a diagonal covariance matrix.",
                       "The error terms are normally distributed and have constant variance in time.",
