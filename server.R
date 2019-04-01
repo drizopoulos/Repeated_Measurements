@@ -2017,8 +2017,8 @@ shinyServer(function(input, output) {
                       "No, because even though the outcome is continuous, the linear regression model does not account for the correlations between children in the same school.",
                       "Yes, because the scores are a continuous outcome and because it is not required to account for the correlations between children in the same school.")
             
-            opt4 <- c("We should the time variable into the model, and test if it is signigicant.",
-                      "We should include investigate graphically the relationship between PSA and time, and decide if we should include nonlinear terms.",
+            opt4 <- c("We should include the time variable into the model, and test if it is signigicant.",
+                      "We should investigate graphically the relationship between PSA and time, and decide if we should include nonlinear terms.",
                       "We should inlcude splines of time into the model and investigate if the log-likelihood increases.",
                       "We should fit two models one with splines and the other with a linear time effect, and do an likelihood ratio test.")
             
@@ -2042,7 +2042,7 @@ shinyServer(function(input, output) {
             chs5 <- lapply(seq_along(opt5), c); names(chs5) <- opt5
             chs6 <- lapply(seq_along(opt6), c); names(chs6) <- opt6
             
-            correct <- c(2, 4, 2, 3, 4, 3)
+            correct <- c(2, 4, 2, 4, 4, 3)
             
             cols1 <- rep("red", length(opt1)); cols1[correct[1L]] <- "green"
             cols2 <- rep("red", length(opt2)); cols2[correct[2L]] <- "green"
