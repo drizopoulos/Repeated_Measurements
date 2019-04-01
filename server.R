@@ -2020,7 +2020,7 @@ shinyServer(function(input, output) {
             opt4 <- c("We should include the time variable into the model, and test if it is signigicant.",
                       "We should investigate graphically the relationship between PSA and time, and decide if we should include nonlinear terms.",
                       "We should inlcude splines of time into the model and investigate if the log-likelihood increases.",
-                      "We should fit two models one with splines and the other with a linear time effect, and do an likelihood ratio test.")
+                      "We should fit two models, one with splines and the other with a linear time effect, and do an likelihood ratio test.")
             
             opt5 <- c("The error terms are normally distributed with a diagonal covariance matrix.",
                       "The error terms are normally distributed and have constant variance in time.",
