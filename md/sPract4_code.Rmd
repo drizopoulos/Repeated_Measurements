@@ -85,9 +85,9 @@ newDF <- with(pbc2, expand.grid(
     sex = levels(sex)
 ))
 
-# marginal log odds
+# log odds
 xyplot(pred + low + upp ~ year | sex * drug, 
-       data = effectPlotData_lmer(fm_3, newDF), 
+       data = effectPlotData(fm_3, newDF), 
        type = "l", lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2)
 
 ######
