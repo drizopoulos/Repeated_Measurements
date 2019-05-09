@@ -6,6 +6,11 @@ fm_s32_pbc <- lme(log(serBilir) ~ ns(year, 2) * sex + (age + basePro) * sex,
 # the following function creates the predicted values
 # and the 95% CIs
 effectPlotData <- function (object, newdata, orig_data) {
+    if (inherits(object, "MixMod")) {
+        warning("For 'MixMod' objects (e.g., if you want marginal predictions) use ",
+                "'GLMMadaptive::effectPlotData'.\n")
+        return(GLMMadaptive::effectPlotData(object, newdata))
+    }
     form <- formula(object)
     namesVars <- all.vars(form)
     betas <- if (!inherits(object, "lme")) coef(object) else fixef(object)

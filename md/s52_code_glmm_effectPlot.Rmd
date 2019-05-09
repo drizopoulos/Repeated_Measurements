@@ -15,10 +15,13 @@ newDF <- with(pbc2, expand.grid(
 ))
 
 # log odds for average/median subject
+# note: you need to use the effectPlotData() function
+# from the GLMMadaptive package (i.e., in case of problems use
+# 'GLMMadaptive::effectPlotData')
 xyplot(pred + low + upp ~ year | sex * drug, 
        data = effectPlotData(fm_s52_pbc, newDF), 
        type = "l", lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2,
-       xlab = "Follow-up time (years)", ylab = "Log Odds")
+       xlab = "Follow-up time (years)", ylab = "Conditional Log Odds")
 
 # marginal probabilities and conditional probabilities corresponding to
 # the average/median individual (i.e., the one with random effects value equal to zero)

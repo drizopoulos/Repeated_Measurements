@@ -8,53 +8,13 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 library("GLMMadaptive")
+library("splines")
 library("lattice")
+library("DHARMa")
+data("aids", package = "JM")
+aids$CD4count <- aids$CD4 * aids$CD4
 ```
 
-```{r simulate_data, include = FALSE}
-set.seed(1234)
-n <- 300 # number of subjects
-K <- 8 # number of measurements per subject
-t_max <- 5 # maximum follow-up time
-
-# we constuct a data frame with the design: 
-# everyone has a baseline measurment, and then measurements at random follow-up times
-DF <- data.frame(id = rep(seq_len(n), each = K),
-                 time = c(replicate(n, c(0, sort(runif(K - 1, 0, t_max))))),
-                 sex = rep(gl(2, n/2, labels = c("male", "female")), each = K),
-                 age = rep(round(runif(n, 40, 75), 1), each = K))
-
-# design matrices for the fixed and random effects non-zero part
-X <- model.matrix(~ sex * time + age, data = DF)
-Z <- model.matrix(~ time, data = DF)
-# design matrices for the fixed and random effects zero part
-X_zi <- model.matrix(~ sex + age, data = DF)
-Z_zi <- model.matrix(~ 1, data = DF)
-
-betas <- c(1.5, 0.5, 0.05, -0.02, 0.1) # fixed effects coefficients non-zero part
-shape <- 2 # shape/size parameter of the negative binomial distribution
-gammas <- c(-2.5, 0.5, 0.01) # fixed effects coefficients zero part
-D11 <- 0.7 # variance of random intercepts non-zero part
-D22 <- 0.5 # variance of random slopes non-zero part
-D33 <- 0.5 # variance of random intercepts zero part
-
-# we simulate random effects
-b <- cbind(rnorm(n, sd = sqrt(D11)), rnorm(n, sd = sqrt(D22)), rnorm(n, sd = sqrt(D33)))
-# linear predictor non-zero part
-eta_y <- as.vector(X %*% betas + rowSums(Z * b[DF$id, 1:2, drop = FALSE]))
-# linear predictor zero part
-eta_zi <- as.vector(X_zi %*% gammas + rowSums(Z_zi * b[DF$id, 3, drop = FALSE]))
-# we simulate negative binomial longitudinal data
-DF$y <- rnbinom(n * K, size = shape, mu = exp(eta_y))
-# we set the extra zeros
-DF$y[as.logical(rbinom(n * K, size = 1, prob = plogis(eta_zi)))] <- 0
-# set MCAR missing data
-DF$y[sample(nrow(DF), nrow(DF) * 0.18)] <- NA
-DF$y[DF$y > 100] <- NA
-DF <- DF[!is.na(DF$y), ]
-ls <- ls()
-rm(list = c(ls[!ls %in% "DF"], "ls"))
-```
 
 # Introduction
 
@@ -63,9 +23,7 @@ rm(list = c(ls[!ls %in% "DF"], "ls"))
 ## Zero-Inflation
 
 # An Example
-Function `mixed_model()` of the **GLMMadaptive** package can also be used to fit zero-inflated and two-part mixed effects models. For both types of models, a suitable `family` object needs to be specified as outlined in `vignette("Custom_Models", package = "GLMMadaptive")`, and also arguments `zi_fixed` and `zi_random` of `mixed_model()` come into play. In these 
-arguments, the user can specify the fixed and random effects `formulas` of the logistic 
-regression for the zero-part of the distribution of the outcome. We should note that the 
+Function `mixed_model()` of the **GLMMadaptive** package can also be used to fit zero-inflated and two-part mixed effects models. For both types of models, a suitable `family` object needs to be specified as outlined in `vignette("Custom_Models", package = "GLMMadaptive")`, and also arguments `zi_fixed` and `zi_random` of `mixed_model()` come into play. In these arguments, the user can specify the fixed and random effects `formulas` of the logistic regression for the zero-part of the distribution of the outcome. We should note that the 
 user has the option to leave `zi_random` set to `NULL`, in which case for the zero-part
 we have a logistic regression with only fixed effects and no random effects.
 
@@ -73,8 +31,7 @@ we have a logistic regression with only fixed effects and no random effects.
 ## Descriptives
 We will start with descriptive plots to see how the data look like. First, the average longitudinal evolutions
 ```{r dscr_marg_evol, fig.align = "center", fig.width = 8.5, fig.height = 7.5}
-library("lattice")
-xyplot(y ~ time | sex, data = DF, 
+xyplot(CD4count ~ obstime | drug, data = aids, 
        panel = function (...) {
            panel.xyplot(...)
            panel.loess(..., lwd = 2, col = "red")
@@ -86,14 +43,140 @@ Our primary aim here is to illustrate the extensions of the Poisson mixed model 
 
 We start by fitting a Poisson mixed model to the dataset using the `mixed_model()` function from the **GLMMadaptive** package:
 ```{r Poisson}
-fm1 <- mixed_model(y ~ sex * time + age, random = ~ time | id, data = DF,
-                   family = poisson())
+fm1 <- mixed_model(CD4count ~ drug * obstime, random = ~ obstime | patient, 
+                   data = aids, family = poisson())
+```
+
+```{r Netative_Binomial}
+fm2 <- mixed_model(CD4count ~ drug * obstime, random = ~ obstime | patient, 
+                   data = aids, family = negative.binomial())
+```
+
+```{r LRT_Pois_NB}
+anova(fm1, fm2)
+```
+
+```{r ZI_Poisson}
+gm1 <- mixed_model(CD4count ~ drug * obstime, random = ~ obstime | patient, 
+                   data = aids, family = zi.poisson(),
+                   zi_fixed = ~ drug + obstime)
+```
+
+```{r ZI_Netative_Binomial}
+gm2 <- mixed_model(CD4count ~ drug * obstime, random = ~ obstime | patient, 
+                   data = aids, family = zi.negative.binomial(),
+                   zi_fixed = ~ drug + obstime)
+```
+
+```{r LRT_Pois_ziPois}
+anova(fm1, gm1)
+```
+
+```{r LRT_NB_ziNB}
+anova(fm2, gm2)
+```
+
+```{r ZI_Poisson2}
+km1 <- mixed_model(CD4count ~ drug * obstime, random = ~ obstime | patient, 
+                   data = aids, family = zi.poisson(),
+                   zi_fixed = ~ drug + obstime, zi_random = ~ 1 | patient)
+```
+
+```{r ZI_Netative_Binomial2}
+km2 <- mixed_model(CD4count ~ drug * obstime, random = ~ obstime | patient, 
+                   data = aids, family = zi.negative.binomial(),
+                   zi_fixed = ~ drug + obstime, zi_random = ~ 1 | patient)
+```
+
+```{r LRT_Pois_ziPois2}
+anova(gm1, km1)
+```
+
+```{r LRT_NB_ziNB2}
+anova(gm2, km2)
 ```
 
 ## Goodness-of-Fit
 
+```{r resids_FUN}
+resids_plot <- function (object, y, nsim = 1000,
+                         type = c("subject_specific", "mean_subject"),
+                         integerResponse = NULL) {
+    if (!inherits(object, "MixMod"))
+        stop("this function works for 'MixMod' objects.\n")
+    type <- match.arg(type)
+    if (is.null(integerResponse)) {
+        integer_families <- c("binomial", "poisson", "negative binomial",
+                              "zero-inflated poisson", "zero-inflated negative binomial", 
+                              "hurdle poisson", "hurdle negative binomial")
+        numeric_families <- c("hurdle log-normal", "beta", "hurdle beta")
+        if (object$family$family %in% integer_families) {
+            integerResponse <- TRUE
+        } else if (object$family$family %in% numeric_families) {
+            integerResponse <- FALSE
+        } else {
+            stop("non build-in family object; you need to specify the 'integerResponse',\n",
+                 "\targument indicating whether the outcome variable is integer or not.\n")
+        }
+    }
+    sims <- simulate(object, nsim = nsim, type = type)
+    fits <- fitted(object, type = type)
+    dharmaRes <- DHARMa::createDHARMa(simulatedResponse = sims, observedResponse = y, 
+                              fittedPredictedResponse = fits, 
+                              integerResponse = integerResponse)
+    DHARMa:::plot.DHARMa(dharmaRes, quantreg = FALSE)
+}
+```
+
+```{r resid_plot_Pois, fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+resids_plot(fm1, aids$CD4count)
+```
+
+```{r resid_plot_NB, fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+resids_plot(fm2, aids$CD4count)
+```
+
+```{r resid_plot_ziPois2, fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+resids_plot(gm1, aids$CD4count)
+```
+
+```{r resid_plot_ziNB2, fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+resids_plot(gm2, aids$CD4count)
+```
+
+```{r resid_plot_ziPois3, fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+resids_plot(km1, aids$CD4count)
+```
+
+```{r resid_plot_ziNB3, fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+resids_plot(km2, aids$CD4count)
+```
+
 ## Effect Plots
 
+```{r plot_data}
+nDF <- with(aids, expand.grid(drug = levels(drug),
+                              obstime = seq(0, 18, length.out = 11)))
 
+plot_data <- effectPlotData(gm2, nDF)
+```
+
+```{r effect_plot, fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+my.panel.bands <- function(x, y, upper, lower, fill, col, subscripts, ..., font, 
+                           fontface) {
+    upper <- upper[subscripts]
+    lower <- lower[subscripts]
+    panel.polygon(c(x, rev(x)), c(upper, rev(lower)), col = fill, border = FALSE, ...)
+}
+
+xyplot(exp(pred) ~ obstime, group = drug, data = plot_data, 
+       upper = exp(plot_data$upp), low = exp(plot_data$low), 
+       type = "l", col = c("blue", "red"), 
+       fill = c("#0000FF80", "#FF000080"),
+       panel = function (x, y, ...) {
+           panel.superpose(x, y, panel.groups = my.panel.bands, ...)
+           panel.xyplot(x, y, lwd = 2,  ...)
+}, xlab = "Follow-up time", ylab = "Expected Counts", ylim = c(0, 50))
+```
 
 

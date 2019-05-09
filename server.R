@@ -3180,6 +3180,10 @@ shinyServer(function(input, output) {
             withMathJax(includeHTML("./Advanced_Topics/Dynamic_Predictions.html"))
         } else if (input$chapter == "Advanced Topics" && input$section == "Ordinal Data") {
             withMathJax(includeHTML("./Advanced_Topics/Ordinal_Data.html"))
+        } else if (input$chapter == "Advanced Topics" && input$section == "Count Data") {
+            withMathJax(includeHTML("./Advanced_Topics/Count_Data.html"))
+        } else if (input$chapter == "Advanced Topics" && input$section == "Count Data 2") {
+            withMathJax(includeHTML("./Advanced_Topics/Count_Data_2.html"))
         }
     })
     
@@ -3387,6 +3391,11 @@ shinyServer(function(input, output) {
             # the following function creates the predicted values
             # and the 95% CIs
             effectPlotData <- function (object, newdata, orig_data) {
+                if (inherits(object, "MixMod")) {
+                    warning("For 'MixMod' objects (e.g., if you want marginal predictions) use ",
+                            "'GLMMadaptive::effectPlotData'.\n")
+                    return(GLMMadaptive::effectPlotData(object, newdata))
+                }
                 library("lattice")
                 form <- formula(object)
                 respVar <- all.vars(form)[1]
@@ -3519,6 +3528,11 @@ shinyServer(function(input, output) {
             # the following function creates the predicted values
             # and the 95% CIs
             effectPlotData <- function (object, newdata, orig_data) {
+                if (inherits(object, "MixMod")) {
+                    warning("For 'MixMod' objects (e.g., if you want marginal predictions) use ",
+                            "'GLMMadaptive::effectPlotData'.\n")
+                    return(GLMMadaptive::effectPlotData(object, newdata))
+                }
                 form <- formula(object)
                 respVar <- all.vars(form)[1]
                 newdata[[respVar]] <- 0.01 
@@ -3715,6 +3729,11 @@ shinyServer(function(input, output) {
             # the following function creates the predicted values
             # and the 95% CIs
             effectPlotData <- function (object, newdata, orig_data) {
+                if (inherits(object, "MixMod")) {
+                    warning("For 'MixMod' objects (e.g., if you want marginal predictions) use ",
+                            "'GLMMadaptive::effectPlotData'.\n")
+                    return(GLMMadaptive::effectPlotData(object, newdata))
+                }
                 form <- formula(object)
                 namesVars <- all.vars(form)
                 respVar <- namesVars[1]
@@ -3877,14 +3896,14 @@ shinyServer(function(input, output) {
             ))
             if (input$scale_s52 == 'log Odds') {
                 print(xyplot(pred + low + upp ~ year | sex * drug, 
-                             data = effectPlotData(fm_s52_pbc, newDF), 
+                             data = GLMMadaptive::effectPlotData(fm_s52_pbc, newDF), 
                              lty = c(1, 2, 2), col = c(2, 1, 1), lwd = 2, type = "l",
                              xlab = "Follow-up time (years)",
-                             ylab = "log Odds"))
+                             ylab = "Conditional Log Odds"))
             } else {
-                plot_data_marg <- effectPlotData(fm_s52_pbc, newDF, marginal = TRUE, 
+                plot_data_marg <- GLMMadaptive::effectPlotData(fm_s52_pbc, newDF, marginal = TRUE, 
                                                  cores = 5)
-                plot_data_marg$pred0 <- effectPlotData(fm_s52_pbc, newDF)$pred
+                plot_data_marg$pred0 <- GLMMadaptive::effectPlotData(fm_s52_pbc, newDF)$pred
                 key <- simpleKey(c("marginal probabilities", "probabilities average patient"), 
                                  points = FALSE, lines = TRUE)
                 key$lines$col <- c("red", "blue")
