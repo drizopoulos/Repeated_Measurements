@@ -3390,11 +3390,9 @@ shinyServer(function(input, output) {
             
             # the following function creates the predicted values
             # and the 95% CIs
-            effectPlotData <- function (object, newdata, orig_data) {
+            effectPlotData <- function (object, newdata, orig_data, ...) {
                 if (inherits(object, "MixMod")) {
-                    warning("For 'MixMod' objects (e.g., if you want marginal predictions) use ",
-                            "'GLMMadaptive::effectPlotData'.\n")
-                    return(GLMMadaptive::effectPlotData(object, newdata))
+                    return(GLMMadaptive::effectPlotData(object, newdata, ...))
                 }
                 library("lattice")
                 form <- formula(object)
@@ -3527,11 +3525,9 @@ shinyServer(function(input, output) {
             
             # the following function creates the predicted values
             # and the 95% CIs
-            effectPlotData <- function (object, newdata, orig_data) {
+            effectPlotData <- function (object, newdata, orig_data, ...) {
                 if (inherits(object, "MixMod")) {
-                    warning("For 'MixMod' objects (e.g., if you want marginal predictions) use ",
-                            "'GLMMadaptive::effectPlotData'.\n")
-                    return(GLMMadaptive::effectPlotData(object, newdata))
+                    return(GLMMadaptive::effectPlotData(object, newdata, ...))
                 }
                 form <- formula(object)
                 respVar <- all.vars(form)[1]
@@ -3728,11 +3724,9 @@ shinyServer(function(input, output) {
             
             # the following function creates the predicted values
             # and the 95% CIs
-            effectPlotData <- function (object, newdata, orig_data) {
+            effectPlotData <- function (object, newdata, orig_data, ...) {
                 if (inherits(object, "MixMod")) {
-                    warning("For 'MixMod' objects (e.g., if you want marginal predictions) use ",
-                            "'GLMMadaptive::effectPlotData'.\n")
-                    return(GLMMadaptive::effectPlotData(object, newdata))
+                    return(GLMMadaptive::effectPlotData(object, newdata, ...))
                 }
                 form <- formula(object)
                 namesVars <- all.vars(form)
