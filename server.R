@@ -3248,7 +3248,7 @@ shinyServer(function(input, output) {
                           "Chapter 0" = 0,
                           "Chapter 1" = 1, "Chapter 2" = 2, "Chapter 3" = 3,
                           "Chapter 4" = 4, "Chapter 5" = 5, "Chapter 6" = 6,
-                          "Practicals" = 7, "Quizzes" = 8)
+                          "Practicals" = 7, "Quizzes" = 8, "Advanced Topics" = 9)
             return(paste0('<iframe style="height:600px; width:100%"', 
                           'src = "slides_chapter', nam, '.pdf"></iframe>'))
         } 
