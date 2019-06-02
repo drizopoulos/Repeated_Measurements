@@ -1,0 +1,227 @@
+---
+title: "Count Data Generalized Estimating Equations and Mixed Models"
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+# Introduction
+In the course we have primarily focused on dichotomous multivariate data when introducing the Generalized Estimating Equations (GEE) approach and the Generalized Linear Mixed Effects Models (GLMMs). However, both GEEs and GLMMs can be used with other types of categorical outcomes. Here, we focus on multivariate count data. Examples of count data are the number of doctor visits per year, the number of asthma attacks per month and the number of trips per month that a person takes.
+
+A standard distribution for counts is the [Poisson distribution](https://en.wikipedia.org/wiki/Poisson_distribution). The Poisson distribution has a single parameter, $\mu$ which denotes the expected counts. Importantly, it also makes the assumption that the variance of the count outcome equals to its mean, hence, the variance is also equal to $\mu$. Because the expected count $\mu$ is positive, models for count data relate the logarithm of $\mu$ to covariates.
+
+## Generalized Estimating Equations for Count Data
+In the case of GEEs, we have an analogous three-component specification as we have seen in the course for binary data, namely,
+
+1. A model for the mean response, $E(y_{ij}) = \mu_{ij}$:
+$$\log(\mu_{ij}) = x_{ij}^\top \beta = \beta_0 + \beta_1 x_{i1} + \ldots + \beta_p x_{ip}.$$
+
+2. The variance of $y_{ij}$ follows from the Poisson distribution accounting for over-dispersion
+$$\mbox{var}(y_{ij}) = \phi \mu_{ij},$$ with $\phi$ denoting the over-dispersion parameter.
+
+3. For the pairwise correlations we make a *working* assumption that possibly depends on parameters to be estimated from the data.
+
+## Generalized Linear Mixed Effects Models for Count Data
+Likewise for GLMMs we follow the three-part specification presented in the course. In particular, we have:
+
+1. Conditional on the random effects $b_i$, the responses $y_{ij}$ are independent and have a Poisson distribution with mean $E(y_{ij} \mid b_i) = \mu_{ij}$ and variance $\mbox{var}(y_{ij} \mid b_i) = \mu_{ij}$.
+
+2. The conditional mean of $y_{ij}$ depends upon fixed and random effects via the following expression: 
+$$\log(\mu_{ij}) = x_{ij}^\top \beta + z_{ij}^\top b_i$$
+
+3. The random effects follow a multivariate normal distribution with mean zero and variance-covariance matrix $D$.
+
+With regard to the interpretation of the coefficients, the model building, and hypothesis testing the same considerations apply as the ones we have seen for dichotomous data.
+
+With regard to the interpretation of the $\beta$ coefficients in particular, as we have see, in GEEs they have a marginal / population-averaged interpretation, whereas in GLMMs a conditional on the random effects interpretation.
+
+# An Example
+To illustrate a repeated measurements analysis for count data using GEEs and GLMMs we will use the the CD4 cell counts in AIDS dataset we have previously introduced in the course. Even though in the course we have analyzed the square root CD4 cell count with marginal and linear mixed models assuming a normal distribution for the error terms, the *true* nature of variable is a *count* (as the name also suggests). We could do that because the counts were relatively large, and when we used the square root transformation we had a reasonable fit of the normal distribution. In the following we will respect the true nature of the CD4 variable and analyze it as a count variable. We first load the required packages and the data from GitHub (**note:** we will also use the [**emmeans**](https://cran.r-project.org/package=emmeans) package; if you do not have installed, you will first need to install it using the `install.packages()` function):
+```{r load_packages_data}
+library("geepack")
+library("GLMMadaptive")
+library("splines")
+library("lattice")
+library("emmeans")
+
+con <- url("https://raw.github.com/drizopoulos/Repeated_Measurements/master/Data.RData")
+load(con)
+close(con)
+```
+
+In the original `aids` database variable `CD4` is the square root CD4 cell count. Hence, to recover the original counts we create the new variable `CD4count` that will use throughout this analysis.
+```{r create_CD4count}
+aids$CD4count <- aids$CD4 * aids$CD4
+```
+
+
+## Descriptives
+We will start with descriptive plots to see how the data look like. First, we plot the average longitudinal evolutions per treatment group.
+```{r dscr_marg_evol, fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+xyplot(CD4count ~ obstime | drug, data = aids, 
+       panel = function (...) {
+           panel.xyplot(...)
+           panel.loess(..., lwd = 2, col = "red")
+       }, xlab = "Follow-Up Time (Months)", ylab = "CD4 Cell Count")
+```
+
+We observe small differences between the two treatment groups over time. We also see that the variance in the counts seems to be much larger than the mean; note under the Poisson model the data should mean and variance being equal. To see if this is the case more clearly, we calculate the mean and variance of the CD4 cell counts per follow-up month using the following syntax:
+```{r descriptives}
+# mean per follow-up month
+with(aids, tapply(CD4count, obstime, mean))
+
+# variance per follow-up month
+with(aids, tapply(CD4count, obstime, var))
+```
+
+The calculations confirm what we have observed in the figure. However, given the high dropout rate in the trial, and because it is a high chance that this dropout is missing at random or missing not at random, we should not rely that much on these descriptives measures. As we have seen in Chapter 6, in these cases the observed data are not a representative sample from our target population.
+
+## Modeling - GEEs
+We start with a GEE analysis of the CD4 cell count. Taking into account that this is a randomized trial, we are focusing only on the difference between the two groups in the longitudinal evolution of the expected CD4 cell count. Hence, we fit a GEE that includes as covariates the medication, the time and their interaction. We allow the time effect to be nonlinear using a natural cubic spline with boundary knots placed at baseline and 12 months, which is the 95\% percentile of the observed follow-up times, and internal knots placed at 2 and 6 months, the follow-up times at which measurements were planned. The working correlation matrix is assumed to auto-regressive of order 1. The corresponding syntax is:
+```{r gee_nonlinear_interaction}
+gm1 <- geeglm(CD4count ~ drug * ns(obstime, knots = c(2, 6), B = c(0, 12)), 
+              id = patient, data = aids, family = poisson(), corstr = "ar1")
+```
+
+To assess whether treatment has an effect we will use a Wald test and compare model `gm1` with the additive nonlinear model:
+```{r nonlinear_additive}
+gm2 <- geeglm(CD4count ~ drug + ns(obstime, knots = c(2, 6), B = c(0, 12)), 
+              id = patient, data = aids, family = poisson(), corstr = "ar1")
+
+anova(gm2, gm1)
+```
+
+The results suggest that there is some evidence of a difference between the two medications. 
+
+We continue by evaluating non-linearity of the evolutions of the log expected CD4 cell counts over time. 
+```{r linear_interaction}
+gm3 <- geeglm(CD4count ~ drug * obstime, id = patient, data = aids,
+              family = poisson(), corstr = "ar1")
+
+anova(gm3, gm1)
+```
+
+We observe that the log expected CD4 cell counts seem to evolve non-linearly over time. Hence, we select as our final GEE analysis the one we begun with, namely model `gm1`. The summary of the model gives:
+```{r summary_gee}
+summary(gm1)
+```
+
+As we have previously discussed, the coefficients for the nonlinear terms do not have a direct interpretation, and the coefficients for the interaction terms a bit more difficult one. For example, the coefficient for `drugddI` is the difference in the log expected CD4 cell counts between the ddI and ddC treatments groups. Hence, we will rely on an effect plot to depict the estimated relationship between time, treatment and the expected CD4 cell counts.
+
+We first define the `effectPlotData()` function, as we have seen in the course:
+```{r effectPlotData_fun}
+effectPlotData <- function (object, newdata, orig_data, ...) {
+    if (inherits(object, "MixMod")) {
+        return(GLMMadaptive::effectPlotData(object, newdata, ...))
+    }
+    form <- formula(object)
+    namesVars <- all.vars(form)
+    betas <- if (!inherits(object, "lme")) coef(object) else fixef(object)
+    V <- if (inherits(object, "geeglm")) object$geese$vbeta else vcov(object)
+    orig_data <- orig_data[complete.cases(orig_data[namesVars]), ]
+    Terms <- delete.response(terms(form))
+    mfX <- model.frame(Terms, data = orig_data)
+    Terms_new <- attr(mfX, "terms")
+    mfX_new <- model.frame(Terms_new, newdata, xlev = .getXlevels(Terms, mfX))
+    X <- model.matrix(Terms_new, mfX_new)
+    pred <- c(X %*% betas)
+    ses <- sqrt(diag(X %*% V %*% t(X)))
+    newdata$pred <- pred
+    newdata$low <- pred - 1.96 * ses
+    newdata$upp <- pred + 1.96 * ses
+    newdata
+}
+```
+
+Next, we create the dataset specifying the grid of values we want to depict, and we call `effectPlotData()` to calculate the log expected CD4 cell counts, and the corresponding 95\% confidence intervals. We save these values in the data frame `plot_data`
+```{r plot_data_gee}
+nDF <- with(aids, expand.grid(drug = levels(drug),
+                              obstime = seq(0, 18, length.out = 31)))
+
+plot_data <- effectPlotData(gm1, nDF, aids)
+```
+
+We then produce the effect plot using the following syntax and call to `xyplot()`; the first part of the syntax, and the definition of the `my.panel.bands()` is used to superimpose the longitudinal evolutions for the two treatment groups on the same figure. Moreover, note the use of the `exp()` function in the formula, upper and lower and arguments of `xyplot()`, i.e., we plot the expected CD4 cell counts (not the log expected counts):
+```{r effect_plot_gee, fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+my.panel.bands <- function(x, y, upper, lower, fill, col, subscripts, ..., font, 
+                           fontface) {
+    upper <- upper[subscripts]
+    lower <- lower[subscripts]
+    panel.polygon(c(x, rev(x)), c(upper, rev(lower)), col = fill, border = FALSE, ...)
+}
+
+xyplot(exp(pred) ~ obstime, group = drug, data = plot_data, 
+       upper = exp(plot_data$upp), lower = exp(plot_data$low), 
+       type = "l", col = c("blue", "red"), 
+       fill = c("#0000FF80", "#FF000080"),
+       panel = function (x, y, ...) {
+           panel.superpose(x, y, panel.groups = my.panel.bands, ...)
+           panel.xyplot(x, y, lwd = 2,  ...)
+}, xlab = "Follow-up time", ylab = "Expected CD4 Cell Counts", ylim = c(0, 120))
+```
+
+We would like to see at which follow-up times there is a difference between the two treatment groups. The estimated differences can be calculated with the **emmeans** package. First, we call `emmeans()` to obtain estimates for the two treatments at the aforementioned follow-up times. The corresponding syntax is:
+```{r emmeans_gee}
+gm_mc <- emmeans(gm1, ~ drug | obstime, at = list(obstime = c(2, 6, 12, 18)))
+gm_mc
+```
+
+Via the `at` argument we specify that we want to compare the groups at 2, 6, 12 and 18 months. The differences are then calculated by the `pairs()` function:
+```{r emmeans_pairs}
+pairs(gm_mc)
+```
+
+We observe that at month 2 there seems to be some evidence of a difference.
+
+## Modeling - GLMMs
+We continue the analysis with a mixed effects Poisson regression. We start by fitting a Poisson mixed model to the dataset using the `mixed_model()` function from the **GLMMadaptive** package. The fixed effects structure is the same as in the GEE analysis above. For the random effects we start with random intercepts. The corresponding syntax is:
+```{r Poisson_int}
+fm1 <- mixed_model(CD4count ~ drug * ns(obstime, knots = c(2, 6), B = c(0, 12)), 
+                   random = ~ 1 | patient, data = aids, family = poisson())
+```
+
+We continue by also including random slopes and testing whether this improved the fit of the model. We use the `update()` function to update the previous fit:
+```{r Poisson_slp}
+fm2 <- update(fm1, random = ~ obstime | patient)
+
+anova(fm1, fm2)
+```
+
+The likelihood ratio test calculated by the `anova()` function suggests that the inclusion of the extra random effect improves the fit. We continue by include nonlinear random slopes using splines. However, because of the complexity of these extra terms we fit the model assuming a diagonal matrix for the random effects. By doing this, this new model will not be nested with the model we fitted above with random intercepts and linear random slopes. This is because the model above was fitted with a general covariance matrix for the random effects - not diagonal. Thus, we only compare between the two models using the AIC and BIC. The syntax is (the model takes some time to fit):
+```{r Poisson_nonlinear_slp}
+fm3 <- update(fm1, random = ~ ns(obstime, knots = c(2, 6), B = c(0, 12)) || patient)
+
+anova(fm2, fm3, test = FALSE)
+```
+
+Both information criteria suggest that the model with the nonlinear random effects fits the data better. Hence, we select this one for the remainder of the analysis. The summary of the model provide the following output:
+```{r summary}
+summary(fm3)
+```
+
+Again this out put is a bit difficult to directly interpret because of the nonlinear and interaction terms. Therefore, similarly to what we have done in the GEE analysis, we produce the corresponding effects plot. First, we calculate the predictions from the model for the same combination of values as we had in the GEE using the `effectPlotData()` function (*note*: this one is from the **GLMMadaptive** package):
+```{r plot_data}
+nDF <- with(aids, expand.grid(drug = levels(drug),
+                              obstime = seq(0, 18, length.out = 31)))
+
+plot_data <- effectPlotData(fm3, nDF)
+```
+
+And next we produce the plot using the same syntax as before.
+```{r effect_plot, fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+xyplot(exp(pred) ~ obstime, group = drug, data = plot_data, 
+       upper = exp(plot_data$upp), low = exp(plot_data$low), 
+       type = "l", col = c("blue", "red"), 
+       fill = c("#0000FF80", "#FF000080"),
+       panel = function (x, y, ...) {
+           panel.superpose(x, y, panel.groups = my.panel.bands, ...)
+           panel.xyplot(x, y, lwd = 2,  ...)
+}, xlab = "Follow-up time", ylab = "Expected Counts", ylim = c(0, 300))
+```
+
+From this analysis we observe smaller differences between two treatment groups.
