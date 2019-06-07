@@ -41,7 +41,7 @@ With regard to the interpretation of the coefficients, the model building, and h
 With regard to the interpretation of the $\beta$ coefficients in particular, as we have see, in GEEs they have a marginal / population-averaged interpretation, whereas in GLMMs a conditional on the random effects interpretation.
 
 # An Example
-To illustrate a repeated measurements analysis for count data using GEEs and GLMMs we will use the the CD4 cell counts in AIDS dataset we have previously introduced in the course. Even though in the course we have analyzed the square root CD4 cell count with marginal and linear mixed models assuming a normal distribution for the error terms, the *true* nature of variable is a *count* (as the name also suggests). We could do that because the counts were relatively large, and when we used the square root transformation we had a reasonable fit of the normal distribution. In the following we will respect the true nature of the CD4 variable and analyze it as a count variable. We first load the required packages and the data from GitHub (**note:** we will also use the [**emmeans**](https://cran.r-project.org/package=emmeans) package; if you do not have installed, you will first need to install it using the `install.packages()` function):
+To illustrate a repeated measurements analysis for count data using GEEs and GLMMs we will use the the CD4 cell counts in AIDS dataset we have previously introduced in the course. Even though in the course we have analyzed the square root CD4 cell count with marginal and linear mixed models assuming a normal distribution for the error terms, the *true* nature of variable is a *count* (as the name also suggests). We could do that because the counts were relatively large, and when we used the square root transformation we had a reasonable fit of the normal distribution. In the following we will respect the true nature of the CD4 variable and analyze it as a count variable. We first load the required packages and the data from GitHub (**note:** we will also use the [**emmeans**](https://cran.r-project.org/package=emmeans) package; if you do not have it installed, you will first need to install it using the `install.packages()` function):
 ```{r load_packages_data}
 library("geepack")
 library("GLMMadaptive")
@@ -141,7 +141,7 @@ effectPlotData <- function (object, newdata, orig_data, ...) {
 Next, we create the dataset specifying the grid of values we want to depict, and we call `effectPlotData()` to calculate the log expected CD4 cell counts, and the corresponding 95\% confidence intervals. We save these values in the data frame `plot_data`
 ```{r plot_data_gee}
 nDF <- with(aids, expand.grid(drug = levels(drug),
-                              obstime = seq(0, 18, length.out = 31)))
+                              obstime = seq(0, 18, length.out = 101)))
 
 plot_data <- effectPlotData(gm1, nDF, aids)
 ```
@@ -204,10 +204,10 @@ Both information criteria suggest that the model with the nonlinear random effec
 summary(fm3)
 ```
 
-Again this out put is a bit difficult to directly interpret because of the nonlinear and interaction terms. Therefore, similarly to what we have done in the GEE analysis, we produce the corresponding effects plot. First, we calculate the predictions from the model for the same combination of values as we had in the GEE using the `effectPlotData()` function (*note*: this one is from the **GLMMadaptive** package):
+Note that the coefficients we obtain from the `summary()` method here have a subject-specific interpretation, as we have explained in detail in Section 5.2 of the course notes; to obtain coefficients with a marginal/population interpretation we can use the `marginal_coefs()` function. This output is a bit difficult to directly interpret because of the nonlinear and interaction terms. Therefore, similarly to what we have done in the GEE analysis, we produce the corresponding effects plot. First, we calculate the predictions from the model for the same combination of values as we had in the GEE using the `effectPlotData()` function (*note*: this one is from the **GLMMadaptive** package):
 ```{r plot_data}
 nDF <- with(aids, expand.grid(drug = levels(drug),
-                              obstime = seq(0, 18, length.out = 31)))
+                              obstime = seq(0, 18, length.out = 101)))
 
 plot_data <- effectPlotData(fm3, nDF)
 ```

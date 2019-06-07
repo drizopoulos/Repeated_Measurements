@@ -12,8 +12,7 @@ shinyServer(function(input, output) {
                 "Practicals" = paste("Practical", 1:4),
                 "Quizzes" = paste("Quiz", 1:5),
                 "Advanced Topics" = c("Count Data", "Count Data 2", "Ordinal Data",
-                                      "Bounded Data", "Multiple Comparisons", 
-                                      "Dynamic Predictions")
+                                      "Bounded Data", "Dynamic Predictions")
             )
             selectInput("section", "Select section:", chs, chs[1])
         }
