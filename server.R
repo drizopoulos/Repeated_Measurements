@@ -11,8 +11,8 @@ shinyServer(function(input, output) {
                 "Chapter 6" = paste("Section", c("6.3")),
                 "Practicals" = paste("Practical", 1:4),
                 "Quizzes" = paste("Quiz", 1:5),
-                "Advanced Topics" = c("Count Data", "Count Data 2", "Ordinal Data",
-                                      "Bounded Data", "Dynamic Predictions")
+                "Advanced Topics" = c("Count Data 1", "Count Data 2", "Ordinal Data",
+                                      "Dynamic Predictions")
             )
             selectInput("section", "Select section:", chs, chs[1])
         }
@@ -3179,7 +3179,7 @@ shinyServer(function(input, output) {
             withMathJax(includeHTML("./Advanced_Topics/Dynamic_Predictions.html"))
         } else if (input$chapter == "Advanced Topics" && input$section == "Ordinal Data") {
             withMathJax(includeHTML("./Advanced_Topics/Ordinal_Data.html"))
-        } else if (input$chapter == "Advanced Topics" && input$section == "Count Data") {
+        } else if (input$chapter == "Advanced Topics" && input$section == "Count Data 1") {
             withMathJax(includeHTML("./Advanced_Topics/Count_Data.html"))
         } else if (input$chapter == "Advanced Topics" && input$section == "Count Data 2") {
             withMathJax(includeHTML("./Advanced_Topics/Count_Data_2.html"))
