@@ -47,7 +47,7 @@ Another common problem with count data models, including both Poisson and negati
 The zero-inflated model combines two models, a logistic regression model that predicts to which of the two latent classes a subject belongs, with a Poisson or negative binomial model that predicts the outcome for those in the second latent class. A mixed effects zero-inflated model includes in the aforementioned model random effects. We have the option to include random effects only in the Poisson or negative binomial model for the second latent class or also in the logistic regression model for the probability of belonging to the first class.
 
 ## Goodness-of-Fit
-Residual interpretation for generalized linear mixed models is often problematic. One reason why residuals from these models are harder to interpret is that the expected distribution of the data changes with the fitted values. Reweighting with the expected variance, as done in Pearson residuals, or using deviance residuals, helps a bit, but does not lead to visually homogenous residuals even if the model is correctly specified. As a result, standard residual plots, when interpreted in the same way as for linear models, seem to show all kind of problems, such as non-normality, heteroscedasticity, even if the model is correctly specified.
+Residual interpretation for generalized linear mixed models is often problematic. One reason why residuals from these models are harder to interpret is that the expected distribution of the data changes with the fitted values. Re-weighting with the expected variance, as done in Pearson residuals, or using deviance residuals, helps a bit, but does not lead to visually homogeneous residuals even if the model is correctly specified. As a result, standard residual plots, when interpreted in the same way as for linear models, seem to show all kind of problems, such as non-normality, heteroscedasticity, even if the model is correctly specified.
 
 To overcome these problems the [**DHARMa** package](https://cran.r-project.org/package=DHARMa) provides a simulated type of residuals, which for correctly specified models, and irrespective of the type of the model, the residuals are expected to have a flat/uniform distribution. We will use these residuals to evaluate the fit of the models presented above for count data.
 
@@ -113,15 +113,15 @@ In this function we need to specify the model and the outcome variable from the 
 resids_plot(fm1, aids$CD4count)
 ```
 
-The left panel shows the QQ-plot that evaluates if the distribution of the residuals is uniform, i.e., we have a good fit when all residuals are across the diagonal. The right panel shows the residuals (y-axis) versus predicted values; when the model fits well these should be a random scatter plot that does not show any systematic patterns (the red dasched line should be close to the solid horizontal line at 0.5, and the spread of residuals needs to be the same for all levels of predicted values). We observe that the fit of the Poisson mixed model is not good. Both the distribution of the residuals is far from the uniform, and we also see clear signs of heteroscedasticity.
+The left panel shows the QQ-plot that evaluates if the distribution of the residuals is uniform, i.e., we have a good fit when all residuals are across the diagonal. The right panel shows the residuals (y-axis) versus predicted values; when the model fits well these should be a random scatter plot that does not show any systematic patterns (the red dashed line should be close to the solid horizontal line at 0.5, and the spread of residuals needs to be the same for all levels of predicted values). We observe that the fit of the Poisson mixed model is not good. Both the distribution of the residuals is far from the uniform, and we also see clear signs of heteroscedasticity.
 
 ## Negative Binomial Mixed Model
-To account for the over-dispersion we have seen in the residuals plot we will use a negative binomial mixed model. To fit this model we can use exactly the same dyntac, and only change the `family` argument to `negative.binomial()`. In the following we do this more quickly by using the `update()` function,
+To account for the over-dispersion we have seen in the residuals plot we will use a negative binomial mixed model. To fit this model we can use exactly the same syntax, and only change the `family` argument to `negative.binomial()`. In the following we do this more quickly by using the `update()` function,
 ```{r Netative_Binomial}
 fm2 <- update(fm1, family = negative.binomial())
 ```
 
-The Poisson mixed model is nested within the negative binomial one. Therefore, we can use a likelihood ratio test to compate the two models using the `anova()` function:
+The Poisson mixed model is nested within the negative binomial one. Therefore, we can use a likelihood ratio test to compare the two models using the `anova()` function:
 ```{r LRT_Pois_NB}
 anova(fm1, fm2)
 ```
@@ -131,25 +131,27 @@ The results suggest that inclusion of the extra over-dispersion parameter improv
 resids_plot(fm2, aids$CD4count)
 ```
 
-We observe an eviden improvement in both the distribution of the residuals and in the scatterplot of the standardized residuals versus predicted values in which we do not observe any alarming systematic trends.
+We observe an evident improvement in both the distribution of the residuals and in the scatterplot of the standardized residuals versus predicted values in which we do not observe any alarming systematic trends.
 
 ## Zero-Inflated Negative Binomial Mixed Model
 We proceed to evaluate whether the zero counts XXX.
 
 Function `mixed_model()` of the **GLMMadaptive** package can also be used to fit zero-inflated and two-part mixed effects models. For both types of models, a suitable `family` object needs to be specified as outlined in the vignette [Custom Models](https://drizopoulos.github.io/GLMMadaptive/articles/Custom_Models.html), and also arguments `zi_fixed` and `zi_random` of `mixed_model()` come into play. In these arguments, the user can specify the fixed and random effects `formulas` of the logistic regression for the zero-part (first latent class) of the distribution of the outcome. We should note that the user has the option to leave `zi_random` set to `NULL`, in which case for the zero-part we have a logistic regression with only fixed effects and no random effects. 
 
-For our example, we want to fit a zero-inflated negative binomial mixed model with first specifying only fixed effects for the logistic regression for the first latent class. This is achieved by the followng syntax:
+For our example, we want to fit a zero-inflated negative binomial mixed model with first specifying only fixed effects for the logistic regression for the first latent class. This is achieved with the following syntax:
 ```{r ZI_Netative_Binomial}
 fm3 <- update(fm2, family = zi.negative.binomial(),
               zi_fixed = ~ drug + obstime)
 ```
 
+We standard negative binomial model is nested within the zero-inflated negative binomial one, and therefore we can compare the two using a likelihood ratio test:
 ```{r LRT_NB_ziNB}
 anova(fm2, fm3)
 ```
 
+The results suggest that the frequency of zero counts is greater than the one assumed by the standard negative binomial model. We continue to see if include a random intercept in the logistic regression for the first latent class further improves the fit; because the number of random effects has increased considerably we set the number of quadrature points to five:
 ```{r ZI_Netative_Binomial2}
-fm4 <- update(fm3, zi_random = ~ 1 | patient)
+fm4 <- update(fm3, zi_random = ~ 1 | patient, nAGQ = 5)
 ```
 
 ```{r LRT_ziNB_ziNB2}
