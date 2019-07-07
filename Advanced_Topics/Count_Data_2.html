@@ -479,9 +479,8 @@ close(con)</code></pre>
 <h2>Zero-Inflated Negative Binomial Mixed Model</h2>
 <p>We proceed to evaluate whether we have issues with the frequency of zero counts in the data by evaluating if the zero-inflated extension of the negative binomial model improves the fit.</p>
 <p>Function <code>mixed_model()</code> of the <strong>GLMMadaptive</strong> package can also be used to fit <a href="https://drizopoulos.github.io/GLMMadaptive/articles/ZeroInflated_and_TwoPart_Models.html">zero-inflated and two-part mixed effects models</a>. For both types of models, a suitable <code>family</code> object needs to be specified, and also arguments <code>zi_fixed</code> and <code>zi_random</code> of <code>mixed_model()</code> come into play. In these arguments, the user can specify the fixed and random effects <code>formulas</code> of the logistic regression for the zero-part (first latent class) of the distribution of the outcome. We should note that the user has the option to leave <code>zi_random</code> set to <code>NULL</code>, in which case for the zero-part we have a logistic regression with only fixed effects and no random effects.</p>
-<p>We continuw by fitting a zero-inflated negative binomial mixed model, with only fixed effects in the logistic regression model for the first latent class (i.e., the class of only zeros). This is achieved with the following syntax:</p>
-<pre class="r"><code>fm3 &lt;- update(fm2, family = zi.negative.binomial(),
-              zi_fixed = ~ drug + obstime)</code></pre>
+<p>We continue by fitting a zero-inflated negative binomial mixed model, with only fixed effects in the logistic regression model for the first latent class (i.e., the class of only zeros). This is achieved with the following syntax, where we use the family object <code>zi.negative.binomial()</code>:</p>
+<pre class="r"><code>fm3 &lt;- update(fm2, family = zi.negative.binomial(), zi_fixed = ~ drug + obstime)</code></pre>
 <p>The standard negative binomial model is nested within the zero-inflated negative binomial one, and therefore we can compare the two using a likelihood ratio test:</p>
 <pre class="r"><code>anova(fm2, fm3)
 #&gt; 

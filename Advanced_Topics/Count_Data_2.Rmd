@@ -138,10 +138,9 @@ We proceed to evaluate whether we have issues with the frequency of zero counts 
 
 Function `mixed_model()` of the **GLMMadaptive** package can also be used to fit [zero-inflated and two-part mixed effects models](https://drizopoulos.github.io/GLMMadaptive/articles/ZeroInflated_and_TwoPart_Models.html). For both types of models, a suitable `family` object needs to be specified, and also arguments `zi_fixed` and `zi_random` of `mixed_model()` come into play. In these arguments, the user can specify the fixed and random effects `formulas` of the logistic regression for the zero-part (first latent class) of the distribution of the outcome. We should note that the user has the option to leave `zi_random` set to `NULL`, in which case for the zero-part we have a logistic regression with only fixed effects and no random effects. 
 
-We continuw by fitting a zero-inflated negative binomial mixed model, with only fixed effects in the logistic regression model for the first latent class (i.e., the class of only zeros). This is achieved with the following syntax:
+We continue by fitting a zero-inflated negative binomial mixed model, with only fixed effects in the logistic regression model for the first latent class (i.e., the class of only zeros). This is achieved with the following syntax, where we use the family object `zi.negative.binomial()`:
 ```{r ZI_Netative_Binomial}
-fm3 <- update(fm2, family = zi.negative.binomial(),
-              zi_fixed = ~ drug + obstime)
+fm3 <- update(fm2, family = zi.negative.binomial(), zi_fixed = ~ drug + obstime)
 ```
 
 The standard negative binomial model is nested within the zero-inflated negative binomial one, and therefore we can compare the two using a likelihood ratio test:
