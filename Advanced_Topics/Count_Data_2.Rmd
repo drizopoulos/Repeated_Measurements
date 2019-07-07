@@ -134,34 +134,58 @@ resids_plot(fm2, aids$CD4count)
 We observe an evident improvement in both the distribution of the residuals and in the scatterplot of the standardized residuals versus predicted values in which we do not observe any alarming systematic trends.
 
 ## Zero-Inflated Negative Binomial Mixed Model
-We proceed to evaluate whether the zero counts XXX.
+We proceed to evaluate whether we have issues with the frequency of zero counts in the data by evaluating if the zero-inflated extension of the negative binomial model improves the fit.
 
-Function `mixed_model()` of the **GLMMadaptive** package can also be used to fit zero-inflated and two-part mixed effects models. For both types of models, a suitable `family` object needs to be specified as outlined in the vignette [Custom Models](https://drizopoulos.github.io/GLMMadaptive/articles/Custom_Models.html), and also arguments `zi_fixed` and `zi_random` of `mixed_model()` come into play. In these arguments, the user can specify the fixed and random effects `formulas` of the logistic regression for the zero-part (first latent class) of the distribution of the outcome. We should note that the user has the option to leave `zi_random` set to `NULL`, in which case for the zero-part we have a logistic regression with only fixed effects and no random effects. 
+Function `mixed_model()` of the **GLMMadaptive** package can also be used to fit [zero-inflated and two-part mixed effects models](https://drizopoulos.github.io/GLMMadaptive/articles/ZeroInflated_and_TwoPart_Models.html). For both types of models, a suitable `family` object needs to be specified, and also arguments `zi_fixed` and `zi_random` of `mixed_model()` come into play. In these arguments, the user can specify the fixed and random effects `formulas` of the logistic regression for the zero-part (first latent class) of the distribution of the outcome. We should note that the user has the option to leave `zi_random` set to `NULL`, in which case for the zero-part we have a logistic regression with only fixed effects and no random effects. 
 
-For our example, we want to fit a zero-inflated negative binomial mixed model with first specifying only fixed effects for the logistic regression for the first latent class. This is achieved with the following syntax:
+We continuw by fitting a zero-inflated negative binomial mixed model, with only fixed effects in the logistic regression model for the first latent class (i.e., the class of only zeros). This is achieved with the following syntax:
 ```{r ZI_Netative_Binomial}
 fm3 <- update(fm2, family = zi.negative.binomial(),
               zi_fixed = ~ drug + obstime)
 ```
 
-We standard negative binomial model is nested within the zero-inflated negative binomial one, and therefore we can compare the two using a likelihood ratio test:
+The standard negative binomial model is nested within the zero-inflated negative binomial one, and therefore we can compare the two using a likelihood ratio test:
 ```{r LRT_NB_ziNB}
 anova(fm2, fm3)
 ```
 
-The results suggest that the frequency of zero counts is greater than the one assumed by the standard negative binomial model. We continue to see if include a random intercept in the logistic regression for the first latent class further improves the fit; because the number of random effects has increased considerably we set the number of quadrature points to five:
+The results suggest that the frequency of zero counts is greater than the one assumed by the standard negative binomial model. We continue to see if including a random intercept in the logistic regression for the first latent class further improves the fit; because the number of random effects has increased considerably we set the number of quadrature points to five:
 ```{r ZI_Netative_Binomial2}
-fm4 <- update(fm3, zi_random = ~ 1 | patient, nAGQ = 5)
+fm4 <- update(fm3, zi_random = ~ 1 | patient, nAGQ = 6)
 ```
 
+We again evaluate if the fit is improved by a likelihood ratio test:
 ```{r LRT_ziNB_ziNB2}
 anova(fm3, fm4)
 ```
 
+The results show that inclusion of the random intercept term does not improve the fit of the logistic regression model for the probability of belonging in the first class. We also produce the simulated residuals plots for our final model
 ```{r resid_plot_ziNB, fig.align = "center", fig.width = 8.5, fig.height = 7.5}
-resids_plot(fm4, aids$CD4count)
+resids_plot(fm3, aids$CD4count)
 ```
 
-```{r summary_ziNB}
-summary(fm4)
+These plots are very similar to ones of model `fm2`. Namely, the fit seems to be acceptable (but not perfect because there is some deviation from the diagonal line in the QQ-plot), with no evident problems of systematic trends.
+
+Finally, we show the effects plot for the expected CD4 cell counts conditional on the random effects from model `fm3`:
+```{r effect_plot, fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+nDF <- with(aids, expand.grid(drug = levels(drug),
+                              obstime = seq(0, 18, length.out = 101)))
+
+plot_data <- effectPlotData(fm3, nDF)
+
+my.panel.bands <- function(x, y, upper, lower, fill, col, subscripts, ..., font, 
+                           fontface) {
+    upper <- upper[subscripts]
+    lower <- lower[subscripts]
+    panel.polygon(c(x, rev(x)), c(upper, rev(lower)), col = fill, border = FALSE, ...)
+}
+
+xyplot(exp(pred) ~ obstime, group = drug, data = plot_data, 
+       upper = exp(plot_data$upp), low = exp(plot_data$low), 
+       type = "l", col = c("blue", "red"), 
+       fill = c("#0000FF80", "#FF000080"),
+       panel = function (x, y, ...) {
+           panel.superpose(x, y, panel.groups = my.panel.bands, ...)
+           panel.xyplot(x, y, lwd = 2,  ...)
+}, xlab = "Follow-up time", ylab = "Expected Counts", ylim = c(0, 50))
 ```
