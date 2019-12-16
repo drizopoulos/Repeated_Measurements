@@ -3,14 +3,14 @@ This repository contains a [shiny](http://shiny.rstudio.com/) application that r
 all analyses presented in the course 
 **Statistical Analysis of Repeated Measurements Data**, including also some additional 
 illustrations. The app requires [R](http://cran.r-project.org/) 
-(version >= 3.5.2) and the following packages:
+(version >= 3.6.1) and the following packages:
 
-* [nlme](http://cran.r-project.org/package=nlme) (version >= 3.1-137)
-* [lme4](http://cran.r-project.org/package=lme4) (version >= 1.1-20)
-* [geepack](http://cran.r-project.org/package=geepack) (version >= 1.2-1)
-* [GLMMadaptive](http://cran.r-project.org/package=GLMMadaptive) (version >= 0.5-1)
-* [MASS](http://cran.r-project.org/package=MASS) (version >= 7.3-51.1)
-* [shiny](http://cran.r-project.org/package=shiny) (version >= 1.2.0)
+* [nlme](http://cran.r-project.org/package=nlme) (version >= 3.1-143)
+* [lme4](http://cran.r-project.org/package=lme4) (version >= 1.1-21)
+* [geepack](http://cran.r-project.org/package=geepack) (version >= 1.3-1)
+* [GLMMadaptive](http://cran.r-project.org/package=GLMMadaptive) (version >= 0.6-5)
+* [MASS](http://cran.r-project.org/package=MASS) (version >= 7.3-51.4)
+* [shiny](http://cran.r-project.org/package=shiny) (version >= 1.4.0)
 * [lattice](http://cran.r-project.org/package=lattice) (version >= 0.20-38)
 * [splines](http://cran.r-project.org/) (available within base R)
 * [corrplot](http://cran.r-project.org/package=corrplot) (version >= 0.84)
