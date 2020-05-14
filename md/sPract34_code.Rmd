@@ -73,5 +73,12 @@ dotplot(work_corr ~  est | parm, lx = dat$lower_sand, lx2 = dat$lower_naiv,
         as.table = TRUE, scales = list(x = list(relation = "free")),
         key = simpleKey(c("Robust Standard Errors", "Naive Standard Errors"), 
                         points = FALSE, lines = TRUE, col = c("blue", "magenta2")))
+
+##########
+
+# QIC
+
+Models <- list(Exch = fm_1, Ind = fm_2, AR1 = fm_3)
+t(sapply(Models, QIC))
 ```
 

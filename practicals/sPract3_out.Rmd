@@ -193,6 +193,20 @@ strongly correlated than abnormal prothrombin times that are further apart. With
 mind, the AR1 working correlation matrix seems more appropriate and therefore we will 
 continue with this matrix for the rest of this practical.
 
+As mentioned in the course, another manner to see which working correlation matrix provides
+better fit to the data we can use the Quasi Information Criterion (QIC). This is implemented
+in the `QIC()` function in **geepack**. We can use it as follows (GEEs with smaller values
+of QIC are to be preferred):
+```{r}
+Models <- list(Exch = fm_1, Ind = fm_2, AR1 = fm_3)
+t(sapply(Models, QIC))
+```
+
+We observe that the QIC also selects the AR1 working correlation structure. We should note
+that the performance of the QIC in selecting the appropriate working correlation matrix can
+be compromised when we have missing data. Hence, we should weigh the results from QIC 
+according to the considerations mentioned above.
+
 ### Question 5
 Based on the requests of the researchers from this study, we first attempt to simplify the
 model by excluding interaction terms. We start with the omnibus test for all the 
