@@ -1,3 +1,8 @@
+---
+title: "t"
+output: html_document
+---
+
 ```{r}
 # model with exponential correlation matrix & constant variance
 fm_s29_pro1 <- gls(pro ~ time + time:treat, data = prothro,

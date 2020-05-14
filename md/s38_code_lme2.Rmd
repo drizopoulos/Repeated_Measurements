@@ -1,3 +1,8 @@
+---
+title: "t"
+output: html_document
+---
+
 ```{r}
 # to calculate the area we need a couple of extra steps:
 # First a function to calculate the cumulative effect based 

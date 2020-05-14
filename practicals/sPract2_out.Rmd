@@ -1,3 +1,8 @@
+---
+title: "Practical 2 Repeated Measurements"
+output: html_document
+---
+
 ## Practical 2: Mixed Effects Models for Continuous Data
 We start by loading the packages we will need for this practical and the data from 
 [GitHub](https://github.com/drizopoulos/Repeated_Measurements). This is achieved with the

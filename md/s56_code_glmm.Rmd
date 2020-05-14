@@ -1,3 +1,8 @@
+---
+title: "t"
+output: html_document
+---
+
 ```{r}
 # model under the alternative hypothesis
 fm_s56_alt <- mixed_model(serCholD ~ year * drug + sex + drug:sex,

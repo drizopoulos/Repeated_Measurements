@@ -1,3 +1,8 @@
+---
+title: "t"
+output: html_document
+---
+
 ```{r}
 # nonlinear time effects & interaction with treatment
 fm_s310_pro1 <- lme(pro ~ ns(time, 3) * treat, data = prothro,

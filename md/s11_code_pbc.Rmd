@@ -1,3 +1,9 @@
+---
+title: "t"
+output: html_document
+---
+
+
 ```{r}
 xyplot(log(serBilir) ~ year | drug, group = id, data = pbc2, type = "l", col = 1, 
        xlab = "Time (years)", ylab = "log serum Bilirubin")

@@ -1,3 +1,8 @@
+---
+title: "t"
+output: html_document
+---
+
 ```{r}
 pbc2$basePro <- with(pbc2, ave(prothrombin, id, FUN = function (x) x[1]))
 fm_s32_pbc <- lme(log(serBilir) ~ ns(year, 2) * sex + (age + basePro) * sex, 

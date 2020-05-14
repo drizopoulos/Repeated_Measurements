@@ -1,3 +1,8 @@
+---
+title: "t"
+output: html_document
+---
+
 ```{r}
 # model with random intercepts & slopes
 fm_s310_aids1 <- lme(CD4 ~ obstime + I(obstime^2) + (obstime + I(obstime^2)):drug, 

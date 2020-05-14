@@ -1,3 +1,9 @@
+---
+title: "t"
+output: html_document
+---
+
+
 ```{r}
 index <- c(rep(T, 2), rep(F, 4), rep(T, 4), rep(F, 6), rep(T, 2), rep(F, 8), T,
            F, T, rep(F, 7), F, T, rep(F, 15), rep(T, 2), rep(F, 6), rep(T, 4),

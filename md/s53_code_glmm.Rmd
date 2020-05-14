@@ -1,3 +1,8 @@
+---
+title: "t"
+output: html_document
+---
+
 ```{r}
 aids$lowCD4 <- aids$CD4 < sqrt(150)
 aids$obstimef <- factor(aids$obstime)

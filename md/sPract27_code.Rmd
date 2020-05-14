@@ -1,3 +1,8 @@
+---
+title: "t"
+output: html_document
+---
+
 ```{r}
 #########################################################
 # Practical 2: Mixed Effects Models for Continuous Data #

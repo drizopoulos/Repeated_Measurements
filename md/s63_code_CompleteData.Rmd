@@ -1,3 +1,8 @@
+---
+title: "t"
+output: html_document
+---
+
 ```{r}
 # we extract the variables of interest from the AIDS dataset
 aids_missings <- aids[c('patient', 'CD4', 'obstime', 'AZT', 'prevOI')]

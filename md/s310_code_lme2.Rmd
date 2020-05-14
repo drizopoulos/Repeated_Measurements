@@ -1,3 +1,8 @@
+---
+title: "t"
+output: html_document
+---
+
 ```{r}
 # random intercepts & slopes, general covariance matrix
 fm_s310_pbc1 <- lme(log(serBilir) ~ ns(year, 2) * sex, data = pbc2, 

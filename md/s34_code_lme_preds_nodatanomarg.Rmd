@@ -1,3 +1,8 @@
+---
+title: "t"
+output: html_document
+---
+
 ```{r}
 # fit the model
 pbc2$basePro <- with(pbc2, ave(prothrombin, id, FUN = function (x) x[1]))

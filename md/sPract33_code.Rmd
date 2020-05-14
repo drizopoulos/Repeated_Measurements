@@ -1,3 +1,8 @@
+---
+title: "t"
+output: html_document
+---
+
 ```{r}
 ##################################################
 # Practical 3: Marginal Models for Discrete Data #

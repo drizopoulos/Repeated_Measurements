@@ -1,3 +1,8 @@
+---
+title: "t"
+output: html_document
+---
+
 ```{r}
 fm_s46_pbc <- geeglm(serCholD ~ ns(year, 3) * drug + ns(age, 3), family = binomial, 
                  data = pbc2, id = id, corstr = "exchangeable")

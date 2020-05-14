@@ -1,3 +1,8 @@
+---
+title: "t"
+output: html_document
+---
+
 ```{r}
 fm_s43_splines <- geeglm(serCholD ~ ns(year, 3) + ns(age, 3) + drug + sex, 
                          family = binomial, data = pbc2, id = id, 

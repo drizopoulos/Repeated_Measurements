@@ -1,3 +1,8 @@
+---
+title: "t"
+output: html_document
+---
+
 ```{r}
 fm_s52_pbc <- mixed_model(fixed = serCholD ~ year * drug + I(age - 50) * sex,
                           random = ~ 1 | id, 

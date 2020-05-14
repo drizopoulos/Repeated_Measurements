@@ -1,3 +1,8 @@
+---
+title: "t"
+output: html_document
+---
+
 ```{r}
 fm_s24_aids <- gls(CD4 ~ obstime + obstime:drug, data = aids,
               correlation = corCompSymm(form = ~ obstime | patient))

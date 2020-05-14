@@ -1,3 +1,8 @@
+---
+title: "t"
+output: html_document
+---
+
 ```{r}
 # create low CD4 indicator
 aids$lowCD4 <- aids$CD4 < sqrt(150)

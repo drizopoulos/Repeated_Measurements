@@ -1,3 +1,8 @@
+---
+title: "t"
+output: html_document
+---
+
 ```{r}
 fm_s24_pbc <- gls(log(serBilir) ~ ns(year, 2) * sex + age + age:sex, data = pbc2,
               correlation = corCAR1(form = ~ year | id))

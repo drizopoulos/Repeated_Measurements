@@ -1,3 +1,9 @@
+---
+title: "t"
+output: html_document
+---
+
+
 ```{r}
 # 16 sample patients
 ids <- c(455, 313, 345, 301, 17, 20, 208, 381, 389, 100, 254, 224, 

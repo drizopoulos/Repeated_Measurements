@@ -1,3 +1,9 @@
+---
+title: "t"
+output: html_document
+---
+
+
 ```{r}
 xyplot(pro ~ time | treat, group = id, data = prothro, 
        panel = function (x, y, ...) {
