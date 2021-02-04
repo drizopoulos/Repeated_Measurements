@@ -293,8 +293,9 @@ shinyServer(function(input, output) {
                                 correlation = corCompSymm(form = ~ obstime | patient))
             if (!exists("fm_s29_aids2")) {
                 withProgress({
+                    aids$obstime_int <- with(aids, match(obstime, sort(unique(obstime))))
                     fm <- gls(CD4 ~ obstime + obstime:drug, data = aids,
-                                     correlation = corSymm(form = ~ 1 | patient),
+                                     correlation = corSymm(form = ~ obstime_int | patient),
                                      weights = varIdent(form = ~ 1 | obstime))
                 }, message = "Fitting the model...")
                 fm_s29_aids2 <<- fm
@@ -3463,8 +3464,9 @@ shinyServer(function(input, output) {
                 if (naf(input$s212_datachoice) && input$s212_datachoice == "AIDS") {
                     if (!exists("fm_s212_aids")) {
                         withProgress({
+                            aids$obstime_int <- with(aids, match(obstime, sort(unique(obstime))))
                             fm <- gls(CD4 ~ obstime + obstime:drug, data = aids,
-                                  correlation = corSymm(form = ~ 1 | patient),
+                                  correlation = corSymm(form = ~ obstime_int | patient),
                                   weights = varIdent(form = ~ 1 | obstime))
                         }, message = "Fitting the model...")
                         fm_s29_aids2 <<- fm
@@ -3494,8 +3496,9 @@ shinyServer(function(input, output) {
                 if (naf(input$s212_datachoice) && input$s212_datachoice == "AIDS") {
                     if (!exists("fm_s212_aids")) {
                         withProgress({
+                            aids$obstime_int <- with(aids, match(obstime, sort(unique(obstime))))
                             fm <- gls(CD4 ~ obstime + obstime:drug, data = aids,
-                                  correlation = corSymm(form = ~ 1 | patient),
+                                  correlation = corSymm(form = ~ obstime_int | patient),
                                   weights = varIdent(form = ~ 1 | obstime))
                         }, message = 'Fitting the model...')
                         fm_s29_aids2 <<- fm

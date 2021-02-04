@@ -4,8 +4,9 @@ output: html_document
 ---
 
 ```{r}
+aids$obstime_int <- with(aids, match(obstime, sort(unique(obstime))))
 fm_s212_aids <- gls(CD4 ~ obstime + obstime:drug, data = aids,
-                    correlation = corSymm(form = ~ 1 | patient),
+                    correlation = corSymm(form = ~ obstime_int | patient),
                     weights = varIdent(form = ~ 1 | obstime))
 
 qqnorm(fm_s212_aids, ~ resid(., type = "n") | drug)

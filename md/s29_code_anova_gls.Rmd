@@ -9,8 +9,9 @@ fm_s29_aids1 <- gls(CD4 ~ obstime + obstime:drug, data = aids,
                     correlation = corCompSymm(form = ~ obstime | patient))
 
 # model with general covariance matrix
+aids$obstime_int <- with(aids, match(obstime, sort(unique(obstime))))
 fm_s29_aids2 <- gls(CD4 ~ obstime + obstime:drug, data = aids,
-                    correlation = corSymm(form = ~ 1 | patient),
+                    correlation = corSymm(form = ~ obstime_int | patient),
                     weights = varIdent(form = ~ 1 | obstime))
 
 # Likelihood ratio test
