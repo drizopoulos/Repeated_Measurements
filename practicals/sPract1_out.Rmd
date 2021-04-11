@@ -224,7 +224,7 @@ anova(fm_3_noInt, fm_3)
 
 We obtain a result but also a **warning** message. In particular, as we have seen in 
 Section 2.9, when we want to compare models that have different $X\beta$ with a likelihood
-ratio test, we need to fit the models using Maximum Likelihood (ML) and Restricted Maximum 
+ratio test, we need to fit the models using Maximum Likelihood (ML) and not Restricted Maximum 
 Likelihood (REML). REML is the default method to fit the model in 
 [gls()](https://goo.gl/0KBq4B), to change it we need to use argument `method`. In 
 particular,
