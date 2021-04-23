@@ -161,7 +161,7 @@ newDF <- with(pbc2, expand.grid(
 ```
 
 The effect plot is created with the following call to [xyplot()](https://goo.gl/KhfGGL) -
-first we produce the plot for the log odds of abnormal prothrombin time:
+first we produce the plot for the conditional log odds of abnormal prothrombin time:
 ```{r}
 xyplot(pred + low + upp ~ year | sex * drug, 
        data = effectPlotData(fm_3, newDF), 
