@@ -69,7 +69,7 @@ patients.
 * No apparent differences can be seen between the two treatment groups, and between sexes.
 
 <span style="color:red">**Remove Outliers:**</span> The plots above show that some patients
-has extreme prothrombin times at some occasions; in order to be affected by these 
+has extreme prothrombin times at some occasions; in order not to be affected by these 
 outliers, for the remainder of this analysis we remove the `r sum(pbc2$prothrombin >= 18)` 
 prothrombin times which were larger than 18 sec, i.e., 
 ```{r}
@@ -256,7 +256,7 @@ anova(fm_3ML_noIntLin, fm_3ML_noInt)
 ```
 
 The results suggest that we could continue by assuming that the average prothrombin time 
-has a linear evolution in time.
+has a linear evolution over time.
 
 ### Question 7
 Using the [summary()](https://goo.gl/9ymFa6) function we obtain a detailed output of our 
