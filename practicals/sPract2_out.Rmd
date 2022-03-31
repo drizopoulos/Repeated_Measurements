@@ -229,7 +229,7 @@ results of the model (see Question 9).
     
     + `r round(fixef(fm_3ML_noInt_LinAge)['age'], 2)` is the expected difference
     in prothrombin time for a unit increase in the baseline age for patients who have the 
-    same sex, received the same treatment,and who are compared at the same follow-up time.
+    same sex, received the same treatment, and who are compared at the same follow-up time.
 
 
 The estimated random effects covariance matrix and the induced correlation matrix are:
