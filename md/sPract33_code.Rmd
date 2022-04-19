@@ -12,8 +12,10 @@ output: html_document
 # Q3 #
 ######
 
-fm_1 <- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age + age : sex, 
-               family = binomial(), data = pbc2, id = id, corstr = "exchangeable")
+fm_1 <- geeglm(Dicht_prothro ~ ns(year, 2, B = c(0, 9.3)) * (drug + sex) + 
+                   age + age:sex, 
+               family = binomial(), data = pbc2, id = id, 
+               corstr = "exchangeable")
 
 summary(fm_1)
 ```

@@ -13,11 +13,15 @@ output: html_document
 # Q4 #
 ######
 
-fm_2 <- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age + age : sex, 
-               family = binomial(), data = pbc2, id = id, corstr = "independence")
+fm_2 <- geeglm(Dicht_prothro ~ ns(year, 2, B = c(0, 9.3)) * (drug + sex) + 
+                   age + age:sex, 
+               family = binomial(), data = pbc2, id = id, 
+               corstr = "independence")
 
-fm_3 <- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age + age : sex, 
-               family = binomial(), data = pbc2, id = id, corstr = "ar1")
+fm_3 <- geeglm(Dicht_prothro ~ ns(year, 2, B = c(0, 9.3)) * (drug + sex) + 
+                   age + age:sex, 
+               family = binomial(), data = pbc2, id = id, 
+               corstr = "ar1")
 
 
 betas <- cbind("independence" = coef(fm_2), 

@@ -14,7 +14,8 @@ output: html_document
 
 # nonlinear terms
 fm_3_IntFinal_Lin <- geeglm(Dicht_prothro ~ year * sex + drug + age, 
-                            family = binomial(), data = pbc2, id = id, corstr = "ar1")
+                            family = binomial(), data = pbc2, id = id, 
+                            corstr = "ar1")
 
 anova(fm_3_IntFinal_Lin, fm_3_IntFinal)
 ```
