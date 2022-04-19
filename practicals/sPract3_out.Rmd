@@ -81,7 +81,7 @@ and its interaction with sex. This model is fitted with following call to functi
 `binomial()`, and supply the `id` argument to identify the clusters, i.e., in this case 
 the patients):
 ```{r}
-fm_1 <- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age + age:sex, 
+fm_1 <- geeglm(Dicht_prothro ~ ns(year, 2, B = c(0, 9.3)) * (drug + sex) + age + age:sex, 
                family = binomial(), data = pbc2, id = id, corstr = "exchangeable")
 
 summary(fm_1)
@@ -95,10 +95,10 @@ We continue the analysis by re-fitting the model of Question 3 with the independ
 auto-regressive of order 1 working correlation matrices. This is done with the following 
 call to [geeglm()](https://goo.gl/1S1uix) by suitably changing the `corstr` argument:
 ```{r}
-fm_2 <- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age + age:sex, 
+fm_2 <- geeglm(Dicht_prothro ~ ns(year, 2, B = c(0, 9.3)) * (drug + sex) + age + age:sex, 
                family = binomial(), data = pbc2, id = id, corstr = "independence")
 
-fm_3 <- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age + age:sex, 
+fm_3 <- geeglm(Dicht_prothro ~ ns(year, 2, B = c(0, 9.3)) * (drug + sex) + age + age:sex, 
                family = binomial(), data = pbc2, id = id, corstr = "ar1")
 ```
 
@@ -223,7 +223,7 @@ and the compare the model under the null (here the one the excludes all interact
 with the model under the alternative (here the model that includes all interaction terms)
 using the `anova()` function. The corresponding code is:
 ```{r}
-fm_3_IntAll <- geeglm(Dicht_prothro ~ ns(year, 2) + drug + sex + age,
+fm_3_IntAll <- geeglm(Dicht_prothro ~ ns(year, 2, B = c(0, 9.3)) + drug + sex + age,
                       family = binomial(), data = pbc2, id = id, corstr = "ar1")
 
 anova(fm_3_IntAll, fm_3)
@@ -233,7 +233,8 @@ We observe that the result is on the borderline. Nonetheless, we will continue t
 investigate the interaction terms further. We will first test the two interaction terms 
 for the time effect, i.e.,
 ```{r}
-fm_3_IntTimeAll <- geeglm(Dicht_prothro ~ ns(year, 2) + sex + drug + age + age : sex, 
+fm_3_IntTimeAll <- geeglm(Dicht_prothro ~ ns(year, 2, B = c(0, 9.3)) + sex + 
+                              drug + age + age:sex, 
                           family = binomial(), data = pbc2, id = id, corstr = "ar1")
 
 anova(fm_3_IntTimeAll, fm_3)
@@ -243,7 +244,8 @@ We find a significant difference between the two models suggesting that at least
 the interaction terms is required. To find out which, we first test the interaction term 
 for drug, i.e.,
 ```{r}
-fm_3_IntTimeDrug <- geeglm(Dicht_prothro ~ ns(year, 2) * sex + drug + age + age : sex, 
+fm_3_IntTimeDrug <- geeglm(Dicht_prothro ~ ns(year, 2, B = c(0, 9.3)) * sex + 
+                               drug + age + age:sex, 
                            family = binomial(), data = pbc2, id = id, corstr = "ar1")
 
 anova(fm_3_IntTimeDrug, fm_3)
@@ -252,7 +254,8 @@ anova(fm_3_IntTimeDrug, fm_3)
 The results point out that this interaction terms does not seem to improve the fit. We 
 continue with the interaction term for sex
 ```{r}
-fm_3_IntTimeSex <- geeglm(Dicht_prothro ~ ns(year, 2) * drug + sex + age + age : sex, 
+fm_3_IntTimeSex <- geeglm(Dicht_prothro ~ ns(year, 2, B = c(0, 9.3)) * drug + 
+                              sex + age + age:sex, 
                           family = binomial(), data = pbc2, id = id, corstr = "ar1")
 
 anova(fm_3_IntTimeSex, fm_3)
@@ -261,7 +264,8 @@ anova(fm_3_IntTimeSex, fm_3)
 The interaction between the time effect and sex seems to improve the fit of the model. We
 finally test the interaction term between age and sex
 ```{r}
-fm_3_IntSexAge <- geeglm(Dicht_prothro ~ ns(year, 2) * (drug + sex) + age, 
+fm_3_IntSexAge <- geeglm(Dicht_prothro ~ ns(year, 2, B = c(0, 9.3)) * (drug + sex) + 
+                             age, 
                          family = binomial(), data = pbc2, id = id, corstr = "ar1")
 
 anova(fm_3_IntSexAge, fm_3)
@@ -270,7 +274,7 @@ anova(fm_3_IntSexAge, fm_3)
 Hence, we keep as final model the one that only includes the interaction term between
 sex and time, i.e.,
 ```{r}
-fm_3_IntFinal <- geeglm(Dicht_prothro ~ ns(year, 2) * sex + drug + age, 
+fm_3_IntFinal <- geeglm(Dicht_prothro ~ ns(year, 2, B = c(0, 9.3)) * sex + drug + age, 
                         family = binomial(), data = pbc2, id = id, corstr = "ar1")
 ```
 
